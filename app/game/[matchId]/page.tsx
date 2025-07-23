@@ -134,9 +134,9 @@ export default function GamePage() {
         console.log('Auto-joining as player B - no player B exists');
         // Auto-join as player B if no player B exists
         joinAsPlayerB();
-      } else if (match.player_b && !match.player_b_moves) {
-        console.log('Player B exists but has no moves, allowing takeover');
-        // Allow taking over player B slot if they haven't submitted moves yet
+      } else if (match.player_b && !match.player_b_moves && user && match.player_b_email === user.email) {
+        console.log('Player B exists but has no moves, and this is the invited player - allowing takeover');
+        // Allow taking over player B slot if they haven't submitted moves yet AND this is the invited player
         takeOverPlayerB();
       } else {
         console.log('Player not recognized in match', {

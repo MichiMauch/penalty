@@ -40,8 +40,20 @@ export async function POST(request: NextRequest) {
       }
       
       const match = result.rows[0];
-      if (match.player_b) {
+      if (match.player_b && match.player_b_email !== email) {
         return NextResponse.json({ error: 'Match already full' }, { status: 400 });
+      }
+      
+      // If player_b exists but it's the same email as the invited player, allow them to join/rejoin
+      if (match.player_b && match.player_b_email === email) {
+        // This is the invited player trying to rejoin - allow it
+        const finalPlayerId = playerId || nanoid();
+        await db.execute({
+          sql: 'UPDATE matches SET player_b = ?, player_b_username = ?, player_b_avatar = ? WHERE id = ?',
+          args: [finalPlayerId, username, avatar, matchId]
+        });
+        
+        return NextResponse.json({ matchId, playerId: finalPlayerId });
       }
       
       const finalPlayerId = playerId || nanoid();

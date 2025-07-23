@@ -24,57 +24,28 @@ export async function GET(request: NextRequest) {
           player_a_username,
           player_a_avatar,
           player_b_email,
+          player_b,
           created_at
         FROM matches 
         WHERE player_b_email = ? 
-          AND player_b IS NULL 
+          AND (player_b IS NULL OR player_b_moves IS NULL)
           AND status = 'waiting'
         ORDER BY created_at DESC
       `,
       args: [session.user.email]
     });
     
-    // Also find matches where the user is already player_b but hasn't submitted moves
-    const activeMatches = await db.execute({
-      sql: `
-        SELECT 
-          id,
-          player_a_email,
-          player_a_username,
-          player_a_avatar,
-          player_b_email,
-          player_b_moves,
-          created_at
-        FROM matches 
-        WHERE player_b_email = ? 
-          AND player_b IS NOT NULL 
-          AND player_b_moves IS NULL
-          AND status = 'waiting'
-        ORDER BY created_at DESC
-      `,
-      args: [session.user.email]
-    });
-    
-    const pendingChallenges = pendingMatches.rows.map(match => ({
+    const challenges = pendingMatches.rows.map(match => ({
       id: match.id,
       challengerEmail: match.player_a_email,
       challengerUsername: match.player_a_username,
       challengerAvatar: match.player_a_avatar,
       createdAt: match.created_at,
-      type: 'invitation' as const
-    }));
-    
-    const activeChallenges = activeMatches.rows.map(match => ({
-      id: match.id,
-      challengerEmail: match.player_a_email,
-      challengerUsername: match.player_a_username,
-      challengerAvatar: match.player_a_avatar,
-      createdAt: match.created_at,
-      type: 'active' as const
+      type: match.player_b ? 'active' : 'invitation' as const
     }));
     
     return NextResponse.json({
-      challenges: [...pendingChallenges, ...activeChallenges]
+      challenges
     });
   } catch (error) {
     console.error('Error fetching pending matches:', error);
