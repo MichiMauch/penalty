@@ -16,7 +16,8 @@ interface PendingChallenge {
   challengerUsername: string;
   challengerAvatar: string;
   createdAt: string;
-  type: 'invitation' | 'active';
+  type: 'invitation' | 'active' | 'waiting_for_opponent';
+  role: 'defender' | 'challenger';
 }
 
 export default function Garderobe() {
@@ -50,7 +51,7 @@ export default function Garderobe() {
     }
   };
 
-  const acceptChallenge = async (challengeId: string, type: 'invitation' | 'active') => {
+  const acceptChallenge = async (challengeId: string, type: 'invitation' | 'active' | 'waiting_for_opponent') => {
     if (type === 'invitation') {
       // Join the match as player B
       const playerId = nanoid();
@@ -79,7 +80,7 @@ export default function Garderobe() {
         setError('Netzwerkfehler');
       }
     } else {
-      // Just navigate to the active match
+      // Just navigate to the match (active or waiting_for_opponent)
       router.push(`/game/${challengeId}`);
     }
   };
@@ -220,9 +221,9 @@ export default function Garderobe() {
                               {challenge.challengerUsername}
                             </p>
                             <p className="text-white/80 text-sm">
-                              {challenge.type === 'invitation' 
-                                ? 'Möchte gegen dich spielen' 
-                                : 'Wartet auf deinen Zug'}
+                              {challenge.role === 'defender' && challenge.type === 'invitation' && 'Möchte gegen dich spielen'}
+                              {challenge.role === 'defender' && challenge.type === 'active' && 'Wartet auf deinen Zug'}
+                              {challenge.role === 'challenger' && challenge.type === 'waiting_for_opponent' && 'Hat deine Herausforderung angenommen!'}
                             </p>
                           </div>
                         </div>
@@ -231,7 +232,9 @@ export default function Garderobe() {
                           onClick={() => acceptChallenge(challenge.id, challenge.type)}
                           className="px-6 py-2 bg-white text-red-600 font-bold rounded-full hover:bg-yellow-100 transform hover:scale-105 transition-all duration-200 shadow-lg"
                         >
-                          {challenge.type === 'invitation' ? '⚽ Annehmen' : '🧤 Weiter spielen'}
+                          {challenge.role === 'defender' && challenge.type === 'invitation' && '⚽ Annehmen'}
+                          {challenge.role === 'defender' && challenge.type === 'active' && '🧤 Weiter spielen'}
+                          {challenge.role === 'challenger' && challenge.type === 'waiting_for_opponent' && '⚽ Spiel öffnen'}
                         </button>
                       </div>
                     ))}

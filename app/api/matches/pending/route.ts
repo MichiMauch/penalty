@@ -24,19 +24,21 @@ export async function GET(request: NextRequest) {
   try {
     console.log('Fetching pending matches for user:', session.user.email);
     
-    // Find matches where the user is invited as player_b but hasn't joined yet
-    const pendingMatches = await db.execute({
+    // Find matches where the user is invited as player_b but hasn't joined yet OR submitted moves
+    const pendingAsPlayerB = await db.execute({
       sql: `
         SELECT 
           id,
           player_a_email,
-          player_a_username,
+          player_a_username, 
           player_a_avatar,
           player_b_email,
           player_b,
           player_b_moves,
+          player_a_moves,
           status,
-          created_at
+          created_at,
+          'invited' as match_type
         FROM matches 
         WHERE player_b_email = ? 
           AND (player_b IS NULL OR player_b_moves IS NULL)
@@ -46,28 +48,59 @@ export async function GET(request: NextRequest) {
       args: [session.user.email]
     });
     
-    console.log('Found pending matches:', pendingMatches.rows.length);
-    pendingMatches.rows.forEach((match: any) => {
-      console.log('Match:', {
-        id: match.id,
-        player_b: match.player_b,
-        player_b_email: match.player_b_email,
-        player_b_moves: match.player_b_moves,
-        status: match.status
-      });
+    // Find matches where the user is player_a and player_b has joined but hasn't submitted moves
+    const pendingAsPlayerA = await db.execute({
+      sql: `
+        SELECT 
+          id,
+          player_a_email,
+          player_a_username,
+          player_a_avatar,
+          player_b_email,
+          player_b_username,
+          player_b_avatar,
+          player_b,
+          player_b_moves,
+          player_a_moves,
+          status,
+          created_at,
+          'challenger' as match_type
+        FROM matches 
+        WHERE player_a_email = ? 
+          AND player_b IS NOT NULL
+          AND player_b_moves IS NULL
+          AND player_a_moves IS NOT NULL
+          AND status = 'waiting'
+        ORDER BY created_at DESC
+      `,
+      args: [session.user.email]
     });
     
-    const challenges = pendingMatches.rows.map((match: any) => ({
+    console.log('Found pending matches as player B:', pendingAsPlayerB.rows.length);
+    console.log('Found pending matches as player A:', pendingAsPlayerA.rows.length);
+    
+    const challengesAsPlayerB = pendingAsPlayerB.rows.map((match: any) => ({
       id: match.id,
       challengerEmail: match.player_a_email,
       challengerUsername: match.player_a_username,
       challengerAvatar: match.player_a_avatar,
       createdAt: match.created_at,
-      type: match.player_b ? 'active' : 'invitation' as const
+      type: match.player_b ? 'active' : 'invitation' as const,
+      role: 'defender' as const
+    }));
+    
+    const challengesAsPlayerA = pendingAsPlayerA.rows.map((match: any) => ({
+      id: match.id,
+      challengerEmail: match.player_b_email,
+      challengerUsername: match.player_b_username,
+      challengerAvatar: match.player_b_avatar,
+      createdAt: match.created_at,
+      type: 'waiting_for_opponent' as const,
+      role: 'challenger' as const
     }));
     
     return NextResponse.json({
-      challenges
+      challenges: [...challengesAsPlayerB, ...challengesAsPlayerA]
     });
   } catch (error) {
     console.error('Error fetching pending matches:', error);
