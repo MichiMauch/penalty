@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       args: [session.user.email]
     });
     
-    const challenges = pendingMatches.rows.map(match => ({
+    const challenges = pendingMatches.rows.map((match: any) => ({
       id: match.id,
       challengerEmail: match.player_a_email,
       challengerUsername: match.player_a_username,

@@ -1,4 +1,3 @@
-import { createClient } from '@libsql/client';
 import dotenv from 'dotenv';
 
 dotenv.config({ path: '.env.local' });
@@ -10,7 +9,23 @@ if (!databaseUrl || !authToken) {
   console.warn('Turso environment variables not set. Database operations will fail.');
 }
 
-export const db = databaseUrl && authToken ? createClient({
+// Use conditional import to load web-compatible version on Vercel
+let createClient: any;
+
+try {
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    // Use web version for serverless environments
+    createClient = require('@libsql/client/web').createClient;
+  } else {
+    // Use node version for local development
+    createClient = require('@libsql/client').createClient;
+  }
+} catch (error) {
+  console.error('Failed to import libsql client:', error);
+  createClient = require('@libsql/client').createClient;
+}
+
+export const db = databaseUrl && authToken && createClient ? createClient({
   url: databaseUrl,
   authToken: authToken,
 }) : null;

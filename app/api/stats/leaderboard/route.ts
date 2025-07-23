@@ -36,7 +36,7 @@ export async function GET() {
       `
     });
 
-    const leaderboard = result.rows.map((row, index) => {
+    const leaderboard = result.rows.map((row: any, index: number) => {
       const totalPoints = Number(row.total_points) || 0;
       const level = calculateLevel(totalPoints);
       

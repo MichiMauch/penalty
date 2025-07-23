@@ -37,7 +37,7 @@ export async function GET() {
       args: [thirtyDaysAgo.toISOString(), thirtyDaysAgo.toISOString()]
     });
 
-    const players = result.rows.map(row => ({
+    const players = result.rows.map((row: any) => ({
       id: row.id as string,
       username: row.username as string,
       avatar: row.avatar as string,
