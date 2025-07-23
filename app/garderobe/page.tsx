@@ -28,7 +28,14 @@ export default function Garderobe() {
   const [error, setError] = useState('');
   const [pendingChallenges, setPendingChallenges] = useState<PendingChallenge[]>([]);
   const [isLoadingChallenges, setIsLoadingChallenges] = useState(true);
-  const [dismissedMatches, setDismissedMatches] = useState<Set<string>>(new Set());
+  const [viewedMatches, setViewedMatches] = useState<Set<string>>(() => {
+    // Load viewed matches from localStorage on init
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('viewedFinishedMatches');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    }
+    return new Set();
+  });
   const router = useRouter();
   const { user, loading, logout } = useAuth();
 
@@ -101,8 +108,11 @@ export default function Garderobe() {
     }
   };
 
-  const dismissFinishedMatch = (challengeId: string) => {
-    setDismissedMatches(prev => new Set([...prev, challengeId]));
+  // Save viewed matches to localStorage
+  const saveViewedMatches = (matches: Set<string>) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('viewedFinishedMatches', JSON.stringify([...matches]));
+    }
   };
 
   const acceptChallenge = async (challengeId: string, type: 'invitation' | 'active' | 'waiting_for_opponent' | 'cancelable' | 'finished_recent') => {
@@ -134,6 +144,12 @@ export default function Garderobe() {
         setError('Netzwerkfehler');
       }
     } else {
+      // Mark finished games as viewed when opening them
+      if (type === 'finished_recent') {
+        const newViewedMatches = new Set([...viewedMatches, challengeId]);
+        setViewedMatches(newViewedMatches);
+        saveViewedMatches(newViewedMatches);
+      }
       // Just navigate to the match (active, waiting_for_opponent, cancelable, or finished_recent)
       router.push(`/game/${challengeId}`);
     }
@@ -240,7 +256,9 @@ export default function Garderobe() {
             <div className="lg:col-span-2 space-y-8">
               
               {/* Pending Challenges - Show prominently at top */}
-              {!isLoadingChallenges && pendingChallenges.filter(challenge => !dismissedMatches.has(challenge.id)).length > 0 && (
+              {!isLoadingChallenges && pendingChallenges.filter(challenge => 
+                !(challenge.type === 'finished_recent' && viewedMatches.has(challenge.id))
+              ).length > 0 && (
                 <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg shadow-xl p-6 border-2 border-yellow-300">
                   <div className="flex items-center mb-4">
                     <span className="text-3xl mr-3">🔥</span>
@@ -248,12 +266,16 @@ export default function Garderobe() {
                       Du wurdest herausgefordert!
                     </h2>
                     <span className="ml-auto bg-white text-red-600 px-3 py-1 rounded-full font-bold text-sm">
-                      {pendingChallenges.filter(challenge => !dismissedMatches.has(challenge.id)).length}
+                      {pendingChallenges.filter(challenge => 
+                        !(challenge.type === 'finished_recent' && viewedMatches.has(challenge.id))
+                      ).length}
                     </span>
                   </div>
                   
                   <div className="space-y-3">
-                    {pendingChallenges.filter(challenge => !dismissedMatches.has(challenge.id)).map((challenge) => (
+                    {pendingChallenges.filter(challenge => 
+                      !(challenge.type === 'finished_recent' && viewedMatches.has(challenge.id))
+                    ).map((challenge) => (
                       <div
                         key={challenge.id}
                         className="bg-white/10 backdrop-blur rounded-lg p-4 flex items-center justify-between"
@@ -314,16 +336,6 @@ export default function Garderobe() {
                               className="px-4 py-2 bg-red-500 text-white font-bold rounded-full hover:bg-red-600 transform hover:scale-105 transition-all duration-200 shadow-lg"
                             >
                               🗑️ Löschen
-                            </button>
-                          )}
-                          
-                          {/* Dismiss button for finished games */}
-                          {challenge.type === 'finished_recent' && (
-                            <button
-                              onClick={() => dismissFinishedMatch(challenge.id)}
-                              className="px-3 py-2 bg-gray-400 text-white font-bold rounded-full hover:bg-gray-500 transform hover:scale-105 transition-all duration-200 shadow-lg"
-                            >
-                              ✕
                             </button>
                           )}
                         </div>
