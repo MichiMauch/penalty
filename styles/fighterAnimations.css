@@ -1,0 +1,231 @@
+/* Fighter Animation Styles */
+
+.fighter-svg {
+  transition: all 0.3s ease;
+}
+
+/* Base states */
+.fighter-svg .fighter-head,
+.fighter-svg .fighter-torso,
+.fighter-svg .fighter-arm,
+.fighter-svg .fighter-leg {
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
+
+/* ATTACK ANIMATIONS */
+
+/* Schlag (Punch) - Right arm extends forward */
+@keyframes punch {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(-30deg) translateX(15px); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-schlag #right-arm {
+  animation: punch 0.8s ease-in-out;
+}
+
+.animate-schlag #right-arm .upper-arm {
+  transform-origin: left center;
+}
+
+.animate-schlag #right-arm .lower-arm {
+  transform-origin: left center;
+}
+
+/* Tritt (Kick) - Right leg kicks forward */
+@keyframes kick {
+  0% { transform: rotate(0deg); }
+  30% { transform: rotate(-45deg); }
+  60% { transform: rotate(-20deg) translateX(20px); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-tritt #right-leg {
+  animation: kick 1s ease-in-out;
+}
+
+.animate-tritt #right-leg .upper-leg {
+  transform-origin: top center;
+}
+
+/* Kopfstoß (Headbutt) - Whole body leans forward */
+@keyframes headbutt {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(15px, -5px) rotate(15deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.animate-kopfstoss #fighter-body {
+  animation: headbutt 0.7s ease-in-out;
+}
+
+/* DEFENSE ANIMATIONS */
+
+/* Block - Both arms cross in front */
+@keyframes block {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(-60deg) translateY(-10px); }
+  100% { transform: rotate(-45deg) translateY(-5px); }
+}
+
+.animate-block #left-arm {
+  animation: block 0.5s ease-out forwards;
+}
+
+.animate-block #right-arm {
+  animation: block 0.5s ease-out forwards;
+  animation-direction: reverse;
+}
+
+/* Ausweichen (Dodge) - Body leans to the side */
+@keyframes dodge {
+  0% { transform: translateX(0) rotate(0deg); }
+  50% { transform: translateX(-20px) rotate(-15deg); }
+  100% { transform: translateX(-10px) rotate(-8deg); }
+}
+
+.animate-ausweichen #fighter-body {
+  animation: dodge 0.6s ease-out forwards;
+}
+
+/* Springen (Jump) - Whole body jumps up */
+@keyframes jump {
+  0% { transform: translateY(0) scaleY(1); }
+  30% { transform: translateY(-25px) scaleY(1.1); }
+  60% { transform: translateY(-30px) scaleY(1.0); }
+  100% { transform: translateY(-20px) scaleY(1.0); }
+}
+
+.animate-springen #fighter-body {
+  animation: jump 0.6s ease-out forwards;
+}
+
+.animate-springen #head {
+  transform: translateY(-5px);
+}
+
+/* RESULT ANIMATIONS */
+
+/* Hit taken - Shake and red flash */
+@keyframes hit-taken {
+  0% { transform: translateX(0); filter: hue-rotate(0deg); }
+  25% { transform: translateX(-3px); filter: hue-rotate(180deg); }
+  50% { transform: translateX(3px); filter: hue-rotate(180deg); }
+  75% { transform: translateX(-2px); filter: hue-rotate(180deg); }
+  100% { transform: translateX(0); filter: hue-rotate(0deg); }
+}
+
+.animate-hit-taken {
+  animation: hit-taken 0.4s ease-in-out;
+}
+
+/* Hit successful - Bounce and impact effects */
+@keyframes hit-success {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.animate-hit-success {
+  animation: hit-success 0.3s ease-out;
+}
+
+.animate-hit-success #impact-effects {
+  opacity: 1;
+  animation: flash 0.2s ease-out;
+}
+
+@keyframes flash {
+  0% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+/* Miss/Block successful - Subtle positive feedback */
+@keyframes miss-defend {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); filter: brightness(1.2); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.animate-miss-defend {
+  animation: miss-defend 0.4s ease-out;
+}
+
+/* Idle state - Subtle breathing animation */
+@keyframes idle-breathing {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+  100% { transform: translateY(0); }
+}
+
+.animate-idle #fighter-body {
+  animation: idle-breathing 2s ease-in-out infinite;
+}
+
+/* Reset animation - Quick return to idle */
+@keyframes reset {
+  to { 
+    transform: translateX(0) translateY(0) rotate(0deg) scale(1);
+  }
+}
+
+.animate-reset #fighter-body,
+.animate-reset #left-arm,
+.animate-reset #right-arm,
+.animate-reset #left-leg,
+.animate-reset #right-leg {
+  animation: reset 0.3s ease-out forwards;
+}
+
+/* Arena ground line */
+.arena-ground {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #8B5CF6, #EC4899);
+  margin-top: 20px;
+}
+
+/* Special effects for critical moments */
+.critical-hit {
+  filter: drop-shadow(0 0 10px gold);
+}
+
+.perfect-defense {
+  filter: drop-shadow(0 0 8px #10B981);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .fighter-svg {
+    width: 80px;
+    height: 120px;
+  }
+  
+  @keyframes punch {
+    50% { transform: rotate(-25deg) translateX(10px); }
+  }
+  
+  @keyframes kick {
+    60% { transform: rotate(-15deg) translateX(15px); }
+  }
+  
+  @keyframes dodge {
+    50% { transform: translateX(-15px) rotate(-12deg); }
+  }
+}
+
+/* Accessibility - Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .fighter-svg,
+  .fighter-svg * {
+    animation-duration: 0.1s;
+    animation-iteration-count: 1;
+  }
+  
+  .animate-idle #fighter-body {
+    animation: none;
+  }
+}

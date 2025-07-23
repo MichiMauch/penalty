@@ -1,0 +1,141 @@
+/* Screen shake animation */
+@keyframes shake {
+  0%, 100% { 
+    transform: translateX(0) translateY(0); 
+  }
+  10% { 
+    transform: translateX(-5px) translateY(-2px); 
+  }
+  20% { 
+    transform: translateX(5px) translateY(2px); 
+  }
+  30% { 
+    transform: translateX(-3px) translateY(-1px); 
+  }
+  40% { 
+    transform: translateX(3px) translateY(1px); 
+  }
+  50% { 
+    transform: translateX(-2px) translateY(-1px); 
+  }
+  60% { 
+    transform: translateX(2px) translateY(1px); 
+  }
+  70% { 
+    transform: translateX(-1px) translateY(0); 
+  }
+  80% { 
+    transform: translateX(1px) translateY(0); 
+  }
+  90% { 
+    transform: translateX(0) translateY(-1px); 
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Comic text pulse animation */
+@keyframes comicPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Impact zoom animation */
+@keyframes impactZoom {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Victory animation */
+@keyframes victory {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(-5deg) scale(1.1);
+  }
+  50% {
+    transform: rotate(5deg) scale(1.2);
+  }
+  75% {
+    transform: rotate(-3deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+/* Speed lines effect */
+.speed-lines {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 5px,
+    rgba(255, 255, 255, 0.1) 5px,
+    rgba(255, 255, 255, 0.1) 10px
+  );
+  animation: speedMove 0.5s linear infinite;
+}
+
+@keyframes speedMove {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(10px);
+  }
+}
+
+/* Comic bubble entrance */
+@keyframes bubbleIn {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Hit flash effect */
+@keyframes hitFlash {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.hit-flash {
+  animation: hitFlash 0.2s ease-out;
+}

@@ -1,0 +1,187 @@
+/* Enhanced Fighter Animations with Poses and Effects */
+
+/* Pose-specific animations */
+@keyframes punch-sequence {
+  0% { transform: translateX(0) rotate(0deg); }
+  30% { transform: translateX(-5px) rotate(-2deg); } /* Wind up */
+  70% { transform: translateX(15px) rotate(3deg); } /* Strike */
+  100% { transform: translateX(0) rotate(0deg); } /* Return */
+}
+
+@keyframes kick-sequence {
+  0% { transform: translateY(0) rotate(0deg); }
+  20% { transform: translateY(-3px) rotate(-1deg); } /* Lift */
+  60% { transform: translateY(2px) rotate(2deg); } /* Kick out */
+  100% { transform: translateY(0) rotate(0deg); } /* Return */
+}
+
+@keyframes headbutt-sequence {
+  0% { transform: translateX(0) scaleX(1); }
+  30% { transform: translateX(-8px) scaleX(0.95); } /* Pull back */
+  70% { transform: translateX(12px) scaleX(1.05); } /* Forward thrust */
+  100% { transform: translateX(0) scaleX(1); } /* Return */
+}
+
+@keyframes block-sequence {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); } /* Brace for impact */
+  100% { transform: scale(1); }
+}
+
+@keyframes dodge-sequence {
+  0% { transform: translateX(0) rotate(0deg); }
+  40% { transform: translateX(-15px) rotate(-8deg); } /* Lean away */
+  60% { transform: translateX(-12px) rotate(-6deg); } /* Hold position */
+  100% { transform: translateX(0) rotate(0deg); } /* Return */
+}
+
+@keyframes jump-sequence {
+  0% { transform: translateY(0) scaleY(1); }
+  30% { transform: translateY(3px) scaleY(0.9); } /* Crouch */
+  60% { transform: translateY(-15px) scaleY(1.1); } /* Jump */
+  100% { transform: translateY(0) scaleY(1); } /* Land */
+}
+
+/* Hit reaction animations */
+@keyframes hit-taken {
+  0% { transform: translateX(0) rotate(0deg); }
+  30% { transform: translateX(-8px) rotate(-3deg); } /* Stagger back */
+  70% { transform: translateX(-5px) rotate(-1deg); } /* Recover */
+  100% { transform: translateX(0) rotate(0deg); }
+}
+
+@keyframes miss-defend {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); } /* Confident block */
+  100% { transform: scale(1); }
+}
+
+/* Screen shake for dramatic impact */
+@keyframes screen-shake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-2px, 1px) rotate(-0.5deg); }
+  20% { transform: translate(2px, -1px) rotate(0.5deg); }
+  30% { transform: translate(-1px, 2px) rotate(-0.3deg); }
+  40% { transform: translate(1px, -2px) rotate(0.3deg); }
+  50% { transform: translate(-2px, 1px) rotate(-0.2deg); }
+  60% { transform: translate(2px, -1px) rotate(0.2deg); }
+  70% { transform: translate(-1px, 1px) rotate(-0.1deg); }
+  80% { transform: translate(1px, -1px) rotate(0.1deg); }
+  90% { transform: translate(-1px, 0px) rotate(0deg); }
+}
+
+/* Particle explosion effect */
+@keyframes particle-explosion {
+  0% { 
+    transform: scale(0) rotate(0deg); 
+    opacity: 1; 
+  }
+  50% { 
+    transform: scale(1.5) rotate(180deg); 
+    opacity: 0.8; 
+  }
+  100% { 
+    transform: scale(3) rotate(360deg); 
+    opacity: 0; 
+  }
+}
+
+/* Motion blur effect */
+@keyframes motion-blur {
+  0% { filter: blur(0px); }
+  50% { filter: blur(2px); }
+  100% { filter: blur(0px); }
+}
+
+/* CSS Animation Classes */
+.animate-schlag {
+  animation: punch-sequence 0.8s ease-in-out;
+}
+
+.animate-tritt {
+  animation: kick-sequence 0.9s ease-in-out;
+}
+
+.animate-kopfstoss {
+  animation: headbutt-sequence 0.7s ease-in-out;
+}
+
+.animate-block {
+  animation: block-sequence 0.6s ease-in-out;
+}
+
+.animate-ausweichen {
+  animation: dodge-sequence 0.8s ease-in-out;
+}
+
+.animate-springen {
+  animation: jump-sequence 1s ease-in-out;
+}
+
+.animate-hit-taken {
+  animation: hit-taken 1s ease-out;
+}
+
+.animate-miss-defend {
+  animation: miss-defend 0.6s ease-in-out;
+}
+
+/* Special effect classes */
+.fighter-svg.impact {
+  animation: screen-shake 0.5s ease-in-out;
+}
+
+.fighter-svg.motion-blur {
+  animation: motion-blur 0.3s ease-in-out;
+}
+
+.particle-explosion {
+  animation: particle-explosion 1s ease-out forwards;
+}
+
+/* Enhanced movement lines */
+.movement-lines line {
+  animation: fade-in-out 0.8s ease-in-out;
+}
+
+@keyframes fade-in-out {
+  0% { opacity: 0; stroke-width: 1; }
+  50% { opacity: 1; stroke-width: 3; }
+  100% { opacity: 0.3; stroke-width: 1; }
+}
+
+/* Fighting stance transitions */
+.fighter-svg {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fighter-head, .fighter-torso, .fighter-arm, .fighter-leg {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Impact flash effect */
+@keyframes impact-flash {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.8) saturate(1.5); }
+  100% { filter: brightness(1); }
+}
+
+.animate-impact {
+  animation: impact-flash 0.2s ease-in-out;
+}
+
+/* Charge up effect for attacks */
+@keyframes charge-up {
+  0% { filter: hue-rotate(0deg) brightness(1); }
+  50% { filter: hue-rotate(45deg) brightness(1.2); }
+  100% { filter: hue-rotate(0deg) brightness(1); }
+}
+
+.animate-charge {
+  animation: charge-up 0.5s ease-in-out infinite;
+}
+
+/* Screen shake animation */
+.animate-shake {
+  animation: screen-shake 0.5s ease-in-out;
+}
