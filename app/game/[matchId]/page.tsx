@@ -138,17 +138,36 @@ export default function GamePage() {
         console.log('Player B exists but has no moves, and this is the invited player - allowing takeover');
         // Allow taking over player B slot if they haven't submitted moves yet AND this is the invited player
         takeOverPlayerB();
+      } else if (user && match.player_a_email === user.email) {
+        console.log('Player recognized as A by email (finished game or localStorage cleared)');
+        // For finished games or when localStorage is cleared, recognize player by email
+        setPlayerRole('player_a');
+        setHasSubmittedMoves(!!match.player_a_moves);
+        // Update localStorage with the correct player ID for future visits
+        localStorage.setItem('playerId', match.player_a);
+        setPlayerId(match.player_a);
+      } else if (user && match.player_b_email === user.email) {
+        console.log('Player recognized as B by email (finished game or localStorage cleared)');
+        // For finished games or when localStorage is cleared, recognize player by email
+        setPlayerRole('player_b');
+        setHasSubmittedMoves(!!match.player_b_moves);
+        // Update localStorage with the correct player ID for future visits
+        localStorage.setItem('playerId', match.player_b);
+        setPlayerId(match.player_b);
       } else {
         console.log('Player not recognized in match', {
           playerA: match.player_a,
           playerB: match.player_b,
-          currentPlayerId: playerId
+          currentPlayerId: playerId,
+          userEmail: user?.email,
+          playerAEmail: match.player_a_email,
+          playerBEmail: match.player_b_email
         });
         // Player is not in this match, but match is full
         setError('Du bist nicht Teil dieses Matches. Bitte verwende den korrekten Link oder erstelle ein neues Match.');
       }
     }
-  }, [match, playerId, joinAsPlayerB, takeOverPlayerB]);
+  }, [match, playerId, user, joinAsPlayerB, takeOverPlayerB]);
   
   // Show auth page if not logged in
   if (loading) {
