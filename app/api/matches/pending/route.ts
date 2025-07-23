@@ -3,14 +3,21 @@ import { db, initDB } from '@/lib/db';
 import { getUserSession } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
+  console.log('Pending matches API called');
+  
   if (!db) {
+    console.log('Database not configured');
     return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
   }
   
   await initDB();
   
+  console.log('Checking session...');
   const session = await getUserSession(request);
+  console.log('Session result:', session ? { userId: session.user.id, email: session.user.email } : 'null');
+  
   if (!session) {
+    console.log('No session found - returning 401');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   

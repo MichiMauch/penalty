@@ -146,7 +146,7 @@ export async function getUserByEmailWithPassword(email: string): Promise<{ user:
 }
 
 export async function getUserSession(request: NextRequest): Promise<UserSession | null> {
-  const sessionId = request.cookies.get('session_id')?.value;
+  const sessionId = request.cookies.get('session')?.value;
   if (!sessionId) return null;
   
   return await getSession(sessionId);
