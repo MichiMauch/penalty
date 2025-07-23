@@ -16,8 +16,9 @@ interface PendingChallenge {
   challengerUsername: string;
   challengerAvatar: string;
   createdAt: string;
-  type: 'invitation' | 'active' | 'waiting_for_opponent';
+  type: 'invitation' | 'active' | 'waiting_for_opponent' | 'cancelable' | 'finished_recent';
   role: 'defender' | 'challenger';
+  winner?: string;
 }
 
 export default function Garderobe() {
@@ -51,7 +52,55 @@ export default function Garderobe() {
     }
   };
 
-  const acceptChallenge = async (challengeId: string, type: 'invitation' | 'active' | 'waiting_for_opponent') => {
+  const declineChallenge = async (challengeId: string) => {
+    try {
+      const response = await fetch('/api/match', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'decline-challenge', 
+          matchId: challengeId,
+          email: user?.email
+        })
+      });
+      
+      if (response.ok) {
+        // Refresh the challenges list
+        fetchPendingChallenges();
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Fehler beim Ablehnen der Herausforderung');
+      }
+    } catch (err) {
+      setError('Netzwerkfehler');
+    }
+  };
+
+  const cancelChallenge = async (challengeId: string) => {
+    try {
+      const response = await fetch('/api/match', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'cancel-challenge', 
+          matchId: challengeId,
+          email: user?.email
+        })
+      });
+      
+      if (response.ok) {
+        // Refresh the challenges list
+        fetchPendingChallenges();
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Fehler beim Löschen der Herausforderung');
+      }
+    } catch (err) {
+      setError('Netzwerkfehler');
+    }
+  };
+
+  const acceptChallenge = async (challengeId: string, type: 'invitation' | 'active' | 'waiting_for_opponent' | 'cancelable' | 'finished_recent') => {
     if (type === 'invitation') {
       // Join the match as player B
       const playerId = nanoid();
@@ -80,7 +129,7 @@ export default function Garderobe() {
         setError('Netzwerkfehler');
       }
     } else {
-      // Just navigate to the match (active or waiting_for_opponent)
+      // Just navigate to the match (active, waiting_for_opponent, cancelable, or finished_recent)
       router.push(`/game/${challengeId}`);
     }
   };
@@ -224,18 +273,45 @@ export default function Garderobe() {
                               {challenge.role === 'defender' && challenge.type === 'invitation' && 'Möchte gegen dich spielen'}
                               {challenge.role === 'defender' && challenge.type === 'active' && 'Wartet auf deinen Zug'}
                               {challenge.role === 'challenger' && challenge.type === 'waiting_for_opponent' && 'Hat deine Herausforderung angenommen!'}
+                              {challenge.type === 'cancelable' && 'Deine Herausforderung wartet auf einen Gegner'}
+                              {challenge.type === 'finished_recent' && 'Spiel beendet - Ergebnis ansehen'}
                             </p>
                           </div>
                         </div>
                         
-                        <button
-                          onClick={() => acceptChallenge(challenge.id, challenge.type)}
-                          className="px-6 py-2 bg-white text-red-600 font-bold rounded-full hover:bg-yellow-100 transform hover:scale-105 transition-all duration-200 shadow-lg"
-                        >
-                          {challenge.role === 'defender' && challenge.type === 'invitation' && '⚽ Annehmen'}
-                          {challenge.role === 'defender' && challenge.type === 'active' && '🧤 Weiter spielen'}
-                          {challenge.role === 'challenger' && challenge.type === 'waiting_for_opponent' && '⚽ Spiel öffnen'}
-                        </button>
+                        <div className="flex space-x-2">
+                          {/* Accept/Continue button */}
+                          <button
+                            onClick={() => acceptChallenge(challenge.id, challenge.type)}
+                            className="px-6 py-2 bg-white text-red-600 font-bold rounded-full hover:bg-yellow-100 transform hover:scale-105 transition-all duration-200 shadow-lg"
+                          >
+                            {challenge.role === 'defender' && challenge.type === 'invitation' && '⚽ Annehmen'}
+                            {challenge.role === 'defender' && challenge.type === 'active' && '🧤 Weiter spielen'}
+                            {challenge.role === 'challenger' && challenge.type === 'waiting_for_opponent' && '⚽ Spiel öffnen'}
+                            {challenge.type === 'cancelable' && '⚽ Zum Spiel'}
+                            {challenge.type === 'finished_recent' && '📊 Ergebnis ansehen'}
+                          </button>
+                          
+                          {/* Decline button for invitations */}
+                          {challenge.role === 'defender' && challenge.type === 'invitation' && (
+                            <button
+                              onClick={() => declineChallenge(challenge.id)}
+                              className="px-4 py-2 bg-gray-500 text-white font-bold rounded-full hover:bg-gray-600 transform hover:scale-105 transition-all duration-200 shadow-lg"
+                            >
+                              ❌ Ablehnen
+                            </button>
+                          )}
+                          
+                          {/* Cancel button for challenges you created */}
+                          {challenge.type === 'cancelable' && (
+                            <button
+                              onClick={() => cancelChallenge(challenge.id)}
+                              className="px-4 py-2 bg-red-500 text-white font-bold rounded-full hover:bg-red-600 transform hover:scale-105 transition-all duration-200 shadow-lg"
+                            >
+                              🗑️ Löschen
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

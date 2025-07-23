@@ -133,6 +133,80 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'Invitation sent' });
     }
     
+    case 'decline-challenge': {
+      const { matchId, email, reason } = body;
+      console.log('DECLINE challenge:', { matchId, email, reason });
+      
+      const result = await db.execute({
+        sql: 'SELECT * FROM matches WHERE id = ?',
+        args: [matchId]
+      });
+      
+      if (result.rows.length === 0) {
+        return NextResponse.json({ error: 'Match not found' }, { status: 404 });
+      }
+      
+      const match = result.rows[0];
+      
+      // Only the invited player (player_b_email) can decline
+      if (match.player_b_email !== email) {
+        return NextResponse.json({ error: 'Unauthorized to decline this challenge' }, { status: 403 });
+      }
+      
+      // Delete the match
+      await db.execute({
+        sql: 'DELETE FROM matches WHERE id = ?',
+        args: [matchId]
+      });
+      
+      // TODO: Send notification email to challenger about decline
+      console.log(`Challenge ${matchId} declined by ${email}, challenger: ${match.player_a_email}`);
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Challenge declined successfully' 
+      });
+    }
+
+    case 'cancel-challenge': {
+      const { matchId, email } = body;
+      console.log('CANCEL challenge:', { matchId, email });
+      
+      const result = await db.execute({
+        sql: 'SELECT * FROM matches WHERE id = ?',
+        args: [matchId]
+      });
+      
+      if (result.rows.length === 0) {
+        return NextResponse.json({ error: 'Match not found' }, { status: 404 });
+      }
+      
+      const match = result.rows[0];
+      
+      // Only the challenger (player_a_email) can cancel if no one has joined yet
+      if (match.player_a_email !== email) {
+        return NextResponse.json({ error: 'Unauthorized to cancel this challenge' }, { status: 403 });
+      }
+      
+      // Only allow canceling if player_b hasn't joined yet or hasn't made moves
+      if (match.player_b && match.player_b_moves) {
+        return NextResponse.json({ error: 'Cannot cancel challenge - game already in progress' }, { status: 400 });
+      }
+      
+      // Delete the match
+      await db.execute({
+        sql: 'DELETE FROM matches WHERE id = ?',
+        args: [matchId]
+      });
+      
+      console.log(`Challenge ${matchId} cancelled by ${email}`);
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Challenge cancelled successfully' 
+      });
+    }
+
     case 'create-revenge': {
       const { matchId, playerAEmail, playerBEmail, playerAUsername, playerBUsername, playerAAvatar, playerBAvatar, originalMatchId } = body;
       
