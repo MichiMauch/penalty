@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { nanoid } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,13 +10,79 @@ import Layout from '@/components/Layout';
 import UserStatsCard from '@/components/UserStatsCard';
 import Leaderboard from '@/components/Leaderboard';
 
+interface PendingChallenge {
+  id: string;
+  challengerEmail: string;
+  challengerUsername: string;
+  challengerAvatar: string;
+  createdAt: string;
+  type: 'invitation' | 'active';
+}
+
 export default function Garderobe() {
   const [matchId, setMatchId] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState('');
+  const [pendingChallenges, setPendingChallenges] = useState<PendingChallenge[]>([]);
+  const [isLoadingChallenges, setIsLoadingChallenges] = useState(true);
   const router = useRouter();
   const { user, loading, logout } = useAuth();
+
+  // Fetch pending challenges when user is loaded
+  useEffect(() => {
+    if (user) {
+      fetchPendingChallenges();
+    }
+  }, [user]);
+
+  const fetchPendingChallenges = async () => {
+    try {
+      const response = await fetch('/api/matches/pending');
+      if (response.ok) {
+        const data = await response.json();
+        setPendingChallenges(data.challenges);
+      }
+    } catch (error) {
+      console.error('Error fetching pending challenges:', error);
+    } finally {
+      setIsLoadingChallenges(false);
+    }
+  };
+
+  const acceptChallenge = async (challengeId: string, type: 'invitation' | 'active') => {
+    if (type === 'invitation') {
+      // Join the match as player B
+      const playerId = nanoid();
+      try {
+        const response = await fetch('/api/match', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            action: 'join', 
+            matchId: challengeId, 
+            playerId,
+            email: user?.email,
+            username: user?.username,
+            avatar: user?.avatar
+          })
+        });
+        
+        if (response.ok) {
+          localStorage.setItem('playerId', playerId);
+          router.push(`/game/${challengeId}`);
+        } else {
+          const data = await response.json();
+          setError(data.error || 'Fehler beim Beitreten des Matches');
+        }
+      } catch (err) {
+        setError('Netzwerkfehler');
+      }
+    } else {
+      // Just navigate to the active match
+      router.push(`/game/${challengeId}`);
+    }
+  };
 
   // Show auth page if not logged in
   if (loading) {
@@ -118,6 +184,61 @@ export default function Garderobe() {
             {/* Main Game Area */}
             <div className="lg:col-span-2 space-y-8">
               
+              {/* Pending Challenges - Show prominently at top */}
+              {!isLoadingChallenges && pendingChallenges.length > 0 && (
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg shadow-xl p-6 border-2 border-yellow-300">
+                  <div className="flex items-center mb-4">
+                    <span className="text-3xl mr-3">🔥</span>
+                    <h2 className="text-2xl font-bold text-white">
+                      Du wurdest herausgefordert!
+                    </h2>
+                    <span className="ml-auto bg-white text-red-600 px-3 py-1 rounded-full font-bold text-sm">
+                      {pendingChallenges.length}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {pendingChallenges.map((challenge) => (
+                      <div
+                        key={challenge.id}
+                        className="bg-white/10 backdrop-blur rounded-lg p-4 flex items-center justify-between"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <UserAvatar 
+                            user={{
+                              id: '',
+                              email: challenge.challengerEmail,
+                              username: challenge.challengerUsername,
+                              avatar: challenge.challengerAvatar as any,
+                              created_at: '',
+                              updated_at: ''
+                            }} 
+                            size="sm" 
+                          />
+                          <div>
+                            <p className="text-white font-semibold">
+                              {challenge.challengerUsername}
+                            </p>
+                            <p className="text-white/80 text-sm">
+                              {challenge.type === 'invitation' 
+                                ? 'Möchte gegen dich spielen' 
+                                : 'Wartet auf deinen Zug'}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <button
+                          onClick={() => acceptChallenge(challenge.id, challenge.type)}
+                          className="px-6 py-2 bg-white text-red-600 font-bold rounded-full hover:bg-yellow-100 transform hover:scale-105 transition-all duration-200 shadow-lg"
+                        >
+                          {challenge.type === 'invitation' ? '⚽ Annehmen' : '🧤 Weiter spielen'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* User Stats Dashboard */}
               <UserStatsCard 
                 userId={user.id}
