@@ -168,6 +168,22 @@ export default function GamePage() {
       }
     }
   }, [match, playerId, user, joinAsPlayerB, takeOverPlayerB]);
+
+  // Auto-polling when waiting for opponent to join
+  useEffect(() => {
+    if (!match || !hasSubmittedMoves || playerRole !== 'player_a' || match.player_b) return;
+    
+    console.log('Starting auto-polling for opponent...');
+    const pollInterval = setInterval(() => {
+      console.log('Polling for opponent...');
+      fetchMatch();
+    }, 8000); // Poll every 8 seconds
+    
+    return () => {
+      console.log('Stopping auto-polling');
+      clearInterval(pollInterval);
+    };
+  }, [match, hasSubmittedMoves, playerRole, fetchMatch]);
   
   // Show auth page if not logged in
   if (loading) {
@@ -354,49 +370,76 @@ export default function GamePage() {
         </div>
         
         {hasSubmittedMoves ? (
-          <div className="text-center py-8">
-            <p className="text-2xl mb-4 font-bold">⚽ Herausforderung verschickt!</p>
-            <p className="text-xl mb-4">✅ Deine Züge wurden übermittelt!</p>
-            <p className="text-gray-600 mb-6">
-              {!match.player_b 
-                ? 'Eine Einladung wurde an deinen Gegner gesendet.' 
-                : 'Warte auf den anderen Spieler...'}
-            </p>
-            
-            {/* Share Options for waiting */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-4">
-              <p className="text-sm text-gray-600 mb-2">Teile den Link falls nötig:</p>
-              <div className="flex gap-2 justify-center mb-2">
-                <button
-                  onClick={() => {
-                    const text = `Ich warte auf dich bei Fußballpause! ${window.location.origin}/game/${matchId}`;
-                    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-                  }}
-                  className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
-                >
-                  📱 WhatsApp
-                </button>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/game/${matchId}`);
-                    alert('Link kopiert!');
-                  }}
-                  className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
-                >
-                  📋 Kopieren
-                </button>
-              </div>
-              <code className="text-xs bg-gray-100 p-1 rounded break-all">
-                {window.location.origin}/game/{matchId}
-              </code>
+          <div className="text-center py-8 max-w-2xl mx-auto">
+            {/* Header */}
+            <div className="mb-8">
+              <div className="text-6xl mb-4">✅</div>
+              <h1 className="text-3xl font-bold text-green-600 mb-2">Herausforderung versendet!</h1>
+              <p className="text-lg text-gray-600">
+                {!match.player_b 
+                  ? `Warten auf ${match.player_b_email}...` 
+                  : 'Der Gegner macht seine Züge...'}
+              </p>
             </div>
-            
-            <button
-              onClick={fetchMatch}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold"
-            >
-              🔄 Status prüfen
-            </button>
+
+            {/* Status with animation */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <span className="text-blue-600">⏳</span>
+                <span className="text-blue-800 font-medium">
+                  {!match.player_b ? 'Einladung versendet' : 'Spiel läuft'}
+                </span>
+                <div className="flex gap-1">
+                  <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></div>
+                  <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse delay-75"></div>
+                  <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse delay-150"></div>
+                </div>
+              </div>
+              <p className="text-sm text-blue-600">
+                {!match.player_b 
+                  ? 'Der Gegner hat bis zu 24 Stunden Zeit zu antworten.' 
+                  : 'Das Spiel startet automatisch wenn beide Spieler fertig sind.'}
+              </p>
+            </div>
+
+            {/* Primary Action */}
+            <div className="mb-8">
+              <button
+                onClick={() => window.location.href = '/garderobe'}
+                className="w-full sm:w-auto px-8 py-4 bg-green-500 text-white text-lg font-bold rounded-lg hover:bg-green-600 transform hover:scale-105 transition-all duration-200 shadow-lg mb-4"
+              >
+                🏠 Zurück zur Garderobe
+              </button>
+              <p className="text-sm text-gray-500">Du kannst andere Herausforderungen annehmen oder neue erstellen</p>
+            </div>
+
+            {/* Secondary Actions - Sharing */}
+            <details className="bg-gray-50 rounded-lg p-4">
+              <summary className="cursor-pointer text-gray-700 font-medium mb-2">🔗 Gegner erreichen</summary>
+              <div className="space-y-3">
+                <p className="text-xs text-gray-500">Falls die Email nicht ankommt, teile den Link manuell:</p>
+                <div className="flex gap-2 justify-center">
+                  <button
+                    onClick={() => {
+                      const text = `Ich fordere dich zum Elfmeterschießen heraus! 🥅⚽ ${window.location.origin}/game/${matchId}`;
+                      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                    }}
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 flex items-center gap-1"
+                  >
+                    📱 WhatsApp
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/game/${matchId}`);
+                      alert('Link kopiert! 📋');
+                    }}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700 flex items-center gap-1"
+                  >
+                    📋 Kopieren
+                  </button>
+                </div>
+              </div>
+            </details>
           </div>
         ) : (
           playerRole === 'player_a' ? (
