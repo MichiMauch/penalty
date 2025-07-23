@@ -30,17 +30,29 @@ export async function POST(request: NextRequest) {
     
     case 'join': {
       const { matchId, playerId, email, username, avatar } = body;
+      console.log('JOIN attempt:', { matchId, playerId, email, username });
+      
       const result = await db.execute({
         sql: 'SELECT * FROM matches WHERE id = ?',
         args: [matchId]
       });
       
       if (result.rows.length === 0) {
+        console.log('Match not found:', matchId);
         return NextResponse.json({ error: 'Match not found' }, { status: 404 });
       }
       
       const match = result.rows[0];
+      console.log('Match state:', {
+        player_b: match.player_b,
+        player_b_email: match.player_b_email,
+        player_b_moves: match.player_b_moves,
+        status: match.status,
+        joining_email: email
+      });
+      
       if (match.player_b && match.player_b_email !== email) {
+        console.log('Match already full - different email');
         return NextResponse.json({ error: 'Match already full' }, { status: 400 });
       }
       
