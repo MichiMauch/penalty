@@ -138,7 +138,7 @@ export default function GamePage() {
         console.log('Player B exists but has no moves, and this is the invited player - allowing takeover');
         // Allow taking over player B slot if they haven't submitted moves yet AND this is the invited player
         takeOverPlayerB();
-      } else if (user && match.player_a_email === user.email) {
+      } else if (user && match.player_a_email === user.email && match.player_a) {
         console.log('Player recognized as A by email (finished game or localStorage cleared)');
         // For finished games or when localStorage is cleared, recognize player by email
         setPlayerRole('player_a');
@@ -146,7 +146,7 @@ export default function GamePage() {
         // Update localStorage with the correct player ID for future visits
         localStorage.setItem('playerId', match.player_a);
         setPlayerId(match.player_a);
-      } else if (user && match.player_b_email === user.email) {
+      } else if (user && match.player_b_email === user.email && match.player_b) {
         console.log('Player recognized as B by email (finished game or localStorage cleared)');
         // For finished games or when localStorage is cleared, recognize player by email
         setPlayerRole('player_b');
