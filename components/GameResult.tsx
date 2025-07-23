@@ -28,6 +28,7 @@ export default function GameResult({
   playerBAvatar 
 }: GameResultProps) {
   const [showFinalResult, setShowFinalResult] = useState(false);
+  const [showAnimation, setShowAnimation] = useState(true);
   
   const isWinner = result.winner === playerRole;
   const isDraw = result.winner === 'draw';
@@ -62,69 +63,126 @@ export default function GameResult({
   const handleAnimationComplete = () => {
     setShowFinalResult(true);
   };
+
+  const skipToResults = () => {
+    setShowAnimation(false);
+    setShowFinalResult(true);
+  };
   
   return (
     <div className="space-y-8">
+      {/* Immediate Result Header - Always Visible */}
+      <div className="text-center bg-gradient-to-r from-green-500 to-blue-500 text-white p-8 rounded-xl shadow-2xl">
+        <div className="text-6xl mb-4">
+          {isDraw ? '🤝' : isWinner ? '🎉' : '😔'}
+        </div>
+        <h1 className="text-4xl font-bold mb-2">
+          {isDraw ? 'UNENTSCHIEDEN!' : isWinner ? 'SIEG!' : 'NIEDERLAGE!'}
+        </h1>
+        <div className="text-2xl font-bold mb-4">
+          {result.scoreA} : {result.scoreB}
+        </div>
+        <p className="text-lg opacity-90">
+          {isDraw ? 'Beide waren gleich stark!' : isWinner ? 'Glückwunsch! Du warst besser!' : 'Beim nächsten Mal klappt es bestimmt!'}
+        </p>
+        
+        {/* Skip Animation Button */}
+        {showAnimation && !showFinalResult && (
+          <button
+            onClick={skipToResults}
+            className="mt-4 px-6 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-200"
+          >
+            ⏭️ Animation überspringen
+          </button>
+        )}
+      </div>
 
-      {/* Header mit Ergebnis - nur nach Animation anzeigen */}
+      {/* Detailed Statistics - Show after animation or skip */}
       {showFinalResult && (
-        <div className="text-center bg-gray-50 p-6 rounded-lg">
-          <h2 className="text-3xl font-bold mb-4">
-            {isDraw ? '🤝 Unentschieden!' : isWinner ? '🎉 Du hast gewonnen!' : '😔 Du hast verloren'}
-          </h2>
-          
-          {/* Player vs Player with Avatars */}
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="flex flex-col items-center">
-              {playerAUser ? (
-                <UserAvatar user={playerAUser} size="lg" showName={true} />
-              ) : (
-                <div className="text-lg font-bold">{playerAName}</div>
-              )}
-            </div>
-            
-            <div className="text-2xl font-bold mx-4">VS</div>
-            
-            <div className="flex flex-col items-center">
-              {playerBUser ? (
-                <UserAvatar user={playerBUser} size="lg" showName={true} />
-              ) : (
-                <div className="text-lg font-bold">{playerBName}</div>
-              )}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Player Comparison */}
+          <div className="bg-white p-6 rounded-xl shadow-lg">
+            <h3 className="text-xl font-bold mb-4 text-center">👥 Spieler Vergleich</h3>
+            <div className="flex items-center justify-between">
+              <div className="text-center flex-1">
+                {yourUser ? (
+                  <UserAvatar user={yourUser} size="md" showName={true} />
+                ) : (
+                  <div className="font-bold">{yourName}</div>
+                )}
+                <div className="text-2xl font-bold text-green-600 mt-2">
+                  {playerRole === 'player_a' ? result.scoreA : result.scoreB}
+                </div>
+                <div className="text-sm text-gray-500">Punkte</div>
+              </div>
+              
+              <div className="text-2xl font-bold text-gray-400 mx-4">VS</div>
+              
+              <div className="text-center flex-1">
+                {opponentUser ? (
+                  <UserAvatar user={opponentUser} size="md" showName={true} />
+                ) : (
+                  <div className="font-bold">{opponentName}</div>
+                )}
+                <div className="text-2xl font-bold text-blue-600 mt-2">
+                  {playerRole === 'player_a' ? result.scoreB : result.scoreA}
+                </div>
+                <div className="text-sm text-gray-500">Punkte</div>
+              </div>
             </div>
           </div>
-          
-          <div className="text-3xl font-bold mb-2">
-            {result.scoreA} : {result.scoreB}
-          </div>
-          
-          <div className="text-lg text-gray-600">
-            Du ({yourName}): <span className="font-bold">{playerRole === 'player_a' ? result.scoreA : result.scoreB} Punkte</span> • 
-            Gegner ({opponentName}): <span className="font-bold">{playerRole === 'player_a' ? result.scoreB : result.scoreA} Punkte</span>
+
+          {/* Round by Round Breakdown */}
+          <div className="bg-white p-6 rounded-xl shadow-lg">
+            <h3 className="text-xl font-bold mb-4 text-center">📊 Runden-Übersicht</h3>
+            <div className="space-y-2">
+              {result.rounds.map((round, index) => {
+                const isYourRound = round.shooter === playerRole;
+                const youWonRound = (isYourRound && round.goal) || (!isYourRound && !round.goal);
+                return (
+                  <div key={index} className={`flex items-center justify-between p-2 rounded ${youWonRound ? 'bg-green-50' : 'bg-red-50'}`}>
+                    <span className="font-medium">Runde {index + 1}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">
+                        {isYourRound ? 'Du schießt' : 'Du hältst'}
+                      </span>
+                      <span className="text-lg">
+                        {round.goal ? '⚽' : '🧤'}
+                      </span>
+                      <span className={`font-bold ${youWonRound ? 'text-green-600' : 'text-red-600'}`}>
+                        {youWonRound ? '+1' : '0'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Animated Replay */}
-      <AnimatedGameReplay
-        result={result}
-        playerRole={playerRole}
-        playerAEmail={playerAEmail}
-        playerBEmail={playerBEmail}
-        playerAUsername={playerAUsername}
-        playerBUsername={playerBUsername}
-        playerAAvatar={playerAAvatar}
-        playerBAvatar={playerBAvatar}
-        onAnimationComplete={handleAnimationComplete}
-      />
+      {/* Animated Replay - Only if not skipped */}
+      {showAnimation && (
+        <AnimatedGameReplay
+          result={result}
+          playerRole={playerRole}
+          playerAEmail={playerAEmail}
+          playerBEmail={playerBEmail}
+          playerAUsername={playerAUsername}
+          playerBUsername={playerBUsername}
+          playerAAvatar={playerAAvatar}
+          playerBAvatar={playerBAvatar}
+          onAnimationComplete={handleAnimationComplete}
+        />
+      )}
 
-      {/* Buttons - immer anzeigen */}
-      <div className="flex gap-4 justify-center">
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
         <Link
-          href="/"
-          className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold"
+          href="/garderobe"
+          className="px-8 py-4 bg-green-500 text-white text-lg font-bold rounded-lg hover:bg-green-600 transform hover:scale-105 transition-all duration-200 shadow-lg"
         >
-          🏠 Neues Spiel
+          🏠 Zurück zur Garderobe
         </Link>
         <RevengeButton
           playerAEmail={playerAEmail}
