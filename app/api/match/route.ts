@@ -5,6 +5,8 @@ import { calculateGameResult } from '@/lib/gameLogic';
 import { PlayerMoves } from '@/lib/types';
 import { sendChallengeEmail } from '@/lib/email';
 import { calculateAndUpdateStats } from '@/lib/stats';
+import { sendChallengeNotification } from '@/lib/pushNotifications';
+import { getUserByEmail } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   if (!db) {
@@ -128,6 +130,22 @@ export async function POST(request: NextRequest) {
         }
       } else {
         console.warn('RESEND_API_KEY not configured - skipping email send');
+      }
+      
+      // Send push notification to the challenged user
+      try {
+        const challengedUser = await getUserByEmail(email);
+        if (challengedUser) {
+          await sendChallengeNotification(
+            challengedUser.id,
+            match.player_a_username as string || match.player_a_email as string || 'Ein Spieler',
+            matchId
+          );
+          console.log('Push notification sent to:', email);
+        }
+      } catch (error) {
+        console.error('Error sending push notification:', error);
+        // Don't fail the request if push fails
       }
       
       return NextResponse.json({ success: true, message: 'Invitation sent' });
