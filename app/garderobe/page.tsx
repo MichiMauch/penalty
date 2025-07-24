@@ -263,7 +263,7 @@ export default function Garderobe() {
                   <div className="flex items-center mb-4">
                     <span className="text-3xl mr-3">🔥</span>
                     <h2 className="text-2xl font-bold text-white">
-                      Du wurdest herausgefordert!
+                      Deine Elfmeter-Aktivitäten
                     </h2>
                     <span className="ml-auto bg-white text-red-600 px-3 py-1 rounded-full font-bold text-sm">
                       {pendingChallenges.filter(challenge => 
