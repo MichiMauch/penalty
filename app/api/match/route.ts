@@ -21,13 +21,26 @@ export async function POST(request: NextRequest) {
   switch (action) {
     case 'create': {
       const matchId = nanoid();
-      const { playerId, email, username, avatar } = body;
-      await db.execute({
-        sql: 'INSERT INTO matches (id, player_a, player_a_email, player_a_username, player_a_avatar) VALUES (?, ?, ?, ?, ?)',
-        args: [matchId, playerId || nanoid(), email, username, avatar]
-      });
+      const { playerId, email, username, avatar, moves } = body;
+      const finalPlayerId = playerId || nanoid();
       
-      return NextResponse.json({ matchId, playerId: playerId || nanoid() });
+      // Create match with or without initial moves
+      if (moves && moves.length > 0) {
+        // Create match with player A moves
+        const playerMoves = { moves: moves, role: 'shooter' };
+        await db.execute({
+          sql: 'INSERT INTO matches (id, player_a, player_a_email, player_a_username, player_a_avatar, player_a_moves) VALUES (?, ?, ?, ?, ?, ?)',
+          args: [matchId, finalPlayerId, email, username, avatar, JSON.stringify(playerMoves)]
+        });
+      } else {
+        // Create match without moves
+        await db.execute({
+          sql: 'INSERT INTO matches (id, player_a, player_a_email, player_a_username, player_a_avatar) VALUES (?, ?, ?, ?, ?)',
+          args: [matchId, finalPlayerId, email, username, avatar]
+        });
+      }
+      
+      return NextResponse.json({ matchId, playerId: finalPlayerId });
     }
     
     case 'join': {
@@ -104,6 +117,34 @@ export async function POST(request: NextRequest) {
       }
       
       const match = result.rows[0];
+      
+      // Check for existing pending challenges between these players
+      const existingChallengeResult = await db.execute({
+        sql: `
+          SELECT id 
+          FROM matches 
+          WHERE (
+            (player_a_email = ? AND player_b_email = ?) OR 
+            (player_a_email = ? AND player_b_email = ?)
+          ) 
+          AND status != 'finished'
+          AND (
+            player_a_moves IS NULL OR 
+            player_b_moves IS NULL OR
+            player_b IS NULL
+          )
+          AND id != ?
+          LIMIT 1
+        `,
+        args: [match.player_a_email, email, email, match.player_a_email, matchId]
+      });
+      
+      if (existingChallengeResult.rows.length > 0) {
+        return NextResponse.json({ 
+          error: 'Es existiert bereits eine offene Herausforderung zwischen diesen Spielern. Bitte warte, bis diese abgeschlossen ist.',
+          existingChallenge: true 
+        }, { status: 400 });
+      }
       
       // Store the email for the invitation
       await db.execute({
@@ -261,6 +302,8 @@ export async function POST(request: NextRequest) {
 
     case 'submit-moves': {
       const { matchId, playerId, moves } = body;
+      console.log('Submit moves:', { matchId, playerId, moves });
+      
       const result = await db.execute({
         sql: 'SELECT * FROM matches WHERE id = ?',
         args: [matchId]
@@ -273,6 +316,15 @@ export async function POST(request: NextRequest) {
       const match = result.rows[0];
       const isPlayerA = match.player_a === playerId;
       const isPlayerB = match.player_b === playerId;
+      
+      console.log('Match state before update:', {
+        player_a: match.player_a,
+        player_b: match.player_b,
+        isPlayerA,
+        isPlayerB,
+        player_a_moves: match.player_a_moves,
+        player_b_moves: match.player_b_moves
+      });
       
       if (!isPlayerA && !isPlayerB) {
         return NextResponse.json({ error: 'Player not in match' }, { status: 403 });
@@ -297,11 +349,20 @@ export async function POST(request: NextRequest) {
       });
       
       const updatedMatch = updated.rows[0];
+      console.log('Match state after update:', {
+        player_a_moves: updatedMatch.player_a_moves,
+        player_b_moves: updatedMatch.player_b_moves,
+        both_have_moves: !!(updatedMatch.player_a_moves && updatedMatch.player_b_moves)
+      });
+      
       if (updatedMatch.player_a_moves && updatedMatch.player_b_moves) {
+        console.log('Both players have moves, calculating result...');
         // Calculate result
         const movesA = JSON.parse(updatedMatch.player_a_moves as string) as PlayerMoves;
         const movesB = JSON.parse(updatedMatch.player_b_moves as string) as PlayerMoves;
         const result = calculateGameResult(movesA, movesB);
+        
+        console.log('Game result calculated:', result);
         
         const winner = result.winner === 'draw' ? null : 
                       result.winner === 'player_a' ? updatedMatch.player_a : updatedMatch.player_b;
@@ -310,6 +371,8 @@ export async function POST(request: NextRequest) {
           sql: 'UPDATE matches SET status = ?, winner = ? WHERE id = ?',
           args: ['finished', winner, matchId]
         });
+        
+        console.log('Match updated to finished status');
 
         // Update player stats and check achievements
         const playerAId = await getUserIdByPlayerId(updatedMatch.player_a as string);
@@ -319,9 +382,11 @@ export async function POST(request: NextRequest) {
           await calculateAndUpdateStats(matchId, playerAId, playerBId, result);
         }
         
+        console.log('Returning finished status to client');
         return NextResponse.json({ status: 'finished', result });
       }
       
+      console.log('Not all moves submitted yet, returning waiting status');
       return NextResponse.json({ status: 'waiting' });
     }
     

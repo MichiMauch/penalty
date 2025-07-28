@@ -45,6 +45,7 @@ export async function GET() {
         id: row.id as string,
         username: row.username as string,
         avatar: row.avatar as string,
+        email: row.email as string,
         stats: {
           totalPoints,
           gamesPlayed: Number(row.games_played) || 0,

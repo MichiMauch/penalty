@@ -11,6 +11,9 @@ interface KeeperAnimationProps {
   onRemoveSave?: (index: number) => void;
   onAddSave?: (direction: SaveDirection) => void;
   disabled?: boolean;
+  onSubmit?: () => void;
+  canSubmit?: boolean;
+  isSubmitting?: boolean;
 }
 
 export default function KeeperAnimation({ 
@@ -20,7 +23,10 @@ export default function KeeperAnimation({
   saves = [],
   onRemoveSave,
   onAddSave,
-  disabled = false
+  disabled = false,
+  onSubmit,
+  canSubmit = false,
+  isSubmitting = false
 }: KeeperAnimationProps) {
   const [keeperPosition, setKeeperPosition] = useState({ x: 50, y: 45 });
   const [showKeeper, setShowKeeper] = useState(true);
@@ -147,6 +153,32 @@ export default function KeeperAnimation({
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Submit Button */}
+      {onSubmit && (
+        <div className="absolute bottom-[-17%] left-1/2 transform -translate-x-1/2 w-full max-w-md px-4">
+          <button
+            onClick={onSubmit}
+            disabled={!canSubmit}
+            className={`w-full px-6 py-4 rounded-lg font-bold text-lg transition-all duration-300 ${
+              canSubmit
+                ? 'bg-green-600 text-white hover:bg-green-500 transform hover:scale-105 shadow-lg animate-pulse'
+                : 'bg-gray-600 text-gray-300 cursor-not-allowed'
+            }`}
+          >
+            {isSubmitting ? (
+              <div className="flex items-center justify-center gap-2">
+                <span className="animate-spin">⚽</span>
+                Paraden werden gesendet...
+              </div>
+            ) : canSubmit ? (
+              '🧤 PARADEN SENDEN!'
+            ) : (
+              `Wähle noch ${5 - saves.length} Paraden`
+            )}
+          </button>
         </div>
       )}
 

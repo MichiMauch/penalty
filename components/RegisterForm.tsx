@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { RegisterData, AvatarId } from '@/lib/types';
 import AvatarSelector from './AvatarSelector';
+import { FaUserPlus } from 'react-icons/fa';
 
 interface RegisterFormProps {
   onSubmit: (data: RegisterData) => Promise<void>;
@@ -51,75 +52,75 @@ export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, err
   const displayError = validationError || error;
 
   return (
-    <div className="bg-white rounded-lg shadow-xl p-8 max-w-lg w-full">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">⚽ Fußballpause</h1>
-        <h2 className="text-xl font-semibold text-gray-600">Registrieren</h2>
+    <div className="bg-black bg-opacity-80 backdrop-blur-lg rounded-lg border-2 border-green-500 border-opacity-60 shadow-xl p-8 max-w-lg w-full">
+      <div className="text-center mb-6">
+        <h2 className="text-xl font-semibold text-white mb-3">Registrieren</h2>
+        <h1 className="hero-title text-4xl md:text-6xl" style={{position: 'static', transform: 'none', top: 'auto', left: 'auto'}}>PENALTY</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-            Benutzername
-          </label>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="floating-label-container">
           <input
             id="username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Dein Spielername"
+            className="floating-input"
+            placeholder="Benutzername"
             disabled={isLoading}
           />
+          <label htmlFor="username" className="floating-label">
+            Benutzername
+          </label>
         </div>
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            E-Mail-Adresse
-          </label>
+        <div className="floating-label-container">
           <input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="deine@email.com"
+            className="floating-input"
+            placeholder="E-Mail-Adresse"
             disabled={isLoading}
           />
+          <label htmlFor="email" className="floating-label">
+            E-Mail-Adresse
+          </label>
         </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            Passwort
-          </label>
+        <div className="floating-label-container">
           <input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Mindestens 6 Zeichen"
+            className="floating-input"
+            placeholder="Passwort (min. 6 Zeichen)"
             disabled={isLoading}
           />
+          <label htmlFor="password" className="floating-label">
+            Passwort
+          </label>
         </div>
 
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-            Passwort bestätigen
-          </label>
+        <div className="floating-label-container">
           <input
             id="confirmPassword"
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Passwort wiederholen"
+            className="floating-input"
+            placeholder="Passwort bestätigen"
             disabled={isLoading}
           />
+          <label htmlFor="confirmPassword" className="floating-label">
+            Passwort bestätigen
+          </label>
         </div>
 
         <AvatarSelector
@@ -128,30 +129,40 @@ export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, err
         />
 
         {displayError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-            <p className="text-red-700 text-sm">{displayError}</p>
+          <div className="bg-red-900 bg-opacity-50 border border-red-500 rounded-lg p-3">
+            <p className="text-red-300 text-sm">{displayError}</p>
           </div>
         )}
 
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full py-3 rounded-lg font-semibold transition-all duration-200 ${
+          className={`w-full py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
             isLoading
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-green-500 text-white hover:bg-green-600 transform hover:scale-105'
+              ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+              : 'bg-green-600 text-white hover:bg-green-500 transform hover:scale-105 border border-green-500'
           }`}
         >
-          {isLoading ? '⏳ Registriere...' : '🎯 Account erstellen'}
+          {isLoading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Registriere...
+            </>
+          ) : (
+            <>
+              <FaUserPlus />
+              Account erstellen
+            </>
+          )}
         </button>
       </form>
 
       <div className="mt-6 text-center">
-        <p className="text-gray-600">
+        <p className="text-gray-300">
           Bereits ein Account?{' '}
           <button
             onClick={onSwitchToLogin}
-            className="text-blue-500 hover:text-blue-600 font-semibold"
+            className="text-green-400 hover:text-green-300 font-semibold"
             disabled={isLoading}
           >
             Jetzt anmelden

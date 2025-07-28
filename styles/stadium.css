@@ -1,0 +1,346 @@
+/* ⚽ FUSSBALLPAUSE - STADIUM ATMOSPHERE STYLES ⚽ */
+
+/* Stadium Color Palette */
+:root {
+  /* Primary Colors - Football Theme */
+  --stadium-grass-dark: #1a4b0c;
+  --stadium-grass: #2d5016;
+  --stadium-grass-light: #4a7c23;
+  --stadium-white: #ffffff;
+  --stadium-line-white: #f8fafc;
+  
+  /* Stadium Lighting */
+  --stadium-floodlight: #ffd700;
+  --stadium-floodlight-glow: rgba(255, 215, 0, 0.3);
+  --stadium-shadow: rgba(0, 0, 0, 0.4);
+  
+  /* Team Colors */
+  --team-blue: #1e40af;
+  --team-red: #dc2626;
+  --referee-black: #1f2937;
+  
+  /* Stadium Materials */
+  --concrete-gray: #64748b;
+  --metal-silver: #94a3b8;
+  --crowd-purple: #4c1d95;
+}
+
+/* Stadium Base Background */
+.stadium-background {
+  background: linear-gradient(180deg, 
+    #1e3a8a 0%,           /* Night sky */
+    #3730a3 15%,          /* Stadium lights glow */
+    var(--stadium-grass-dark) 40%,  /* Upper stands */
+    var(--stadium-grass) 60%,       /* Field level */
+    var(--stadium-grass-light) 100% /* Pitch */
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+/* Stadium Floodlight Effects */
+.stadium-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(ellipse 40% 20% at 20% 10%, var(--stadium-floodlight-glow), transparent),
+    radial-gradient(ellipse 40% 20% at 80% 10%, var(--stadium-floodlight-glow), transparent),
+    radial-gradient(ellipse 60% 30% at 50% 0%, var(--stadium-floodlight-glow), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Grass Texture Pattern */
+.grass-texture {
+  background-image: 
+    linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.05) 50%),
+    linear-gradient(0deg, var(--stadium-grass-dark) 0%, var(--stadium-grass) 50%, var(--stadium-grass-light) 100%);
+  background-size: 8px 8px, 100% 100%;
+  position: relative;
+}
+
+/* Stadium Crowd Silhouettes */
+.stadium-crowd {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: 
+    linear-gradient(180deg, 
+      var(--crowd-purple) 0%,
+      rgba(76, 29, 149, 0.8) 50%,
+      transparent 100%
+    );
+  z-index: 1;
+}
+
+.stadium-crowd::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 15px,
+    rgba(0, 0, 0, 0.3) 15px,
+    rgba(0, 0, 0, 0.3) 18px
+  );
+}
+
+/* Football Field Lines */
+.field-lines {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background: 
+    /* Center circle */
+    radial-gradient(circle 60px at 50% 100px, transparent 58px, var(--stadium-line-white) 58px, var(--stadium-line-white) 62px, transparent 62px),
+    /* Penalty area */
+    linear-gradient(90deg, transparent 25%, var(--stadium-line-white) 25%, var(--stadium-line-white) 27%, transparent 27%),
+    linear-gradient(90deg, transparent 73%, var(--stadium-line-white) 73%, var(--stadium-line-white) 75%, transparent 75%),
+    /* Goal area */
+    linear-gradient(90deg, transparent 35%, var(--stadium-line-white) 35%, var(--stadium-line-white) 37%, transparent 37%),
+    linear-gradient(90deg, transparent 63%, var(--stadium-line-white) 63%, var(--stadium-line-white) 65%, transparent 65%);
+  opacity: 0.6;
+  z-index: 2;
+}
+
+/* Football-style Cards */
+.stadium-card {
+  background: var(--stadium-white);
+  border: 3px solid var(--stadium-grass-dark);
+  border-radius: 0;
+  box-shadow: 
+    0 4px 15px var(--stadium-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.stadium-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    var(--stadium-grass-dark), 
+    var(--stadium-floodlight), 
+    var(--stadium-grass-dark)
+  );
+}
+
+/* Football Buttons */
+.football-button {
+  background: radial-gradient(circle at 30% 30%, #ffffff, #f0f0f0, #d0d0d0);
+  border: 3px solid var(--stadium-grass-dark);
+  border-radius: 50%;
+  color: var(--stadium-grass-dark);
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 6px 20px var(--stadium-shadow),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.football-button::before {
+  content: '⚽';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.8em;
+  opacity: 0.1;
+  z-index: 0;
+}
+
+.football-button:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 
+    0 10px 30px var(--stadium-shadow),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4);
+}
+
+.football-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Stadium Scoreboard Style */
+.stadium-scoreboard {
+  background: var(--referee-black);
+  color: var(--stadium-floodlight);
+  border: 4px solid var(--metal-silver);
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 
+    0 0 20px var(--stadium-shadow),
+    inset 0 0 10px rgba(255, 215, 0, 0.2);
+  position: relative;
+}
+
+.stadium-scoreboard::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  background: linear-gradient(135deg, 
+    rgba(255, 215, 0, 0.1), 
+    transparent 30%,
+    transparent 70%,
+    rgba(255, 215, 0, 0.1)
+  );
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* Goal Post Frames */
+.goal-frame {
+  border: 6px solid var(--stadium-white);
+  border-radius: 8px 8px 0 0;
+  background: var(--stadium-grass);
+  position: relative;
+  box-shadow: 
+    0 -4px 0 var(--stadium-white),
+    0 8px 25px var(--stadium-shadow);
+}
+
+.goal-frame::before,
+.goal-frame::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  width: 6px;
+  height: 40px;
+  background: var(--stadium-white);
+  z-index: 3;
+}
+
+.goal-frame::before {
+  left: -6px;
+}
+
+.goal-frame::after {
+  right: -6px;
+}
+
+/* Stadium Crowd Animation */
+@keyframes crowd-wave {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-2px); }
+  75% { transform: translateY(-4px); }
+}
+
+.crowd-animated {
+  animation: crowd-wave 3s ease-in-out infinite;
+}
+
+/* Floodlight Flicker */
+@keyframes floodlight-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.95; }
+  75% { opacity: 0.98; }
+}
+
+.floodlight-glow {
+  animation: floodlight-flicker 4s ease-in-out infinite;
+}
+
+/* Stadium Entrance Effect */
+.stadium-entrance {
+  background: 
+    linear-gradient(180deg,
+      var(--referee-black) 0%,
+      var(--stadium-grass-dark) 50%,
+      var(--stadium-grass) 100%
+    );
+  position: relative;
+}
+
+.stadium-entrance::before {
+  content: '🏟️';
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 4rem;
+  opacity: 0.1;
+  z-index: 0;
+}
+
+/* Penalty Spot */
+.penalty-spot {
+  width: 12px;
+  height: 12px;
+  background: var(--stadium-white);
+  border-radius: 50%;
+  position: relative;
+  margin: 0 auto;
+  box-shadow: 0 2px 4px var(--stadium-shadow);
+}
+
+/* Stadium Typography */
+.stadium-text {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+  color: var(--stadium-white);
+  text-shadow: 2px 2px 4px var(--stadium-shadow);
+}
+
+.stadium-number {
+  font-family: 'Courier New', monospace;
+  font-weight: 900;
+  font-size: 2rem;
+  color: var(--stadium-floodlight);
+  text-shadow: 
+    0 0 10px var(--stadium-floodlight-glow),
+    2px 2px 4px var(--stadium-shadow);
+}
+
+/* Responsive Stadium */
+@media (max-width: 768px) {
+  .stadium-background {
+    background: linear-gradient(180deg, 
+      var(--stadium-grass-dark) 0%,
+      var(--stadium-grass) 50%,
+      var(--stadium-grass-light) 100%
+    );
+  }
+  
+  .stadium-crowd {
+    height: 20%;
+  }
+  
+  .field-lines {
+    height: 150px;
+  }
+}
+
+/* Utility Classes */
+.grass-green { color: var(--stadium-grass); }
+.stadium-yellow { color: var(--stadium-floodlight); }
+.referee-black { color: var(--referee-black); }
+.team-blue { color: var(--team-blue); }
+.team-red { color: var(--team-red); }
+
+.bg-grass { background-color: var(--stadium-grass); }
+.bg-floodlight { background-color: var(--stadium-floodlight); }
+.bg-stadium-white { background-color: var(--stadium-white); }

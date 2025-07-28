@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SaveDirection, ShotDirection } from '@/lib/types';
+
+type BruceContext = 'shooting' | 'keeping' | 'rematch';
 
 interface BruceDialogProps {
   isOpen: boolean;
@@ -10,6 +12,7 @@ interface BruceDialogProps {
   opponentShooterMoves: ShotDirection[];
   opponentName: string;
   onContinueRevenge: () => void;
+  context?: BruceContext;
 }
 
 interface BruceAnalysis {
@@ -19,17 +22,79 @@ interface BruceAnalysis {
   error?: boolean;
 }
 
+interface ChatMessage {
+  type: 'bruce' | 'user';
+  content: string;
+  timestamp: Date;
+  isTyping?: boolean;
+  displayedContent?: string;
+}
+
 export default function BruceDialog({
   isOpen,
   onClose,
   opponentKeepermoves,
   opponentShooterMoves,
   opponentName,
-  onContinueRevenge
+  onContinueRevenge,
+  context = 'shooting'
 }: BruceDialogProps) {
   const [analysis, setAnalysis] = useState<BruceAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [typingMessageIndex, setTypingMessageIndex] = useState<number | null>(null);
+
+  // Typewriter effect for Bruce messages
+  const typeMessage = (message: string, messageIndex: number) => {
+    setTypingMessageIndex(messageIndex);
+    let currentIndex = 0;
+    
+    const typeInterval = setInterval(() => {
+      setMessages(prev => 
+        prev.map((msg, index) => 
+          index === messageIndex 
+            ? { ...msg, displayedContent: message.slice(0, currentIndex + 1) }
+            : msg
+        )
+      );
+      
+      currentIndex++;
+      if (currentIndex >= message.length) {
+        clearInterval(typeInterval);
+        setTypingMessageIndex(null);
+      }
+    }, 30); // 30ms per character
+  };
+
+  // Generate context-based intro message
+  const getIntroMessage = (context: BruceContext, opponentName: string): string => {
+    switch (context) {
+      case 'shooting':
+        return `Ja, ja...ich kenne das Spielverhalten von ${opponentName} sehr gut, mein Tipp für das Penalty schiessen wäre folgender:`;
+      case 'keeping':
+        return `Aha, ${opponentName} wieder! Ich habe seine Schussmuster studiert, hier mein Abwehr-Tipp:`;
+      case 'rematch':
+        return `Revanche gegen ${opponentName}! Basierend auf eurem letzten Match, hier meine Empfehlung:`;
+      default:
+        return `Bruce kennt ${opponentName}'s Spielverhalten sehr gut! Er kann die letzten 5 Elfmeter analysieren und dir einen strategischen Tipp geben.`;
+    }
+  };
+
+  // Reset and start AI conversation when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      setMessages([]);
+      setAnalysis(null);
+      setShowAnalysis(false);
+      setIsLoading(false);
+      
+      // Start AI conversation immediately
+      setTimeout(() => {
+        askBruce();
+      }, 500);
+    }
+  }, [isOpen, opponentName, context]);
 
   const askBruce = async () => {
     setIsLoading(true);
@@ -42,25 +107,64 @@ export default function BruceDialog({
         body: JSON.stringify({
           opponentKeepermoves,
           opponentShooterMoves,
-          opponentName
+          opponentName,
+          context
         })
       });
 
       if (response.ok) {
         const data: BruceAnalysis = await response.json();
         setAnalysis(data);
+        
+        // Add Bruce's message with typewriter effect
+        const newMessage: ChatMessage = {
+          type: 'bruce',
+          content: data.analysis,
+          timestamp: new Date(),
+          isTyping: true,
+          displayedContent: ''
+        };
+        
+        setMessages(prev => {
+          const newMessages = [...prev, newMessage];
+          // Start typing effect for the new message
+          setTimeout(() => {
+            typeMessage(data.analysis, newMessages.length - 1);
+          }, 100);
+          return newMessages;
+        });
+        
         setShowAnalysis(true);
       } else {
         throw new Error('Bruce ist gerade nicht verfügbar');
       }
     } catch (error) {
       console.error('Bruce analysis error:', error);
+      const fallbackTip = `${opponentName} ist unberechenbar - aber du schaffst das!`;
       setAnalysis({
-        analysis: `${opponentName} ist unberechenbar - aber du schaffst das!`,
+        analysis: fallbackTip,
         confidence: "Bruce's Notfall-Tipp",
         source: "error",
         error: true
       });
+      
+      // Add fallback message with typewriter effect
+      const fallbackMessage: ChatMessage = {
+        type: 'bruce',
+        content: fallbackTip,
+        timestamp: new Date(),
+        isTyping: true,
+        displayedContent: ''
+      };
+      
+      setMessages(prev => {
+        const newMessages = [...prev, fallbackMessage];
+        setTimeout(() => {
+          typeMessage(fallbackTip, newMessages.length - 1);
+        }, 100);
+        return newMessages;
+      });
+      
       setShowAnalysis(true);
     } finally {
       setIsLoading(false);
@@ -79,121 +183,51 @@ export default function BruceDialog({
       <div className="bruce-dialog">
         {/* Bruce Header */}
         <div className="bruce-header">
-          <div className="bruce-avatar">🧠</div>
+          <img 
+            src="/bruce.png" 
+            alt="Bruce" 
+            className="bruce-avatar-img"
+          />
           <div>
-            <h2 className="bruce-title">Frag Bruce</h2>
+            <h2 className="bruce-title">Bruce</h2>
             <p className="bruce-subtitle">Der Elfmeter-Experte</p>
           </div>
           <button onClick={onClose} className="close-button">✕</button>
         </div>
 
-        {/* Content */}
-        <div className="bruce-content">
-          {!showAnalysis && !isLoading && (
-            <div className="bruce-intro">
-              <p className="mb-4">
-                🎯 Bruce kennt <strong>{opponentName}&apos;s</strong> Spielverhalten sehr gut! 
-                Er kann die letzten 5 Elfmeter analysieren und dir einen strategischen Tipp geben.
-              </p>
-              
-              <div className="opponent-stats">
-                {opponentKeepermoves.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className="font-semibold mb-2">🧤 {opponentName}&apos;s letzte Paraden:</h4>
-                    <div className="moves-display">
-                      {opponentKeepermoves.map((move, index) => (
-                        <div key={index} className="move-item">
-                          <span className="move-number">#{index + 1}</span>
-                          <span className="move-direction">
-                            {move === 'links' ? '👈 Links' : 
-                             move === 'rechts' ? '👉 Rechts' : 
-                             '🎯 Mitte'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {opponentShooterMoves.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold mb-2">⚽ {opponentName}&apos;s letzte Schüsse:</h4>
-                    <div className="moves-display">
-                      {opponentShooterMoves.map((move, index) => (
-                        <div key={index} className="move-item">
-                          <span className="move-number">#{index + 1}</span>
-                          <span className="move-direction">
-                            {move === 'links' ? '👈 Links' : 
-                             move === 'rechts' ? '👉 Rechts' : 
-                             '🎯 Mitte'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="bruce-actions">
-                <button 
-                  onClick={askBruce}
-                  className="ask-bruce-button"
-                >
-                  🧠 Bruce fragen
-                </button>
-                <button 
-                  onClick={handleContinue}
-                  className="skip-button"
-                >
-                  Ohne Tipp weiter
-                </button>
+        {/* Chat Messages */}
+        <div className="chat-container">
+          {messages.map((message, index) => (
+            <div key={index} className={`chat-message ${message.type}`}>
+              <div className="message-bubble">
+                {message.isTyping && message.displayedContent !== undefined 
+                  ? message.displayedContent 
+                  : message.content}
               </div>
             </div>
-          )}
-
+          ))}
+          
           {isLoading && (
-            <div className="bruce-loading">
-              <div className="loading-spinner">🧠</div>
-              <p>Bruce analysiert die Daten...</p>
-              <div className="loading-dots">
-                <span>.</span><span>.</span><span>.</span>
-              </div>
-            </div>
-          )}
-
-          {showAnalysis && analysis && (
-            <div className="bruce-analysis">
-              <div className="analysis-header">
-                <span className="bruce-icon">🎯</span>
-                <h3>Bruce&apos;s Analyse</h3>
-              </div>
-              
-              <div className="analysis-content">
-                <p className="analysis-text">&quot;{analysis.analysis}&quot;</p>
-                <div className="analysis-meta">
-                  <span className="confidence">📈 {analysis.confidence}</span>
-                  {analysis.error && (
-                    <span className="error-note">⚠️ Backup-Tipp verwendet</span>
-                  )}
+            <div className="chat-message bruce">
+              <div className="message-bubble typing">
+                <div className="typing-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
                 </div>
               </div>
-              
-              <div className="bruce-actions">
-                <button 
-                  onClick={handleContinue}
-                  className="continue-button"
-                >
-                  💪 Revanche starten!
-                </button>
-                <button 
-                  onClick={onClose}
-                  className="cancel-button"
-                >
-                  Abbrechen
-                </button>
-              </div>
             </div>
           )}
+        </div>
+
+        {/* Actions */}
+        <div className="chat-actions">
+          <button 
+            onClick={handleContinue}
+            className="continue-button"
+          >
+            ⚽ Weiter zum Schiessen
+          </button>
         </div>
       </div>
 
@@ -204,56 +238,58 @@ export default function BruceDialog({
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0, 0, 0, 0.8);
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          background: transparent;
           z-index: 1000;
-          padding: 1rem;
+          pointer-events: none;
         }
 
         .bruce-dialog {
           background: white;
           border-radius: 1rem;
-          max-width: 500px;
-          width: 100%;
-          max-height: 90vh;
-          overflow-y: auto;
+          width: 420px;
+          height: 500px;
+          display: flex;
+          flex-direction: column;
           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+          position: fixed;
+          bottom: 100px;
+          right: 20px;
+          margin: 0;
+          pointer-events: auto;
+          border: 1px solid #e5e7eb;
         }
 
         .bruce-header {
           display: flex;
           align-items: center;
           gap: 1rem;
-          padding: 1.5rem;
+          padding: 1rem 1.5rem;
           border-bottom: 1px solid #e5e7eb;
-          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          background: linear-gradient(135deg, #10b981, #059669);
           color: white;
           border-radius: 1rem 1rem 0 0;
+          position: relative;
         }
 
-        .bruce-avatar {
-          font-size: 2.5rem;
-          background: rgba(255, 255, 255, 0.2);
+        .bruce-avatar-img {
+          width: 50px;
+          height: 50px;
           border-radius: 50%;
-          width: 60px;
-          height: 60px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          object-fit: cover;
+          border: 3px solid rgba(255, 255, 255, 0.3);
         }
 
         .bruce-title {
-          font-size: 1.5rem;
-          font-weight: bold;
+          font-size: 1.1rem;
+          font-weight: 600;
           margin: 0;
         }
 
         .bruce-subtitle {
-          font-size: 0.9rem;
+          font-size: 0.75rem;
           opacity: 0.9;
           margin: 0;
+          font-weight: 400;
         }
 
         .close-button {
@@ -272,13 +308,108 @@ export default function BruceDialog({
           background: rgba(255, 255, 255, 0.2);
         }
 
-        .bruce-content {
-          padding: 1.5rem;
+        .chat-container {
+          flex: 1;
+          padding: 1rem;
+          overflow-y: auto;
+          background: #f8f9fa;
+          min-height: 0;
         }
 
-        .bruce-intro p {
-          color: #4b5563;
-          line-height: 1.6;
+        .chat-message {
+          margin-bottom: 1rem;
+          display: flex;
+        }
+
+        .chat-message.bruce {
+          justify-content: flex-start;
+        }
+
+        .chat-message.user {
+          justify-content: flex-end;
+        }
+
+        .message-bubble {
+          max-width: 80%;
+          padding: 0.75rem 1rem;
+          border-radius: 1rem;
+          line-height: 1.4;
+          font-size: 0.9rem;
+        }
+
+        .chat-message.bruce .message-bubble {
+          background: #10b981;
+          color: white;
+          border-radius: 1rem;
+        }
+
+        .chat-message.user .message-bubble {
+          background: #10b981;
+          color: white;
+          border-bottom-right-radius: 0.25rem;
+        }
+
+        .message-bubble.typing {
+          background: #e5e7eb;
+          color: #6b7280;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .typing-dots {
+          display: flex;
+          gap: 0.25rem;
+        }
+
+        .typing-dots span {
+          width: 6px;
+          height: 6px;
+          background: #6b7280;
+          border-radius: 50%;
+          animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+          animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+          0%, 60%, 100% {
+            transform: translateY(0);
+          }
+          30% {
+            transform: translateY(-10px);
+          }
+        }
+
+        .chat-actions {
+          padding: 1rem 1.5rem;
+          border-top: 1px solid #e5e7eb;
+          background: white;
+          border-radius: 0 0 1rem 1rem;
+        }
+
+        .continue-button {
+          width: 100%;
+          padding: 0.75rem 1rem;
+          background: linear-gradient(135deg, #10b981, #059669);
+          color: white;
+          border: none;
+          border-radius: 0.5rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .continue-button:hover {
+          background: linear-gradient(135deg, #059669, #047857);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .opponent-stats {

@@ -13,6 +13,8 @@ interface UserStats {
   bestStreak: number;
   perfectGames: number;
   rank: number;
+  pointsToPrevRank: number | null;
+  pointsToNextRank: number | null;
 }
 
 interface Level {
@@ -62,8 +64,8 @@ export default function UserStatsCard({ userId, username, avatar }: UserStatsCar
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6 animate-pulse">
-        <div className="h-32 bg-gray-200 rounded"></div>
+      <div className="animate-pulse">
+        <div className="h-32 bg-gray-700 rounded"></div>
       </div>
     );
   }
@@ -80,83 +82,103 @@ export default function UserStatsCard({ userId, username, avatar }: UserStatsCar
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-4">
+      {/* Compact Header: Points + Rank + Level */}
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
-          <div className="text-3xl font-bold text-gray-800">
+          <div className="text-4xl font-bold text-green-400">
             {getRankEmoji(stats.rank)}
           </div>
           <div>
-            <h3 className="text-xl font-bold text-gray-800">{username}</h3>
-            <p className="text-sm text-gray-600">{stats.totalPoints} Punkte</p>
+            <p className="text-3xl font-bold text-white">
+              {stats.totalPoints} Punkte 
+              {stats.pointsToNextRank && (
+                <span className="text-sm text-white font-normal ml-3">Vorsprung zu #{stats.rank + 1}: {stats.pointsToNextRank} Punkte</span>
+              )}
+            </p>
+            <p className="text-lg text-white">Rang #{stats.rank}</p>
           </div>
         </div>
         
-        {/* Current Level Badge */}
+        {/* Compact Level Badge */}
         <div className="text-center">
-          <div className="text-4xl mb-1">{levelInfo.current.icon}</div>
-          <div className="text-sm font-semibold text-gray-800">{levelInfo.current.name}</div>
+          <div className="text-3xl mb-1">{levelInfo.current.icon}</div>
+          <div className="text-sm font-bold text-white" style={{fontFamily: 'var(--font-notable)'}}>{levelInfo.current.name}</div>
         </div>
       </div>
 
-      {/* Level Progress */}
-      {levelInfo.next && (
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-gray-600">
-              Fortschritt zu {levelInfo.next.name} {levelInfo.next.icon}
-            </span>
-            <span className="text-sm font-semibold text-gray-800">
-              {levelInfo.progress}%
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
-            <div 
-              className="bg-gradient-to-r from-green-500 to-blue-500 h-3 rounded-full transition-all duration-500"
-              style={{ width: `${levelInfo.progress}%` }}
-            ></div>
-          </div>
-          <div className="text-xs text-gray-500 mt-1">
-            Noch {levelInfo.pointsToNext} Punkte bis zum nächsten Level
-          </div>
-        </div>
-      )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="text-center">
-          <p className="text-2xl font-bold text-green-600">{stats.gamesWon}</p>
-          <p className="text-xs text-gray-600">Siege</p>
+      {/* Stats Table and Progress Bar Side by Side */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Stats Table - Takes 2/3 width */}
+        <div className="md:col-span-2 bg-gray-900 bg-opacity-40 rounded-lg border border-green-600 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-green-900 bg-opacity-50">
+                <th className="text-left py-2 px-3 text-green-400 font-semibold">Statistik</th>
+                <th className="text-right py-2 px-3 text-green-400 font-semibold">Wert</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700 divide-opacity-50">
+              <tr className="hover:bg-green-900 hover:bg-opacity-20 transition-colors">
+                <td className="py-2 px-3 text-white">🏆 Siege</td>
+                <td className="py-2 px-3 text-right font-bold text-white">{stats.gamesWon}</td>
+              </tr>
+              <tr className="hover:bg-green-900 hover:bg-opacity-20 transition-colors">
+                <td className="py-2 px-3 text-white">📊 Gewinnrate</td>
+                <td className="py-2 px-3 text-right font-bold text-white">{stats.winRate}%</td>
+              </tr>
+              <tr className="hover:bg-green-900 hover:bg-opacity-20 transition-colors">
+                <td className="py-2 px-3 text-white">🔥 Aktuelle Serie</td>
+                <td className="py-2 px-3 text-right font-bold text-white">{stats.currentStreak > 0 ? stats.currentStreak : '-'}</td>
+              </tr>
+              <tr className="hover:bg-green-900 hover:bg-opacity-20 transition-colors">
+                <td className="py-2 px-3 text-white">⚽ Tore erzielt</td>
+                <td className="py-2 px-3 text-right font-bold text-white">{stats.goalsScored}</td>
+              </tr>
+              <tr className="hover:bg-green-900 hover:bg-opacity-20 transition-colors">
+                <td className="py-2 px-3 text-white">🥅 Paraden</td>
+                <td className="py-2 px-3 text-right font-bold text-white">{stats.savesMade}</td>
+              </tr>
+              <tr className="hover:bg-green-900 hover:bg-opacity-20 transition-colors">
+                <td className="py-2 px-3 text-white">💎 Perfekte Spiele</td>
+                <td className="py-2 px-3 text-right font-bold text-white">{stats.perfectGames}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div className="text-center">
-          <p className="text-2xl font-bold text-blue-600">{stats.winRate}%</p>
-          <p className="text-xs text-gray-600">Gewinnrate</p>
-        </div>
-        <div className="text-center">
-          <p className="text-2xl font-bold text-purple-600">{stats.goalsScored}</p>
-          <p className="text-xs text-gray-600">Tore</p>
-        </div>
-        <div className="text-center">
-          <p className="text-2xl font-bold text-orange-600">{stats.savesMade}</p>
-          <p className="text-xs text-gray-600">Paraden</p>
-        </div>
+
+        {/* Progress Bar - Takes 1/3 width */}
+        {levelInfo.next && (
+          <div className="bg-gray-900 bg-opacity-40 rounded-lg border border-green-600 p-4 flex flex-col justify-between">
+            <div>
+              <div className="text-center mb-3">
+                <div className="text-sm text-gray-400 mb-1">Nächstes Level</div>
+                <div className="text-lg font-bold text-white">{levelInfo.next.name}</div>
+                <div className="text-2xl mt-1">{levelInfo.next.icon}</div>
+              </div>
+              
+              <div className="text-center mb-3">
+                <span className="text-2xl font-bold text-green-400">{levelInfo.progress}%</span>
+              </div>
+              
+              <div className="relative h-32 w-8 mx-auto bg-gray-700 rounded-full overflow-hidden">
+                <div 
+                  className="absolute bottom-0 w-full bg-gradient-to-t from-green-500 to-green-400 transition-all duration-500"
+                  style={{ height: `${levelInfo.progress}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            <div className="text-center mt-3">
+              <div className="text-xs text-gray-400">Noch</div>
+              <div className="text-sm font-bold text-white">{levelInfo.pointsToNext}</div>
+              <div className="text-xs text-gray-400">Punkte</div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="space-y-3">
-        <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-          <span className="text-sm text-gray-600">Aktuelle Serie</span>
-          <span className="font-semibold">
-            {stats.currentStreak > 0 ? `🔥 ${stats.currentStreak} Siege` : '-'}
-          </span>
-        </div>
-        <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-          <span className="text-sm text-gray-600">Beste Serie</span>
-          <span className="font-semibold">{stats.bestStreak} Siege</span>
-        </div>
-        <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-          <span className="text-sm text-gray-600">Perfekte Spiele</span>
-          <span className="font-semibold">{stats.perfectGames}</span>
-        </div>
-      </div>
     </div>
   );
 }

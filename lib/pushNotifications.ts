@@ -152,7 +152,7 @@ export async function sendChallengeNotification(
     body: `${challengerName} fordert dich zum Elfmeterschießen heraus!`,
     icon: '/icon-192x192.png',
     badge: '/icon-72x72.png',
-    url: `/game/${matchId}`,
+    url: `/challenge?match=${matchId}`,
     tag: `challenge-${matchId}`
   };
 
@@ -171,7 +171,7 @@ export async function sendGameFinishedNotification(
     body: `Dein Spiel gegen ${opponentName} ist beendet. ${won ? 'Du hast gewonnen!' : 'Besser kämpfen beim nächsten Mal!'}`,
     icon: '/icon-192x192.png',
     badge: '/icon-72x72.png',
-    url: `/game/${matchId}`,
+    url: `/challenge?match=${matchId}`,
     tag: `result-${matchId}`
   };
 

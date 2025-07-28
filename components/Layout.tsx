@@ -10,9 +10,9 @@ interface LayoutProps {
 
 export default function Layout({ children, showHeader = true }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-400 to-pink-600">
+    <div className="min-h-screen">
       {showHeader && <Header />}
-      <main className={showHeader ? 'pt-0' : ''}>
+      <main>
         {children}
       </main>
     </div>

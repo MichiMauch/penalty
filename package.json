@@ -6,7 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:api": "jest --testPathPattern=api",
+    "test:all": "node test-runner.js all",
+    "test:quick": "node test-runner.js quick",
+    "test:integration": "node test-runner.js integration"
   },
   "keywords": [],
   "author": "",
@@ -25,14 +34,24 @@
     "postcss": "^8.5.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-icons": "^5.5.0",
     "resend": "^4.7.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.8.3",
     "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.1",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
     "@types/web-push": "^3.6.4",
     "eslint": "^9.31.0",
-    "eslint-config-next": "^15.4.2"
+    "eslint-config-next": "^15.4.2",
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5",
+    "ts-jest": "^29.4.0",
+    "whatwg-fetch": "^3.6.20"
   }
 }

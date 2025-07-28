@@ -111,23 +111,25 @@ export async function GET(request: NextRequest) {
     const cancelableMatches = await db.execute({
       sql: `
         SELECT 
-          id,
-          player_a_email,
-          player_a_username,
-          player_a_avatar,
-          player_b_email,
-          player_b,
-          player_b_moves,
-          player_a_moves,
-          status,
-          created_at,
+          m.id,
+          m.player_a_email,
+          m.player_a_username,
+          m.player_a_avatar,
+          m.player_b_email,
+          m.player_b,
+          m.player_b_moves,
+          m.player_a_moves,
+          m.status,
+          m.created_at,
+          u.username as invited_username,
+          u.avatar as invited_avatar,
           'cancelable' as match_type
-        FROM matches 
-        WHERE player_a_email = ? 
-          AND (player_b IS NULL OR (player_b IS NOT NULL AND player_b_moves IS NULL))
-          AND player_a_moves IS NOT NULL
-          AND status = 'waiting'
-        ORDER BY created_at DESC
+        FROM matches m
+        LEFT JOIN users u ON u.email = m.player_b_email
+        WHERE m.player_a_email = ? 
+          AND (m.player_b IS NULL OR (m.player_b IS NOT NULL AND m.player_b_moves IS NULL))
+          AND m.status = 'waiting'
+        ORDER BY m.created_at DESC
       `,
       args: [session.user.email]
     });
@@ -171,8 +173,8 @@ export async function GET(request: NextRequest) {
     const cancelableChallenges = cancelableMatches.rows.map((match: any) => ({
       id: match.id,
       challengerEmail: match.player_b_email || 'Unbekannt',
-      challengerUsername: match.player_b_username || (match.player_b_email || 'Wartend'),
-      challengerAvatar: match.player_b_avatar || 'player1',
+      challengerUsername: match.invited_username || 'Wartend',
+      challengerAvatar: match.invited_avatar || 'soccer',
       createdAt: match.created_at,
       type: 'cancelable' as const,
       role: 'challenger' as const

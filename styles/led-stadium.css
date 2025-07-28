@@ -1,0 +1,401 @@
+/* 🏟️ FUSSBALLPAUSE - LED STADIUM DISPLAY SYSTEM 🏟️ */
+
+/* LED Color System */
+:root {
+  /* Primary LED Colors */
+  --led-black: #0a0a0a;
+  --led-panel: #1a1a1a;
+  --led-yellow: #FFD700;
+  --led-amber: #FFBF00;
+  --led-orange: #FFA500;
+  --led-red: #FF0000;
+  --led-green: #00FF00;
+  --led-white: #FFFFFF;
+  
+  /* Stadium Environment */
+  --stadium-night: #0d0d0d;
+  --stadium-dark: #1a1a1a;
+  --stadium-concrete: #2d2d2d;
+  --field-green: #2d5a2d;
+  --field-lines: #FFFFFF;
+  
+  /* LED Effects */
+  --led-glow-yellow: 0 0 20px rgba(255, 215, 0, 0.8);
+  --led-glow-red: 0 0 20px rgba(255, 0, 0, 0.8);
+  --led-glow-green: 0 0 20px rgba(0, 255, 0, 0.8);
+  --led-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+}
+
+/* Reset Bad Backgrounds */
+body {
+  background: var(--stadium-night) !important;
+  color: var(--led-white);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* LED Scoreboard Base */
+.led-scoreboard {
+  background: var(--led-black);
+  border: 4px solid var(--stadium-concrete);
+  border-radius: 0;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 
+    inset 0 0 30px rgba(0, 0, 0, 0.8),
+    0 0 40px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.led-scoreboard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.03) 2px,
+      rgba(255, 255, 255, 0.03) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.03) 2px,
+      rgba(255, 255, 255, 0.03) 4px
+    );
+  pointer-events: none;
+}
+
+/* LED Text Styles */
+.led-text {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: var(--led-yellow);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: var(--led-glow-yellow);
+}
+
+.led-text-large {
+  font-size: 3rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+}
+
+.led-text-xl {
+  font-size: 4rem;
+  line-height: 1;
+  letter-spacing: 0.15em;
+}
+
+.led-text-red {
+  color: var(--led-red);
+  text-shadow: var(--led-glow-red);
+}
+
+.led-text-green {
+  color: var(--led-green);
+  text-shadow: var(--led-glow-green);
+}
+
+/* 7-Segment Display Numbers */
+@font-face {
+  font-family: 'DSEG7';
+  src: url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
+}
+
+.led-number {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  font-weight: 900;
+  color: var(--led-yellow);
+  text-shadow: var(--led-glow-yellow);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Modern Flat Buttons */
+.led-button {
+  background: var(--led-panel);
+  border: 2px solid var(--stadium-concrete);
+  color: var(--led-yellow);
+  padding: 1rem 2rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--led-shadow);
+}
+
+.led-button:hover {
+  background: var(--stadium-concrete);
+  border-color: var(--led-yellow);
+  text-shadow: var(--led-glow-yellow);
+  transform: translateY(-2px);
+  box-shadow: 
+    var(--led-shadow),
+    var(--led-glow-yellow);
+}
+
+.led-button:active {
+  transform: translateY(0);
+  box-shadow: 
+    inset 0 2px 10px rgba(0, 0, 0, 0.8),
+    var(--led-glow-yellow);
+}
+
+.led-button-primary {
+  background: var(--led-yellow);
+  color: var(--led-black);
+  border-color: var(--led-amber);
+}
+
+.led-button-primary:hover {
+  background: var(--led-amber);
+  text-shadow: none;
+  box-shadow: 
+    var(--led-shadow),
+    0 0 30px rgba(255, 191, 0, 0.8);
+}
+
+.led-button-danger {
+  background: var(--led-panel);
+  color: var(--led-red);
+  border-color: var(--led-red);
+}
+
+.led-button-danger:hover {
+  background: rgba(255, 0, 0, 0.1);
+  text-shadow: var(--led-glow-red);
+  box-shadow: 
+    var(--led-shadow),
+    var(--led-glow-red);
+}
+
+/* Stadium Layout */
+.stadium-layout {
+  min-height: 100vh;
+  background: var(--stadium-night);
+  position: relative;
+}
+
+/* Subtle Floodlight Effect */
+.stadium-floodlights {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40vh;
+  background: 
+    radial-gradient(ellipse at 20% 0%, rgba(255, 255, 255, 0.05), transparent 40%),
+    radial-gradient(ellipse at 80% 0%, rgba(255, 255, 255, 0.05), transparent 40%),
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.08), transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Field Strip at Bottom */
+.field-strip {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to top, var(--field-green), transparent);
+  z-index: 0;
+}
+
+/* LED Panel Cards */
+.led-panel {
+  background: var(--led-panel);
+  border: 2px solid var(--stadium-concrete);
+  padding: 1.5rem;
+  box-shadow: 
+    inset 0 0 20px rgba(0, 0, 0, 0.6),
+    var(--led-shadow);
+}
+
+/* LED Match Display */
+.led-match-display {
+  background: var(--led-black);
+  border: 3px solid var(--stadium-concrete);
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.led-match-display::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--led-yellow);
+  opacity: 0.3;
+  animation: led-scan 3s linear infinite;
+}
+
+@keyframes led-scan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* LED Status Indicators */
+.led-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.led-indicator-active {
+  background: var(--led-green);
+  box-shadow: var(--led-glow-green);
+  animation: led-pulse 1s ease-in-out infinite;
+}
+
+.led-indicator-waiting {
+  background: var(--led-yellow);
+  box-shadow: var(--led-glow-yellow);
+  animation: led-pulse 2s ease-in-out infinite;
+}
+
+.led-indicator-error {
+  background: var(--led-red);
+  box-shadow: var(--led-glow-red);
+  animation: led-blink 0.5s ease-in-out infinite;
+}
+
+@keyframes led-pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+@keyframes led-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Input Fields */
+.led-input {
+  background: var(--led-black);
+  border: 2px solid var(--stadium-concrete);
+  color: var(--led-yellow);
+  padding: 1rem 1.5rem;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 1.125rem;
+  text-align: center;
+  letter-spacing: 0.1em;
+  transition: all 0.2s ease;
+}
+
+.led-input:focus {
+  outline: none;
+  border-color: var(--led-yellow);
+  box-shadow: 
+    inset 0 0 10px rgba(0, 0, 0, 0.8),
+    var(--led-glow-yellow);
+}
+
+.led-input::placeholder {
+  color: rgba(255, 215, 0, 0.3);
+  text-transform: uppercase;
+}
+
+/* Victory/Defeat Display */
+.led-result-victory {
+  font-size: 5rem;
+  color: var(--led-green);
+  text-shadow: 
+    var(--led-glow-green),
+    0 0 60px rgba(0, 255, 0, 0.6);
+  animation: led-victory-flash 1s ease-in-out infinite;
+}
+
+.led-result-defeat {
+  font-size: 5rem;
+  color: var(--led-red);
+  text-shadow: var(--led-glow-red);
+}
+
+@keyframes led-victory-flash {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+/* Scrolling LED Ticker */
+.led-ticker {
+  background: var(--led-black);
+  border: 2px solid var(--stadium-concrete);
+  padding: 0.75rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.led-ticker-content {
+  display: inline-block;
+  color: var(--led-yellow);
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+  animation: led-scroll 20s linear infinite;
+}
+
+@keyframes led-scroll {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* Remove All Gradient Nonsense */
+.bg-gradient-to-br,
+.bg-gradient-to-r,
+.from-green-400,
+.to-blue-600,
+.from-purple-400,
+.to-pink-600,
+.from-orange-500,
+.to-red-500 {
+  background: none !important;
+}
+
+/* Stadium Content Area */
+.stadium-content {
+  position: relative;
+  z-index: 10;
+  padding: 2rem 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .led-text-xl {
+    font-size: 2.5rem;
+  }
+  
+  .led-text-large {
+    font-size: 2rem;
+  }
+  
+  .led-result-victory,
+  .led-result-defeat {
+    font-size: 3rem;
+  }
+  
+  .led-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+  }
+}

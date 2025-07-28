@@ -71,87 +71,103 @@ export default function GameResult({
   
   return (
     <div className="space-y-8">
-      {/* Immediate Result Header - Always Visible */}
-      <div className="text-center bg-gradient-to-r from-green-500 to-blue-500 text-white p-8 rounded-xl shadow-2xl">
-        <div className="text-6xl mb-4">
-          {isDraw ? '🤝' : isWinner ? '🎉' : '😔'}
-        </div>
-        <h1 className="text-4xl font-bold mb-2">
-          {isDraw ? 'UNENTSCHIEDEN!' : isWinner ? 'SIEG!' : 'NIEDERLAGE!'}
-        </h1>
-        <div className="text-2xl font-bold mb-4">
-          {result.scoreA} : {result.scoreB}
-        </div>
-        <p className="text-lg opacity-90">
-          {isDraw ? 'Beide waren gleich stark!' : isWinner ? 'Glückwunsch! Du warst besser!' : 'Beim nächsten Mal klappt es bestimmt!'}
-        </p>
-        
-        {/* Skip Animation Button */}
-        {showAnimation && !showFinalResult && (
+      {/* Suspense Header - No spoilers */}
+      {!showFinalResult && (
+        <div className="text-center bg-gradient-to-r from-gray-500 to-gray-600 text-white p-8 rounded-xl shadow-2xl">
+          <div className="text-6xl mb-4">⚽</div>
+          <h1 className="text-3xl font-bold mb-2">
+            Elfmeterschießen läuft...
+          </h1>
+          <p className="text-lg opacity-90 mb-4">
+            Schau dir die spannende Animation an!
+          </p>
+          
+          {/* Skip to Results Button */}
           <button
             onClick={skipToResults}
-            className="mt-4 px-6 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-200"
+            className="px-6 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-200"
           >
-            ⏭️ Animation überspringen
+            📊 Direkt zum Ergebnis
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Detailed Statistics - Show after animation or skip */}
+      {/* Modern Scoreboard Result */}
       {showFinalResult && (
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Player Comparison */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <h3 className="text-xl font-bold mb-4 text-center">👥 Spieler Vergleich</h3>
+        <div className="scoreboard max-w-4xl mx-auto">
+          <h1 className={`score-result ${
+            isDraw ? '' : isWinner ? 'victory' : 'defeat'
+          }`}>
+            {isDraw ? 'Unentschieden' : isWinner ? 'Sieg' : 'Niederlage'}
+          </h1>
+          
+          <div className="score-display">
+            {result.scoreA} : {result.scoreB}
+          </div>
+          
+          <p className="body-lg">
+            {isDraw ? 'Beide gleich stark!' : isWinner ? 'Glückwunsch!' : 'Nächstes Mal besser!'}
+          </p>
+        </div>
+      )}
+
+      {/* Modern Statistics Display */}
+      {showFinalResult && (
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          {/* Player Stats */}
+          <div className="modern-card">
+            <h3 className="heading-sm text-center mb-4">Spieler</h3>
             <div className="flex items-center justify-between">
               <div className="text-center flex-1">
                 {yourUser ? (
                   <UserAvatar user={yourUser} size="md" showName={true} />
                 ) : (
-                  <div className="font-bold">{yourName}</div>
+                  <div className="body-sm mb-2">{yourName}</div>
                 )}
-                <div className="text-2xl font-bold text-green-600 mt-2">
+                <div className="stat-value text-3xl mt-2">
                   {playerRole === 'player_a' ? result.scoreA : result.scoreB}
                 </div>
-                <div className="text-sm text-gray-500">Punkte</div>
+                <div className="stat-label">Punkte</div>
               </div>
               
-              <div className="text-2xl font-bold text-gray-400 mx-4">VS</div>
+              <div className="body-lg mx-4">vs</div>
               
               <div className="text-center flex-1">
                 {opponentUser ? (
                   <UserAvatar user={opponentUser} size="md" showName={true} />
                 ) : (
-                  <div className="font-bold">{opponentName}</div>
+                  <div className="body-sm mb-2">{opponentName}</div>
                 )}
-                <div className="text-2xl font-bold text-blue-600 mt-2">
+                <div className="stat-value text-3xl mt-2">
                   {playerRole === 'player_a' ? result.scoreB : result.scoreA}
                 </div>
-                <div className="text-sm text-gray-500">Punkte</div>
+                <div className="stat-label">Punkte</div>
               </div>
             </div>
           </div>
 
-          {/* Round by Round Breakdown */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <h3 className="text-xl font-bold mb-4 text-center">📊 Runden-Übersicht</h3>
-            <div className="space-y-2">
+          {/* Round Details */}
+          <div className="modern-card">
+            <h3 className="heading-sm text-center mb-4">Runden</h3>
+            <div className="space-y-3">
               {result.rounds.map((round, index) => {
                 const isYourRound = round.shooter === playerRole;
                 const youWonRound = (isYourRound && round.goal) || (!isYourRound && !round.goal);
                 return (
-                  <div key={index} className={`flex items-center justify-between p-2 rounded ${youWonRound ? 'bg-green-50' : 'bg-red-50'}`}>
-                    <span className="font-medium">Runde {index + 1}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">
-                        {isYourRound ? 'Du schießt' : 'Du hältst'}
-                      </span>
-                      <span className="text-lg">
-                        {round.goal ? '⚽' : '🧤'}
-                      </span>
-                      <span className={`font-bold ${youWonRound ? 'text-green-600' : 'text-red-600'}`}>
-                        {youWonRound ? '+1' : '0'}
-                      </span>
+                  <div key={index} className="match-card">
+                    <div className="match-info">
+                      <div className={`match-status ${youWonRound ? 'active' : 'finished'}`}></div>
+                      <div className="match-details">
+                        <div className="match-opponent">
+                          Runde {index + 1}
+                        </div>
+                        <div className="match-type">
+                          {isYourRound ? 'Schuss' : 'Parade'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="body-sm">
+                      {round.goal ? 'Tor' : 'Gehalten'}
                     </div>
                   </div>
                 );
@@ -176,25 +192,27 @@ export default function GameResult({
         />
       )}
 
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <Link
-          href="/garderobe"
-          className="px-8 py-4 bg-green-500 text-white text-lg font-bold rounded-lg hover:bg-green-600 transform hover:scale-105 transition-all duration-200 shadow-lg"
-        >
-          🏠 Zurück zur Garderobe
-        </Link>
-        <RevengeButton
-          playerAEmail={playerAEmail}
-          playerBEmail={playerBEmail}
-          playerAUsername={playerAUsername}
-          playerBUsername={playerBUsername}
-          playerAAvatar={playerAAvatar}
-          playerBAvatar={playerBAvatar}
-          currentPlayerRole={playerRole}
-          opponentKeepermoves={result.rounds.map(round => round.keeperMove)}
-          opponentShooterMoves={result.rounds.map(round => round.shooterMove)}
-        />
+      {/* Modern Action Panel */}
+      <div className="modern-card max-w-2xl mx-auto">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            href="/garderobe"
+            className="btn btn-secondary text-center"
+          >
+            Zurück zur Garderobe
+          </Link>
+          <RevengeButton
+            playerAEmail={playerAEmail}
+            playerBEmail={playerBEmail}
+            playerAUsername={playerAUsername}
+            playerBUsername={playerBUsername}
+            playerAAvatar={playerAAvatar}
+            playerBAvatar={playerBAvatar}
+            currentPlayerRole={playerRole}
+            opponentKeepermoves={result.rounds.map(round => round.keeperMove)}
+            opponentShooterMoves={result.rounds.map(round => round.shooterMove)}
+          />
+        </div>
       </div>
     </div>
   );

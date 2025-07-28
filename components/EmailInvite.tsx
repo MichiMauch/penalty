@@ -57,7 +57,7 @@ export default function EmailInvite({ matchId, playerAEmail, onInviteSent }: Ema
   };
 
   const gameUrl = typeof window !== 'undefined' ? 
-    `${window.location.origin}/game/${matchId}` : '';
+    `${window.location.origin}/challenge?match=${matchId}` : '';
 
   if (isInvited) {
     return (

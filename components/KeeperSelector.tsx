@@ -122,83 +122,33 @@ export default function KeeperSelector({
   const canSubmit = saves.length === 5 && !disabled && !isSubmitting;
   
   return (
-    <div className="space-y-6">
-      {/* Challenge Received Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-6 text-center">
-        <h2 className="text-2xl font-bold text-blue-800 mb-4">
-          ⚽ Du wurdest zum Elfmeterschießen herausgefordert! 🧤
-        </h2>
-        <div className="flex items-center justify-center gap-4 mb-4">
-          {/* Challenger */}
-          <div className="flex flex-col items-center">
-            <p className="text-sm text-gray-600 mb-2">Herausforderer:</p>
-            {challengerUser ? (
-              <UserAvatar user={challengerUser} size="md" showName={true} />
-            ) : (
-              <div className="font-semibold text-green-600">{challengerName}</div>
-            )}
-          </div>
-          
-          <div className="text-2xl mx-4">VS</div>
-          
-          {/* You */}
-          <div className="flex flex-col items-center">
-            <p className="text-sm text-gray-600 mb-2">Du:</p>
-            {playerBUser ? (
-              <UserAvatar user={playerBUser} size="md" showName={true} />
-            ) : (
-              <div className="font-semibold text-blue-600">{playerBName}</div>
-            )}
-          </div>
-        </div>
-        <p className="text-blue-700 font-medium">
-          Wähle deine 5 Parade-Richtungen strategisch!
-        </p>
-      </div>
-
-      {/* Save Selection */}
-      <div>
-        {/* Keeper Animation - Always visible */}
-        <div className="mb-6">
-          <KeeperAnimation 
-            saveDirection={animatingDirection || 'mitte'}
-            isAnimating={showAnimation}
-            saves={saves}
-            onRemoveSave={handleRemoveSave}
-            onAddSave={handleSaveSelect}
-            disabled={saves.length >= 5 || isSubmitting || showAnimation}
-            onAnimationComplete={() => {
-              setShowAnimation(false);
-              setAnimatingDirection(null);
-            }}
-          />
-        </div>
+    <div className="relative">
+      {/* Keeper Animation - Always visible */}
+      <div className="mb-6">
+        <KeeperAnimation 
+          saveDirection={animatingDirection || 'mitte'}
+          isAnimating={showAnimation}
+          saves={saves}
+          onRemoveSave={handleRemoveSave}
+          onAddSave={handleSaveSelect}
+          disabled={saves.length >= 5 || isSubmitting || showAnimation}
+          onAnimationComplete={() => {
+            setShowAnimation(false);
+            setAnimatingDirection(null);
+          }}
+          onSubmit={handleSubmit}
+          canSubmit={canSubmit}
+          isSubmitting={isSubmitting}
+        />
       </div>
 
 
-      {/* Bruce Button - immer anzeigen */}
-      <div className="mb-4">
-        <button
-          onClick={() => setShowBruceDialog(true)}
-          className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 font-semibold transition-all duration-300 transform hover:scale-105"
-        >
-          🧠 Frag Bruce vor dem Halten  
-        </button>
-      </div>
-
-      {/* Accept Challenge Button */}
+      {/* Global Bruce Button - Fixed in screen corner */}
       <button
-        onClick={handleSubmit}
-        disabled={!canSubmit}
-        className={`w-full px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 ${
-          canSubmit
-            ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:from-blue-600 hover:to-green-600 transform hover:scale-105 shadow-lg'
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-        }`}
+        onClick={() => setShowBruceDialog(true)}
+        className="fixed bottom-6 right-6 w-16 h-16 bg-white rounded-full shadow-2xl border-4 border-green-500 flex items-center justify-center hover:bg-gray-50 transition-all duration-200 transform hover:scale-110 z-40 animate-pulse"
       >
-        {isSubmitting ? '⏳ Paraden werden gesendet...' : 
-         canSubmit ? '🧤 HERAUSFORDERUNG ANNEHMEN! 🧤' : 
-         `Wähle noch ${5 - saves.length} Paraden`}
+        <img src="/bruce.png" alt="Bruce" className="w-12 h-12 rounded-full object-cover"/>
       </button>
 
       {/* Bruce Dialog */}

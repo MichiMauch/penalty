@@ -8,23 +8,26 @@ interface CombinedPenaltyAnimationProps {
   saveDirection: SaveDirection;
   isAnimating: boolean;
   onAnimationComplete?: () => void;
+  playerRole?: 'shooter' | 'keeper'; // Rolle des aktuellen Spielers
 }
 
 export default function CombinedPenaltyAnimation({ 
   shotDirection, 
   saveDirection, 
   isAnimating, 
-  onAnimationComplete 
+  onAnimationComplete,
+  playerRole = 'shooter'
 }: CombinedPenaltyAnimationProps) {
-  // Ball state - same as GoalAnimation
-  const [ballPosition, setBallPosition] = useState({ x: 50, y: 78 });
+  // Ball state - moved 8% down from previous position (66 + 8% = 71.3)
+  const [ballPosition, setBallPosition] = useState({ x: 50, y: 71 });
   const [showBall, setShowBall] = useState(true);
   const [isBallResetting, setIsBallResetting] = useState(false);
   
-  // Keeper state - same as KeeperAnimation
-  const [keeperPosition, setKeeperPosition] = useState({ x: 50, y: 45 });
+  // Keeper state - moved another 5% higher (30 - 5% = 28.5)
+  const [keeperPosition, setKeeperPosition] = useState({ x: 50, y: 28 });
   const [showKeeper, setShowKeeper] = useState(true);
   const [isKeeperResetting, setIsKeeperResetting] = useState(false);
+  const [isKeeperAnimating, setIsKeeperAnimating] = useState(false);
   const [showResult, setShowResult] = useState(false);
 
   useEffect(() => {
@@ -34,51 +37,54 @@ export default function CombinedPenaltyAnimation({
       setShowKeeper(true);
       setIsBallResetting(false);
       setIsKeeperResetting(false);
+      setIsKeeperAnimating(false);
       setShowResult(false);
-      setBallPosition({ x: 50, y: 78 }); // Same as GoalAnimation
-      setKeeperPosition({ x: 50, y: 45 }); // Same as KeeperAnimation
+      setBallPosition({ x: 50, y: 71 }); // Ball start position adjusted
+      setKeeperPosition({ x: 50, y: 28 }); // Keeper start position adjusted
       
-      // Start animations after a brief delay
-      const animationTimer = setTimeout(() => {
-        // Ball animation - adjusted positions to avoid goal posts
+      // Ball animation starts immediately (ball is shot first)
+      const ballAnimationTimer = setTimeout(() => {
         let ballTargetX = 50;
         switch (shotDirection) {
           case 'links':
-            ballTargetX = 35; // Less extreme to avoid post
+            ballTargetX = 20; // Moved 5% less extreme (15 + 5 = 20)
             break;
           case 'rechts':
-            ballTargetX = 65; // Less extreme to avoid post
+            ballTargetX = 80; // Moved 5% less extreme (85 - 5 = 80)
             break;
           case 'mitte':
             ballTargetX = 50; // Center unchanged
             break;
         }
-        setBallPosition({ x: ballTargetX, y: 45 }); // Same target Y as GoalAnimation
-        
-        // Keeper animation - same positions as KeeperAnimation
+        setBallPosition({ x: ballTargetX, y: 23 }); // Moved 10% lower (13 + 10 = 23)
+      }, 100);
+      
+      // Keeper animation starts with delay (realistic reaction time)
+      const keeperAnimationTimer = setTimeout(() => {
+        setIsKeeperAnimating(true);
         let keeperTargetX = 50;
         switch (saveDirection) {
           case 'links':
-            keeperTargetX = 35; // Same as KeeperAnimation
+            keeperTargetX = 20; // Moved 10% further left (30 - 10 = 20)
             break;
           case 'rechts':
-            keeperTargetX = 65; // Same as KeeperAnimation
+            keeperTargetX = 80; // Moved 10% further right (70 + 10 = 80)
             break;
           case 'mitte':
-            keeperTargetX = 50; // Same as KeeperAnimation
+            keeperTargetX = 50; // Center unchanged
             break;
         }
-        setKeeperPosition({ x: keeperTargetX, y: 45 });
-      }, 100);
+        setKeeperPosition({ x: keeperTargetX, y: 28 }); // Moved another 5% higher (30 - 2 = 28)
+      }, 250); // 150ms delay after ball starts moving
 
       // Show result and handle ball visibility
       const resultTimer = setTimeout(() => {
         const isGoal = shotDirection !== saveDirection;
         
-        if (isGoal) {
-          // Goal scored - show TOR! message
-          setShowResult(true);
-        } else {
+        // Always show result message - TOR or PARADE
+        setShowResult(true);
+        
+        if (!isGoal) {
           // Ball was saved - hide it
           setShowBall(false);
         }
@@ -88,19 +94,21 @@ export default function CombinedPenaltyAnimation({
       const resetTimer = setTimeout(() => {
         setIsBallResetting(true);
         setIsKeeperResetting(true);
-        setBallPosition({ x: 50, y: 78 }); // Ball back to penalty spot
-        setKeeperPosition({ x: 50, y: 45 }); // Keeper back to center
+        setIsKeeperAnimating(false);
+        setBallPosition({ x: 50, y: 71 }); // Ball back to penalty spot - position adjusted
+        setKeeperPosition({ x: 50, y: 28 }); // Keeper back to center - position adjusted
         setShowBall(true); // Show ball again
         setShowResult(false); // Hide TOR message
-      }, 2000);
+      }, 1800);
 
-      // Animation complete
+      // Animation complete - wait longer to ensure ball visually returns
       const completeTimer = setTimeout(() => {
         onAnimationComplete?.();
-      }, 2300);
+      }, 2500);
 
       return () => {
-        clearTimeout(animationTimer);
+        clearTimeout(ballAnimationTimer);
+        clearTimeout(keeperAnimationTimer);
         clearTimeout(resultTimer);
         clearTimeout(resetTimer);
         clearTimeout(completeTimer);
@@ -113,7 +121,7 @@ export default function CombinedPenaltyAnimation({
       {/* Keeper */}
       {showKeeper && (
         <div 
-          className={`keeper ${isAnimating && !isKeeperResetting ? 'animate-save' : ''} ${isKeeperResetting ? 'fade-in' : ''}`}
+          className={`keeper ${isKeeperAnimating && !isKeeperResetting ? 'animate-save' : ''} ${isKeeperResetting ? 'fade-in' : ''}`}
           style={{
             left: `${keeperPosition.x}%`,
             top: `${keeperPosition.y}%`,
@@ -142,11 +150,22 @@ export default function CombinedPenaltyAnimation({
         </div>
       )}
       
-      {/* Goal Result */}
+      {/* Goal/Save Result */}
       {showResult && (
         <div className="goal-result-overlay">
-          <div className="goal-result-message">
-            <div className="goal-text">⚽ TOR!</div>
+          <div className={`goal-result-message ${(() => {
+            const isGoal = shotDirection !== saveDirection;
+            if (isGoal) {
+              // Tor: Gut für Schütze, schlecht für Keeper
+              return playerRole === 'shooter' ? 'success' : 'failure';
+            } else {
+              // Parade: Gut für Keeper, schlecht für Schütze
+              return playerRole === 'keeper' ? 'success' : 'failure';
+            }
+          })()}`}>
+            <div className="goal-text">
+              {shotDirection !== saveDirection ? '⚽ TOR!' : '🧤 PARADE!'}
+            </div>
           </div>
         </div>
       )}
@@ -156,10 +175,7 @@ export default function CombinedPenaltyAnimation({
           position: relative;
           width: 100%;
           height: 400px;
-          background-image: url('/stadium-background.jpg');
-          background-size: cover;
-          background-position: center bottom;
-          background-repeat: no-repeat;
+          background: transparent;
           border-radius: 12px;
           overflow: hidden;
           perspective: 1000px;
@@ -171,7 +187,7 @@ export default function CombinedPenaltyAnimation({
           transform: translate(-50%, -50%);
           z-index: 9;
           filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.5));
-          transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          /* Removed transition - only animate when class is added */
         }
 
         .keeper-body {
@@ -190,6 +206,7 @@ export default function CombinedPenaltyAnimation({
 
         .keeper.animate-save {
           animation: keeperMove 0.8s ease-out forwards;
+          transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         .keeper.animate-save[style*="links"] .keeper-body {
@@ -263,11 +280,11 @@ export default function CombinedPenaltyAnimation({
 
         /* Fade in animations */
         .keeper.fade-in {
-          animation: fadeInKeeper 0.3s ease-out;
+          animation: fadeInKeeper 0.5s ease-out;
         }
 
         .football.fade-in {
-          animation: fadeInBall 0.3s ease-out;
+          animation: fadeInBall 0.6s ease-out;
         }
 
         @keyframes fadeInKeeper {
@@ -283,12 +300,16 @@ export default function CombinedPenaltyAnimation({
 
         @keyframes fadeInBall {
           0% {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.5);
+            opacity: 0.3;
+            transform: translate(-50%, -50%) scale(0.7) translateY(-20px);
+          }
+          50% {
+            opacity: 0.7;
+            transform: translate(-50%, -50%) scale(1.1) translateY(-10px);
           }
           100% {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
+            transform: translate(-50%, -50%) scale(1) translateY(0px);
           }
         }
 
@@ -307,13 +328,21 @@ export default function CombinedPenaltyAnimation({
         }
 
         .goal-result-message {
-          background: rgba(34, 197, 94, 0.95);
           color: white;
           padding: 1.5rem 2rem;
           border-radius: 1rem;
           box-shadow: 0 10px 30px rgba(0,0,0,0.3);
           animation: goalPop 0.6s ease-out;
+        }
+
+        .goal-result-message.success {
+          background: rgba(34, 197, 94, 0.95);
           border: 3px solid #22c55e;
+        }
+
+        .goal-result-message.failure {
+          background: rgba(239, 68, 68, 0.95);
+          border: 3px solid #ef4444;
         }
 
         .goal-text {

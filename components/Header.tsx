@@ -1,14 +1,107 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import UserAvatar from './UserAvatar';
+import ChallengeModal from './ChallengeModal';
+import { FaCheck, FaTimes, FaExternalLinkAlt, FaEye } from 'react-icons/fa';
+import { GiCrossedSwords } from 'react-icons/gi';
+
+interface Match {
+  id: string;
+  type: 'invitation' | 'active' | 'waiting_for_opponent' | 'cancelable' | 'finished_recent';
+  role: 'defender' | 'challenger';
+  challengerEmail: string;
+  challengerUsername: string;
+  challengerAvatar: string;
+  createdAt: string;
+  winner?: string;
+}
 
 export default function Header() {
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMatchesOpen, setIsMatchesOpen] = useState(false);
+  const [isChallengeModalOpen, setIsChallengeModalOpen] = useState(false);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [isLoadingMatches, setIsLoadingMatches] = useState(false);
+  const [matchesError, setMatchesError] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  const isGarderobe = pathname === '/garderobe';
+  const isChallenge = pathname === '/challenge';
 
-  if (!user) return null;
+  // Fetch matches when user is available or matches dropdown is opened
+  useEffect(() => {
+    if (user && isMatchesOpen && !isLoadingMatches && matches.length === 0) {
+      fetchMatches();
+    }
+  }, [user, isMatchesOpen]);
+
+  const fetchMatches = async () => {
+    setIsLoadingMatches(true);
+    setMatchesError('');
+    try {
+      const response = await fetch('/api/matches/pending');
+      if (response.ok) {
+        const data = await response.json();
+        setMatches(data.challenges);
+      } else {
+        setMatchesError('Fehler beim Laden der Matches');
+      }
+    } catch (error) {
+      console.error('Error fetching matches:', error);
+      setMatchesError('Netzwerkfehler');
+    } finally {
+      setIsLoadingMatches(false);
+    }
+  };
+
+  // Get avatar emoji
+  const getAvatarEmoji = (avatar: string): string => {
+    const avatarMap: { [key: string]: string } = {
+      'fire': '🔥', 'lightning': '⚡', 'star': '🌟', 'rocket': '🚀', 'crown': '👑',
+      'target': '🎯', 'trophy': '🏆', 'soccer': '⚽', 'muscle': '💪', 'sunglasses': '😎',
+      'heart': '❤️', 'diamond': '💎', 'rainbow': '🌈', 'ghost': '👻', 'alien': '👽',
+      'robot': '🤖', 'unicorn': '🦄', 'dragon': '🐉', 'ninja': '🥷', 'wizard': '🧙'
+    };
+    return avatarMap[avatar] || '⚽';
+  };
+
+  // Helper functions for match status and actions
+  const getMatchStatus = (match: Match): string => {
+    switch (match.type) {
+      case 'invitation':
+        return 'Neue Herausforderung';
+      case 'active':
+        return 'Wartet auf dich';
+      case 'waiting_for_opponent':
+        return 'Du wartest auf Gegner';
+      case 'cancelable':
+        return 'Wartend';
+      case 'finished_recent':
+        return 'Beendet';
+      default:
+        return 'Unbekannt';
+    }
+  };
+
+  const newMatchesCount = matches.filter(m => m.type === 'invitation' || m.type === 'finished_recent').length;
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsMatchesOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -19,84 +112,277 @@ export default function Header() {
     }
   };
 
+  const handleLeaderboard = () => {
+    // For now, we'll scroll to leaderboard section on Garderobe page
+    // Later this could navigate to a dedicated leaderboard page
+    if (isGarderobe) {
+      const leaderboardElement = document.querySelector('.leaderboard-section');
+      leaderboardElement?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      router.push('/garderobe');
+    }
+    setIsMenuOpen(false);
+  };
+
   return (
-    <header className="bg-white shadow-md border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo/Title */}
-          <div className="flex items-center">
-            <a href="/garderobe" className="text-xl font-bold text-gray-800 hover:text-gray-900">
-              ⚽ <span className="hidden sm:inline">Fußballpause</span>
-            </a>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <nav className="flex space-x-4">
-              <button className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">
-                Rangliste
-              </button>
-              <button className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">
-                Profil
-              </button>
-            </nav>
-            
-            <div className="flex items-center space-x-3">
-              <UserAvatar user={user} size="sm" showName={true} />
-              <button
-                onClick={handleLogout}
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
-              >
-                Abmelden
-              </button>
+    <header className={`modern-header ${isGarderobe ? 'garderobe-header' : ''} ${isChallenge ? 'challenge-header' : ''}`}>
+      <div className="container">
+        {!isGarderobe && !isChallenge && (
+          <>
+            {/* Large Hero Title - Only on non-Garderobe pages */}
+            <div className="header-hero-title">
+              <h1 className="hero-main-title">
+                PENALTY
+              </h1>
+              <h2 className="hero-sub-title">
+                THE GAME
+              </h2>
             </div>
-          </div>
+          </>
+        )}
+        
+        <div className="header-content">
+          {/* Logo/Title */}
+          <a href={user ? "/garderobe" : "/"} className={`logo ${isGarderobe ? 'garderobe-logo' : ''}`}>
+            ⚽ <span className="hidden sm:inline">PENALTY</span>
+          </a>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-3">
-            <UserAvatar user={user} size="sm" showName={false} />
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-600 hover:text-gray-900 p-2"
-            >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {isMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
-          </div>
+          {/* Show navigation only if user is logged in */}
+          {user && (
+            <>
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center space-x-4">
+                <button 
+                  onClick={handleLeaderboard}
+                  className="nav-link text-white"
+                >
+                  Rangliste
+                </button>
+                
+                {/* Challenge Button */}
+                <button 
+                  onClick={() => setIsChallengeModalOpen(true)}
+                  className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all duration-200 transform hover:scale-105"
+                >
+                  <GiCrossedSwords size={16} />
+                  HERAUSFORDERN
+                </button>
+                
+                {/* Matches Dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                  <button 
+                    onClick={() => setIsMatchesOpen(!isMatchesOpen)}
+                    className="nav-link text-white flex items-center gap-2"
+                  >
+                    Matches
+                    {newMatchesCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 font-bold">
+                        {newMatchesCount}
+                      </span>
+                    )}
+                  </button>
+                  
+                  {isMatchesOpen && (
+                    <div className="absolute top-full right-0 mt-2 w-80 bg-gray-900 bg-opacity-95 backdrop-blur-md rounded-lg border border-green-600 shadow-2xl z-50">
+                      <div className="p-4">
+                        <h3 className="text-white font-bold text-lg mb-3">Deine Matches</h3>
+                        
+                        {isLoadingMatches ? (
+                          <div className="text-center py-6">
+                            <div className="animate-spin rounded-full h-8 w-8 border-2 border-green-400 border-t-transparent mx-auto mb-2"></div>
+                            <p className="text-gray-400 text-sm">Lade Matches...</p>
+                          </div>
+                        ) : matchesError ? (
+                          <div className="text-center py-6">
+                            <p className="text-red-400 text-sm">{matchesError}</p>
+                            <button 
+                              onClick={fetchMatches}
+                              className="mt-2 text-green-400 hover:text-green-300 text-sm"
+                            >
+                              Erneut versuchen
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Neue Herausforderungen */}
+                            <div className="mb-4">
+                              <h4 className="text-green-400 text-sm font-semibold mb-2">Neue Herausforderungen</h4>
+                              {matches.filter(m => m.type === 'invitation').length === 0 ? (
+                                <p className="text-gray-400 text-xs py-2">Keine neuen Herausforderungen</p>
+                              ) : (
+                                matches.filter(m => m.type === 'invitation').map(match => (
+                                  <div key={match.id} className="flex items-center justify-between p-2 hover:bg-green-900 hover:bg-opacity-30 rounded transition-colors mb-1">
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-2xl">{getAvatarEmoji(match.challengerAvatar)}</span>
+                                      <div>
+                                        <p className="text-white text-sm font-medium">{match.challengerUsername}</p>
+                                        <p className="text-gray-400 text-xs">{getMatchStatus(match)}</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <button 
+                                        onClick={() => router.push(`/challenge?match=${match.id}`)}
+                                        className="text-green-400 hover:text-green-300 p-1"
+                                        title="Herausforderung annehmen"
+                                      >
+                                        <FaCheck size={14} />
+                                      </button>
+                                      <button className="text-red-400 hover:text-red-300 p-1" title="Ablehnen">
+                                        <FaTimes size={14} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                            
+                            {/* Aktive Matches */}
+                            <div className="mb-4">
+                              <h4 className="text-yellow-400 text-sm font-semibold mb-2">Aktive Matches</h4>
+                              {matches.filter(m => m.type === 'active' || m.type === 'waiting_for_opponent' || m.type === 'cancelable').length === 0 ? (
+                                <p className="text-gray-400 text-xs py-2">Keine aktiven Matches</p>
+                              ) : (
+                                matches.filter(m => m.type === 'active' || m.type === 'waiting_for_opponent' || m.type === 'cancelable').map(match => (
+                                  <div key={match.id} className="flex items-center justify-between p-2 hover:bg-green-900 hover:bg-opacity-30 rounded transition-colors mb-1">
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-2xl">{getAvatarEmoji(match.challengerAvatar)}</span>
+                                      <div>
+                                        <p className="text-white text-sm font-medium">{match.challengerUsername}</p>
+                                        <p className="text-gray-400 text-xs">{getMatchStatus(match)}</p>
+                                      </div>
+                                    </div>
+                                    {match.type === 'cancelable' ? (
+                                      <span className="text-gray-500 text-xs px-2">Warte auf Antwort</span>
+                                    ) : (
+                                      <button 
+                                        onClick={() => router.push(`/challenge?match=${match.id}`)}
+                                        className="text-blue-400 hover:text-blue-300 p-1"
+                                        title="Match öffnen"
+                                      >
+                                        <FaExternalLinkAlt size={14} />
+                                      </button>
+                                    )}
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                            
+                            {/* Beendete Matches */}
+                            <div>
+                              <h4 className="text-gray-400 text-sm font-semibold mb-2">Beendete Matches</h4>
+                              {matches.filter(m => m.type === 'finished_recent').length === 0 ? (
+                                <p className="text-gray-400 text-xs py-2">Keine beendeten Matches</p>
+                              ) : (
+                                matches.filter(m => m.type === 'finished_recent').map(match => (
+                                  <div key={match.id} className="flex items-center justify-between p-2 hover:bg-green-900 hover:bg-opacity-30 rounded transition-colors mb-1">
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-2xl">{getAvatarEmoji(match.challengerAvatar)}</span>
+                                      <div>
+                                        <p className="text-white text-sm font-medium">{match.challengerUsername}</p>
+                                        <p className="text-gray-400 text-xs">{getMatchStatus(match)}</p>
+                                      </div>
+                                    </div>
+                                    <button 
+                                      onClick={() => router.push(`/challenge?match=${match.id}`)}
+                                      className="text-gray-400 hover:text-gray-300 p-1"
+                                      title="Ergebnis ansehen"
+                                    >
+                                      <FaEye size={14} />
+                                    </button>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <span className="text-white text-sm">|</span>
+                <div className="header-avatar">
+                  <UserAvatar user={user} size="sm" showName={true} />
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="nav-link p-2 text-white"
+                  title="Abmelden"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Mobile Menu Button */}
+              <div className="md:hidden flex items-center space-x-3">
+                <UserAvatar user={user} size="sm" showName={false} />
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="nav-link p-2"
+                >
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    {isMenuOpen ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    )}
+                  </svg>
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
+        {/* Mobile Menu - only show if user is logged in */}
+        {user && isMenuOpen && (
+          <div className="md:hidden border-t border-subtle py-4">
             <div className="space-y-3">
               <div className="px-3 py-2">
                 <UserAvatar user={user} size="md" showName={true} />
               </div>
               
-              <button className="block w-full text-left px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md">
+              <button 
+                onClick={handleLeaderboard}
+                className="nav-link block w-full text-left text-white"
+              >
                 Rangliste
               </button>
               
-              <button className="block w-full text-left px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md">
-                Profil
+              <button 
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  setIsMatchesOpen(true);
+                }}
+                className="nav-link block w-full text-left text-white flex items-center justify-between"
+              >
+                <span>Matches</span>
+                {newMatchesCount > 0 && (
+                  <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 font-bold">
+                    {newMatchesCount}
+                  </span>
+                )}
               </button>
               
-              <hr className="my-2" />
+              <hr className="border-subtle my-2" />
               
               <button
                 onClick={handleLogout}
-                className="block w-full text-left px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md"
+                className="nav-link block w-full text-left text-white"
               >
                 Abmelden
               </button>
             </div>
           </div>
         )}
+
+        {/* Challenge Modal */}
+        <ChallengeModal 
+          isOpen={isChallengeModalOpen}
+          onClose={() => setIsChallengeModalOpen(false)}
+          redirectToChallengePage={true}
+        />
       </div>
     </header>
   );

@@ -101,7 +101,7 @@ export default function AnimatedGameReplay({
     intro: 1000,
     prepare: 500,   // Shorter preparation
     shoot: 100,     // Very short - just trigger combined animation
-    save: 3000,     // Show combined animation
+    save: 2600,     // Wait for combined animation + ball reset
     result: 1500    // Show result
   }), []);
 
@@ -110,6 +110,7 @@ export default function AnimatedGameReplay({
   const nextStep = useCallback(() => {
     setAnimationState(prev => {
       const { currentPenalty, step } = prev;
+      console.log(`nextStep: currentPenalty=${currentPenalty}, step=${step}`);
       
       switch (step) {
         case 'intro':
@@ -148,7 +149,9 @@ export default function AnimatedGameReplay({
           }
           
           // Check if all penalties are complete
+          console.log(`Checking completion: currentPenalty=${currentPenalty}, total rounds=${result.rounds.length}`);
           if (currentPenalty >= 4) {
+            console.log('All penalties complete, setting to complete state');
             return { 
               ...prev, 
               step: 'complete',
@@ -156,6 +159,7 @@ export default function AnimatedGameReplay({
               scoreB: newScoreB
             };
           } else {
+            console.log(`Moving to next penalty: ${currentPenalty + 1}`);
             // Continue with next penalty
             return { 
               ...prev, 
@@ -211,17 +215,6 @@ export default function AnimatedGameReplay({
         setTimeout(() => nextStep(), getAdjustedTiming(timings.result));
         break;
 
-      case 'complete':
-        // Animation finished - show game end animation
-        setPlayerStates({
-          playerA: { move: 'idle', isAnimating: false },
-          playerB: { move: 'idle', isAnimating: false }
-        });
-        // Show win/lose animation after short delay
-        setTimeout(() => {
-          setShowGameEndAnimation(true);
-        }, 500);
-        break;
     }
   }, [animationState, currentPenaltyData, nextStep, onAnimationComplete, getAdjustedTiming, timings]);
 
@@ -231,22 +224,31 @@ export default function AnimatedGameReplay({
     }
   }, [animationState.isPlaying, animationState.step, playAnimation]);
 
-  const togglePlayPause = () => {
-    setAnimationState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
-  };
+  // Handle complete state separately
+  useEffect(() => {
+    if (animationState.step === 'complete') {
+      console.log('Animation reached complete state - directly showing scoreboard');
+      // Reset all states completely
+      setPlayerStates({
+        playerA: { move: 'idle', isAnimating: false },
+        playerB: { move: 'idle', isAnimating: false }
+      });
+      setPointAnimation({ show: false, isGoal: false, playerName: '' });
+      setParticleEffect({ show: false, type: 'goal', x: 50, y: 50 });
+      setScreenShake(false);
+      setShowGameEndAnimation(false);
+      
+      // Skip game end animation and go directly to scoreboard
+      const timer = setTimeout(() => {
+        console.log('Calling onAnimationComplete directly');
+        onAnimationComplete?.();
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [animationState.step, onAnimationComplete]);
 
-  const skipAnimation = () => {
-    // Restart animation from beginning
-    setShowGameEndAnimation(false);
-    setAnimationState({
-      currentPenalty: 0,
-      step: 'intro',
-      isPlaying: true,
-      playbackSpeed: 1,
-      scoreA: 0,
-      scoreB: 0
-    });
-  };
+
 
   const startAnimation = () => {
     setAnimationState(prev => ({ ...prev, isPlaying: true }));
@@ -263,23 +265,6 @@ export default function AnimatedGameReplay({
     return () => clearTimeout(timer);
   }, [animationState.step, animationState.isPlaying]);
 
-  const getRoundDescription = () => {
-    if (animationState.step === 'complete') {
-      return `Elfmeterschießen beendet! ${result.winner === 'draw' ? 'Unentschieden' : 
-        result.winner === 'player_a' ? `${playerAName} gewinnt` : `${playerBName} gewinnt`}`;
-    }
-    
-    if (animationState.step === 'intro') {
-      return 'Bereit zum Elfmeterschießen...';
-    }
-    
-    if (!currentPenaltyData) return 'Lade Elfmeter...';
-    
-    const shooter = currentPenaltyData.shooter === 'player_a' ? playerAName : playerBName;
-    const keeper = currentPenaltyData.shooter === 'player_a' ? playerBName : playerAName;
-    
-    return `⚽ ${shooter} vs 🧤 ${keeper}`;
-  };
 
   return (
     <div className={`animated-game-replay ${screenShake ? 'animate-shake' : ''}`}>
@@ -289,27 +274,6 @@ export default function AnimatedGameReplay({
         @import url('/styles/enhancedFighterAnimations.css');
       `}</style>
       
-      {/* Round Information */}
-      <div className="text-center mb-6">
-        <h3 className="text-2xl font-bold mb-2">{getRoundDescription()}</h3>
-        <div className="text-lg">
-          <span className={`font-bold transition-all duration-300 ${
-            pointAnimation.show && ((pointAnimation.isGoal && isPlayerAShooting) || (!pointAnimation.isGoal && !isPlayerAShooting))
-              ? 'text-blue-800 text-2xl animate-pulse transform scale-110' 
-              : 'text-blue-600'
-          }`}>
-            {playerAName}: {animationState.scoreA}
-          </span>
-          <span className="mx-4 text-gray-500">vs</span>
-          <span className={`font-bold transition-all duration-300 ${
-            pointAnimation.show && ((pointAnimation.isGoal && !isPlayerAShooting) || (!pointAnimation.isGoal && isPlayerAShooting))
-              ? 'text-red-800 text-2xl animate-pulse transform scale-110' 
-              : 'text-red-600'
-          }`}>
-            {playerBName}: {animationState.scoreB}
-          </span>
-        </div>
-      </div>
 
 
       {/* Combined Penalty Animation */}
@@ -320,83 +284,17 @@ export default function AnimatedGameReplay({
             saveDirection={currentPenaltyData?.keeperMove || 'mitte'}
             isAnimating={(animationState.step === 'shoot' || animationState.step === 'save') && !!currentPenaltyData}
             onAnimationComplete={() => {}}
+            playerRole={
+              (playerRole === 'player_a' && currentPenaltyData?.shooter === 'player_a') ||
+              (playerRole === 'player_b' && currentPenaltyData?.shooter === 'player_b')
+                ? 'shooter' : 'keeper'
+            }
           />
           
-          {/* Schlussspielstand - nur nach Animation anzeigen */}
-          {animationState.step === 'complete' && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-              <div className="bg-white/95 backdrop-blur rounded-2xl px-12 py-8 shadow-2xl border-4 border-green-500">
-                <div className="text-9xl font-bold text-center text-gray-800">
-                  {result.scoreA} : {result.scoreB}
-                </div>
-                <div className="text-2xl text-center text-gray-600 mt-4 font-semibold">
-                  Endstand
-                </div>
-              </div>
-            </div>
-          )}
         </div>
         
-        {/* Animation Controls - direkt unter dem Bild */}
-        <div className="flex justify-center gap-3 mt-2">
-          <button
-            onClick={togglePlayPause}
-            className="w-12 h-12 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center text-xl transition-colors duration-200 shadow-lg"
-            title={animationState.isPlaying ? "Pause" : "Starten"}
-          >
-            {animationState.isPlaying ? '⏸️' : '▶️'}
-          </button>
-
-          <button
-            onClick={skipAnimation}
-            className="w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center text-xl transition-colors duration-200 shadow-lg"
-            title="Wiederholen"
-          >
-            🔄
-          </button>
-        </div>
       </div>
 
-      {/* Player Names and Roles - aligned with image edges */}
-      <div className="flex justify-between mb-4 max-w-2xl mx-auto">
-        <div className="text-left">
-          <div className={`flex items-center gap-2 mb-2 ${
-            isPlayerAShooting ? 'text-green-600' : 'text-blue-600'
-          }`}>
-            {playerAUser ? (
-              <UserAvatar user={playerAUser} size="md" showName={true} />
-            ) : (
-              <div className="font-bold text-lg">{playerAName}</div>
-            )}
-          </div>
-          <div className={`px-4 py-2 rounded-full text-lg font-semibold inline-block ${
-            isPlayerAShooting 
-              ? 'bg-green-200 text-green-800' 
-              : 'bg-blue-200 text-blue-800'
-          }`}>
-            {isPlayerAShooting ? '⚽ SCHÜTZE' : '🧤 TORWART'}
-          </div>
-        </div>
-        
-        <div className="text-right">
-          <div className={`flex items-center gap-2 mb-2 justify-end ${
-            !isPlayerAShooting ? 'text-green-600' : 'text-blue-600'
-          }`}>
-            {playerBUser ? (
-              <UserAvatar user={playerBUser} size="md" showName={true} />
-            ) : (
-              <div className="font-bold text-lg">{playerBName}</div>
-            )}
-          </div>
-          <div className={`px-4 py-2 rounded-full text-lg font-semibold inline-block ${
-            !isPlayerAShooting 
-              ? 'bg-green-200 text-green-800' 
-              : 'bg-blue-200 text-blue-800'
-          }`}>
-            {!isPlayerAShooting ? '⚽ SCHÜTZE' : '🧤 TORWART'}
-          </div>
-        </div>
-      </div>
 
 
 
@@ -408,7 +306,9 @@ export default function AnimatedGameReplay({
         playerBName={playerBName}
         show={showGameEndAnimation}
         onComplete={() => {
+          console.log('Game end animation completed, calling onAnimationComplete');
           setShowGameEndAnimation(false);
+          // Automatically show scoreboard after game end animation
           onAnimationComplete?.();
         }}
       />

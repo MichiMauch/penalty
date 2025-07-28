@@ -19,7 +19,7 @@ export async function sendChallengeEmail({
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const gameUrl = `${appUrl}/game/${matchId}`;
+  const gameUrl = `${appUrl}/challenge?match=${matchId}`;
   
   try {
     const { data, error } = await resend.emails.send({

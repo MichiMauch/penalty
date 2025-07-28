@@ -8,7 +8,7 @@ import UserAvatar from './UserAvatar';
 
 interface PenaltySelectorProps {
   matchId: string;
-  onSubmit: (moves: PlayerMoves, opponentEmail: string) => Promise<void>;
+  onSubmit: (moves: PlayerMoves, opponentEmail?: string) => Promise<void>;
   disabled?: boolean;
   playerAEmail?: string;
   playerBEmail?: string; // Falls bereits ein Gegner existiert
@@ -17,6 +17,7 @@ interface PenaltySelectorProps {
   playerAAvatar?: AvatarId;
   playerBAvatar?: AvatarId;
   opponentKeepermoves?: SaveDirection[]; // Für Bruce Analysis
+  role?: 'shooter' | 'keeper'; // Neue Prop für Rolle
 }
 
 interface ShotOption {
@@ -42,7 +43,8 @@ export default function PenaltySelector({
   playerBUsername,
   playerAAvatar,
   playerBAvatar,
-  opponentKeepermoves = [] 
+  opponentKeepermoves = [],
+  role = 'shooter'
 }: PenaltySelectorProps) {
   const [shots, setShots] = useState<ShotDirection[]>([]);
   const [opponentEmail, setOpponentEmail] = useState(playerBEmail || '');
@@ -53,7 +55,8 @@ export default function PenaltySelector({
   const [showBruceDialog, setShowBruceDialog] = useState(false);
   
   // Wenn bereits ein Gegner existiert, keine E-Mail-Eingabe nötig
-  const hasOpponent = !!playerBEmail;
+  // Für Keeper-Rolle nie Opponent-Selection anzeigen
+  const hasOpponent = !!playerBEmail || role === 'keeper';
 
   // Create user objects for avatar display
   const playerAUser = playerAUsername && playerAAvatar ? {
@@ -100,20 +103,23 @@ export default function PenaltySelector({
   };
   
   const handleSubmit = async () => {
-    if (shots.length === 5 && (hasOpponent || opponentEmail.trim())) {
-      setIsSubmitting(true);
-      try {
-        await onSubmit(
-          { moves: shots, role: 'shooter' }, 
-          opponentEmail.trim()
-        );
-      } finally {
-        setIsSubmitting(false);
+    if (shots.length === 5) {
+      // For keeper role, we don't need opponent email (already set)
+      if (role === 'keeper' || hasOpponent || opponentEmail.trim()) {
+        setIsSubmitting(true);
+        try {
+          await onSubmit(
+            { moves: shots, role: role === 'keeper' ? 'keeper' : 'shooter' }, 
+            role === 'keeper' ? undefined : opponentEmail.trim()
+          );
+        } finally {
+          setIsSubmitting(false);
+        }
       }
     }
   };
   
-  const canSubmit = shots.length === 5 && (hasOpponent || opponentEmail.trim()) && !disabled && !isSubmitting;
+  const canSubmit = shots.length === 5 && (role === 'keeper' || hasOpponent || opponentEmail.trim()) && !disabled && !isSubmitting;
   
   const shareViaWhatsApp = () => {
     const text = `Lass uns Fußballpause spielen! ⚽ Elfmeterschießen - wer gewinnt? Klicke hier: ${gameUrl}`;
@@ -201,30 +207,9 @@ export default function PenaltySelector({
         </div>
       )}
 
-      {/* Revanche Info - zeigen wenn Gegner bereits existiert */}
-      {hasOpponent && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-          <h3 className="text-lg font-semibold text-blue-800 mb-3">
-            🔄 Elfmeter-Revanche!
-          </h3>
-          <div className="mb-3">
-            <p className="text-blue-700 mb-2">Du forderst heraus:</p>
-            <div className="flex justify-center">
-              {playerBUser ? (
-                <UserAvatar user={playerBUser} size="md" showName={true} />
-              ) : (
-                <strong className="text-blue-800">{playerBName}</strong>
-              )}
-            </div>
-          </div>
-          <p className="text-sm text-blue-600">
-            Wähle deine 5 Schussrichtungen strategisch.
-          </p>
-        </div>
-      )}
 
       {/* Shot Selection */}
-      <div>
+      <div className="relative">
         {/* Goal Animation - Always visible */}
         <div className="mb-6">
           <GoalAnimation 
@@ -238,39 +223,33 @@ export default function PenaltySelector({
               setShowAnimation(false);
               setAnimatingDirection(null);
             }}
+            onSubmit={handleSubmit}
+            canSubmit={canSubmit}
+            isSubmitting={isSubmitting}
+            role={role}
           />
         </div>
+
+
+        {/* Bruce Button completely disabled */}
+
+        <style jsx>{`
+          @keyframes pulse-bruce {
+            0%, 100% {
+              transform: scale(1);
+              box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            }
+            50% {
+              transform: scale(1.05);
+              box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+          }
+          
+          .fixed.animate-pulse {
+            animation: pulse-bruce 2s ease-in-out infinite;
+          }
+        `}</style>
       </div>
-
-
-      {/* Bruce Button - immer bei Gegnern anzeigen */}  
-      {hasOpponent && (
-        <div className="mb-4">
-          <button
-            onClick={() => setShowBruceDialog(true)}
-            className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 font-semibold transition-all duration-300 transform hover:scale-105"
-          >
-            🧠 Frag Bruce vor dem Schießen
-          </button>
-        </div>
-      )}
-
-      {/* Challenge Button */}
-      <button
-        onClick={handleSubmit}
-        disabled={!canSubmit}
-        className={`w-full px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 ${
-          canSubmit
-            ? 'bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600 transform hover:scale-105 shadow-lg'
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-        }`}
-      >
-        {isSubmitting ? '⏳ Elfmeter-Herausforderung wird gesendet...' : 
-         canSubmit ? '⚽ ELFMETERSCHIESSEN! ⚽' : 
-         hasOpponent ? `Wähle noch ${5 - shots.length} Schüsse` :
-         !opponentEmail.trim() ? 'Gib die E-Mail deines Gegners ein' :
-         `Wähle noch ${5 - shots.length} Schüsse`}
-      </button>
 
       {/* Bruce Dialog */}
       <BruceDialog
@@ -280,6 +259,7 @@ export default function PenaltySelector({
         opponentShooterMoves={[]}
         opponentName={playerBName}
         onContinueRevenge={() => setShowBruceDialog(false)}
+        context="shooting"
       />
 
     </div>
