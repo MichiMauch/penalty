@@ -31,10 +31,10 @@ export default function UserAvatar({ user, size = 'md', showName = false, classN
     <div className={`flex items-center gap-3 ${className}`}>
       <div className={`
         ${sizeClasses[size]} 
-        ${avatar.color} 
+        ${avatar?.color || 'bg-gray-500'} 
         rounded-full flex items-center justify-center shadow-md
       `}>
-        {avatar.emoji}
+        {avatar?.emoji || '🙂'}
       </div>
       
       {showName && (
@@ -42,7 +42,7 @@ export default function UserAvatar({ user, size = 'md', showName = false, classN
           <span className={`font-semibold text-gray-800 ${textSizes[size]}`}>
             {user.username}
           </span>
-          {size !== 'sm' && (
+          {size !== 'sm' && avatar && (
             <span className="text-xs text-gray-500">
               {avatar.name}
             </span>

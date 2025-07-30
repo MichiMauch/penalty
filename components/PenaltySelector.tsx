@@ -119,7 +119,7 @@ export default function PenaltySelector({
     }
   };
   
-  const canSubmit = shots.length === 5 && (role === 'keeper' || hasOpponent || opponentEmail.trim()) && !disabled && !isSubmitting;
+  const canSubmit = shots.length === 5 && (role === 'keeper' || hasOpponent || !!opponentEmail.trim()) && !disabled && !isSubmitting;
   
   const shareViaWhatsApp = () => {
     const text = `Lass uns Fußballpause spielen! ⚽ Elfmeterschießen - wer gewinnt? Klicke hier: ${gameUrl}`;

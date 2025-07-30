@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
@@ -21,7 +21,7 @@ interface User {
   totalPoints?: number;
 }
 
-export default function ChallengePage() {
+function ChallengePageContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -43,7 +43,7 @@ export default function ChallengePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Check for pre-selected user from URL params OR match ID
   useEffect(() => {
@@ -110,9 +110,9 @@ export default function ChallengePage() {
               action: 'join',
               matchId: matchId,
               playerId,
-              email: user.email,
-              username: user.username,
-              avatar: user.avatar
+              email: user?.email || '',
+              username: user?.username || '',
+              avatar: user?.avatar || '🙂'
             })
           });
           
@@ -268,7 +268,7 @@ export default function ChallengePage() {
     if (searchQuery.length >= 2) {
       searchTimeoutRef.current = setTimeout(() => {
         searchUsers(searchQuery);
-      }, 300);
+      }, 300) as any;
     } else {
       setSearchResults([]);
     }
@@ -764,7 +764,7 @@ export default function ChallengePage() {
                     
                     {showGameDetails && (
                       <div className="space-y-2 animate-fade-in">
-                        {gameResult.rounds.map((round, index) => (
+                        {gameResult.rounds.map((round: any, index: number) => (
                           <div key={index} className="game-detail-row">
                             <div className="game-detail-round">Schuss {index + 1}</div>
                             <div className="game-detail-center">
@@ -805,7 +805,7 @@ export default function ChallengePage() {
                 playerAUsername={user?.username || ''}
                 playerBUsername={selectedUser.username}
                 playerAAvatar={user?.avatar || 'soccer'}
-                playerBAvatar={selectedUser.avatar}
+                playerBAvatar={selectedUser.avatar as any}
                 role={searchParams.get('match') ? 'keeper' : 'shooter'}
               />
             )}
@@ -881,5 +881,19 @@ export default function ChallengePage() {
         </div>
       )}
     </Layout>
+  );
+}
+
+export default function ChallengePage() {
+  return (
+    <Suspense fallback={
+      <Layout>
+        <div className="min-h-screen hero-stadium flex items-center justify-center">
+          <div className="text-white text-xl">⚽ Lade Challenge...</div>
+        </div>
+      </Layout>
+    }>
+      <ChallengePageContent />
+    </Suspense>
   );
 }

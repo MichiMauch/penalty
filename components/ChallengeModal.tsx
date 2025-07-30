@@ -32,7 +32,7 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Pre-fill search if user is pre-selected
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
     if (searchQuery.length >= 2) {
       searchTimeoutRef.current = setTimeout(() => {
         searchUsers(searchQuery);
-      }, 300);
+      }, 300) as any;
     } else {
       setSearchResults([]);
     }

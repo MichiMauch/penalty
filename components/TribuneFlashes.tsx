@@ -21,7 +21,7 @@ export default function TribuneFlashes() {
     const triggerRandomFlash = () => {
       // Select 3-8 random flash positions (even more flashes)
       const numberOfFlashes = Math.floor(Math.random() * 6) + 3;
-      const selectedFlashes = [];
+      const selectedFlashes: string[] = [];
       
       for (let i = 0; i < numberOfFlashes; i++) {
         const randomIndex = Math.floor(Math.random() * flashPositions.length);

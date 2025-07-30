@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       args: [`%${query}%`, `%${query}%`]
     });
 
-    const users = result.rows.map(row => ({
+    const users = result.rows.map((row: any) => ({
       id: row.id,
       username: row.username,
       email: row.email,

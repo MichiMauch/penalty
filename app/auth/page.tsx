@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
 import AuthPage from '@/components/AuthPage';
 
-export default function AuthPageRoute() {
+function AuthPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading } = useAuth();
@@ -37,5 +37,19 @@ export default function AuthPageRoute() {
         <AuthPage />
       </div>
     </Layout>
+  );
+}
+
+export default function AuthPageRoute() {
+  return (
+    <Suspense fallback={
+      <Layout showHeader={false}>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-white text-xl">⚽ Lade Fußballpause...</div>
+        </div>
+      </Layout>
+    }>
+      <AuthPageContent />
+    </Suspense>
   );
 }
