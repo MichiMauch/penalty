@@ -90,6 +90,16 @@ export default function LoginForm({ onSubmit, onSwitchToRegister, isLoading, err
         </button>
       </form>
 
+      {/* Forgot Password Link */}
+      <div className="mt-4 text-center">
+        <a
+          href="/forgot-password"
+          className="text-yellow-400 hover:text-yellow-300 text-sm underline"
+        >
+          Passwort vergessen?
+        </a>
+      </div>
+
       <div className="mt-6 text-center">
         <p className="text-gray-300">
           Noch kein Account?{' '}

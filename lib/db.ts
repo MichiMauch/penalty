@@ -144,4 +144,17 @@ export async function initDB() {
       UNIQUE(user_id, endpoint)
     )
   `);
+
+  // Create password reset tokens table
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      token TEXT UNIQUE NOT NULL,
+      expires_at DATETIME NOT NULL,
+      used BOOLEAN DEFAULT FALSE,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    )
+  `);
 }

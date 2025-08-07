@@ -238,3 +238,203 @@ Viel Erfolg beim Elfmeterschießen!
     return { success: false, error };
   }
 }
+
+interface SendPasswordResetEmailParams {
+  to: string;
+  resetToken: string;
+  username: string;
+}
+
+export async function sendPasswordResetEmail({
+  to,
+  resetToken,
+  username
+}: SendPasswordResetEmailParams) {
+  if (!resend) {
+    console.warn('Resend not configured - password reset email will not be sent');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const resetUrl = `${appUrl}/reset-password/${resetToken}`;
+  
+  try {
+    const { data, error } = await resend.emails.send({
+      from: 'Penalty Shootout <michi@kokomo.house>',
+      to: [to],
+      subject: 'Passwort zurücksetzen - Penalty Shootout ⚽',
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Passwort zurücksetzen</title>
+            <style>
+              body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+                background-color: #f3f4f6;
+              }
+              .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              }
+              .header {
+                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                color: white;
+                padding: 40px 20px;
+                text-align: center;
+              }
+              .header h1 {
+                margin: 0;
+                font-size: 32px;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+              }
+              .content {
+                padding: 40px 20px;
+                text-align: center;
+              }
+              .reset-box {
+                background-color: #fef3c7;
+                border: 2px solid #f59e0b;
+                border-radius: 8px;
+                padding: 20px;
+                margin: 20px 0;
+              }
+              .reset-box h2 {
+                color: #d97706;
+                margin: 0 0 10px 0;
+                font-size: 22px;
+              }
+              .button {
+                display: inline-block;
+                background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+                color: white;
+                text-decoration: none;
+                padding: 16px 48px;
+                border-radius: 8px;
+                font-size: 18px;
+                font-weight: bold;
+                margin: 30px 0;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                transition: transform 0.2s;
+              }
+              .button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+              }
+              .warning {
+                background-color: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+                padding: 15px;
+                margin: 20px 0;
+                color: #991b1b;
+                font-size: 14px;
+              }
+              .footer {
+                background-color: #f3f4f6;
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #6b7280;
+              }
+              .link-fallback {
+                word-break: break-all;
+                color: #6366f1;
+                text-decoration: underline;
+                font-size: 14px;
+              }
+              @media only screen and (max-width: 600px) {
+                .header h1 {
+                  font-size: 24px;
+                }
+                .button {
+                  padding: 14px 36px;
+                  font-size: 16px;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>🔒 PASSWORT ZURÜCKSETZEN</h1>
+              </div>
+              
+              <div class="content">
+                <div class="reset-box">
+                  <h2>🔐 Passwort-Reset angefordert</h2>
+                  <p style="font-size: 16px; margin: 10px 0;">
+                    Hallo <strong>${username}</strong>!
+                  </p>
+                </div>
+                
+                <p style="font-size: 16px; color: #4b5563; margin: 20px 0;">
+                  Du hast eine Passwort-Zurücksetzung für deinen Penalty Shootout Account angefordert.<br>
+                  Klicke auf den Button unten, um ein neues Passwort zu setzen.
+                </p>
+                
+                <a href="${resetUrl}" class="button">
+                  🔑 NEUES PASSWORT SETZEN
+                </a>
+                
+                <div class="warning">
+                  <strong>⚠️ Wichtige Sicherheitshinweise:</strong><br>
+                  • Dieser Link ist nur 15 Minuten gültig<br>
+                  • Der Link kann nur einmal verwendet werden<br>
+                  • Falls du kein neues Passwort angefordert hast, ignoriere diese Email
+                </div>
+                
+                <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
+                  Falls der Button nicht funktioniert, kopiere diesen Link:<br>
+                  <a href="${resetUrl}" class="link-fallback">${resetUrl}</a>
+                </p>
+              </div>
+              
+              <div class="footer">
+                <p>
+                  Diese Email wurde automatisch generiert.<br>
+                  Penalty Shootout - Das Elfmeterschießen-Spiel ⚽
+                </p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+      text: `
+Passwort zurücksetzen - Penalty Shootout
+
+Hallo ${username}!
+
+Du hast eine Passwort-Zurücksetzung für deinen Penalty Shootout Account angefordert.
+Besuche den folgenden Link, um ein neues Passwort zu setzen:
+
+${resetUrl}
+
+WICHTIGE SICHERHEITSHINWEISE:
+- Dieser Link ist nur 15 Minuten gültig
+- Der Link kann nur einmal verwendet werden
+- Falls du kein neues Passwort angefordert hast, ignoriere diese Email
+
+Penalty Shootout Team
+      `
+    });
+
+    if (error) {
+      console.error('Failed to send password reset email:', error);
+      return { success: false, error };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Password reset email service error:', error);
+    return { success: false, error };
+  }
+}

@@ -151,3 +151,79 @@ export async function getUserSession(request: NextRequest): Promise<UserSession 
   
   return await getSession(sessionId);
 }
+
+// Password Reset functionality
+export async function createPasswordResetToken(userId: string): Promise<string> {
+  if (!db) throw new Error('Database not configured');
+  
+  // Generate secure token
+  const token = nanoid(32);
+  const tokenId = nanoid();
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+  
+  // Insert token into database
+  await db.execute({
+    sql: 'INSERT INTO password_reset_tokens (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)',
+    args: [tokenId, userId, token, expiresAt.toISOString()]
+  });
+  
+  return token;
+}
+
+export async function validatePasswordResetToken(token: string): Promise<{ userId: string; tokenId: string } | null> {
+  if (!db) return null;
+  
+  const result = await db.execute({
+    sql: `
+      SELECT id, user_id 
+      FROM password_reset_tokens 
+      WHERE token = ? AND expires_at > datetime('now') AND used = FALSE
+    `,
+    args: [token]
+  });
+  
+  if (result.rows.length === 0) return null;
+  
+  const row = result.rows[0];
+  return {
+    userId: row.user_id as string,
+    tokenId: row.id as string
+  };
+}
+
+export async function resetUserPassword(token: string, newPassword: string): Promise<boolean> {
+  if (!db) return false;
+  
+  const tokenData = await validatePasswordResetToken(token);
+  if (!tokenData) return false;
+  
+  try {
+    // Hash new password
+    const passwordHash = await hashPassword(newPassword);
+    
+    // Update user password and mark token as used
+    await db.execute({
+      sql: 'UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      args: [passwordHash, tokenData.userId]
+    });
+    
+    await db.execute({
+      sql: 'UPDATE password_reset_tokens SET used = TRUE WHERE id = ?',
+      args: [tokenData.tokenId]
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    return false;
+  }
+}
+
+export async function cleanExpiredPasswordResetTokens(): Promise<void> {
+  if (!db) return;
+  
+  await db.execute({
+    sql: 'DELETE FROM password_reset_tokens WHERE expires_at <= datetime("now") OR used = TRUE',
+    args: []
+  });
+}
