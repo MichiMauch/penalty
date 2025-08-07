@@ -51,25 +51,28 @@ export async function GET(
     const progress = calculateProgress(totalPoints, currentLevel);
     const pointsToNext = getPointsToNextLevel(totalPoints, currentLevel);
 
-    // Calculate rank
-    const rankResult = await db.execute({
-      sql: `
-        SELECT COUNT(*) + 1 as rank
-        FROM user_stats
-        WHERE total_points > (
-          SELECT total_points FROM user_stats WHERE user_id = ?
-        )
-      `,
-      args: [userId]
-    });
-
-    const rank = rankResult.rows[0]?.rank || 0;
+    // Calculate rank - only if user has played games
+    let rank = null;
+    if (Number(userStats.games_played) > 0) {
+      const rankResult = await db.execute({
+        sql: `
+          SELECT COUNT(*) + 1 as rank
+          FROM user_stats
+          WHERE total_points > (
+            SELECT COALESCE(total_points, 0) FROM user_stats WHERE user_id = ?
+          )
+        `,
+        args: [userId]
+      });
+      
+      rank = rankResult.rows[0]?.rank || 1;
+    }
 
     // Get points for previous and next rank
     let pointsToPrevRank = null;
     let pointsToNextRank = null;
 
-    if (rank > 1) {
+    if (rank && rank > 1) {
       const prevRankResult = await db.execute({
         sql: `
           SELECT total_points
@@ -122,7 +125,7 @@ export async function GET(
         currentStreak: Number(userStats.current_streak),
         bestStreak: Number(userStats.best_streak),
         perfectGames: Number(userStats.perfect_games),
-        rank: Number(rank),
+        rank: rank ? Number(rank) : null,
         pointsToPrevRank,
         pointsToNextRank
       },

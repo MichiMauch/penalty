@@ -15,6 +15,7 @@ interface GoalAnimationProps {
   canSubmit?: boolean;
   isSubmitting?: boolean;
   role?: 'shooter' | 'keeper';
+  showControlsPulse?: boolean;
 }
 
 export default function GoalAnimation({ 
@@ -28,7 +29,8 @@ export default function GoalAnimation({
   onSubmit,
   canSubmit = false,
   isSubmitting = false,
-  role = 'shooter'
+  role = 'shooter',
+  showControlsPulse = false
 }: GoalAnimationProps) {
   const [ballPosition, setBallPosition] = useState({ 
     x: 50, 
@@ -170,7 +172,7 @@ export default function GoalAnimation({
         >
           <button
             onClick={() => onAddShot('links')}
-            className="control-btn"
+            className={`control-btn ${showControlsPulse ? 'control-btn-pulse' : ''}`}
             disabled={disabled || shots.length >= 5}
             title={role === 'keeper' ? "Links hechten" : "Links schießen"}
           >
@@ -178,7 +180,7 @@ export default function GoalAnimation({
           </button>
           <button
             onClick={() => onAddShot('mitte')}
-            className="control-btn"
+            className={`control-btn ${showControlsPulse ? 'control-btn-pulse' : ''}`}
             disabled={disabled || shots.length >= 5}
             title={role === 'keeper' ? "Mitte bleiben" : "Mitte schießen"}
           >
@@ -186,7 +188,7 @@ export default function GoalAnimation({
           </button>
           <button
             onClick={() => onAddShot('rechts')}
-            className="control-btn"
+            className={`control-btn ${showControlsPulse ? 'control-btn-pulse' : ''}`}
             disabled={disabled || shots.length >= 5}
             title={role === 'keeper' ? "Rechts hechten" : "Rechts schießen"}
           >
@@ -448,6 +450,27 @@ export default function GoalAnimation({
           box-shadow: 
             0 2px 6px rgba(0, 0, 0, 0.2),
             inset 0 1px 2px rgba(255, 255, 255, 0.1);
+        }
+
+        .control-btn-pulse {
+          animation: controlPulse 2s ease-in-out 2;
+        }
+
+        @keyframes controlPulse {
+          0%, 100% {
+            transform: scale(1);
+            box-shadow: 
+              0 6px 20px rgba(0, 0, 0, 0.4),
+              0 0 30px rgba(16, 185, 129, 0.6),
+              inset 0 3px 6px rgba(255, 255, 255, 0.3);
+          }
+          50% {
+            transform: scale(1.1);
+            box-shadow: 
+              0 8px 25px rgba(0, 0, 0, 0.5),
+              0 0 40px rgba(16, 185, 129, 1),
+              inset 0 3px 8px rgba(255, 255, 255, 0.4);
+          }
         }
 
         /* Submit Button - Round button next to shot controls */

@@ -114,7 +114,7 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
       // Just redirect to challenge page with selected user
       onClose();
       resetModal();
-      router.push(`/challenge?user=${selectedUser.id}`);
+      router.push(`/challenge-new?user=${selectedUser.id}`);
       return;
     }
 

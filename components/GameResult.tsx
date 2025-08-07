@@ -33,8 +33,29 @@ export default function GameResult({
   const isWinner = result.winner === playerRole;
   const isDraw = result.winner === 'draw';
   
+  // Extract display names (lastname priority)
+  const extractDisplayName = (fullName: string): string => {
+    if (!fullName) return 'SPIELER';
+    
+    // Check if it's an email
+    if (fullName.includes('@')) {
+      return fullName.split('@')[0].toUpperCase();
+    }
+    
+    // Split by spaces and get last part (lastname)
+    const parts = fullName.trim().split(' ');
+    if (parts.length > 1) {
+      return parts[parts.length - 1].toUpperCase(); // Last name
+    }
+    
+    return fullName.toUpperCase(); // First name only
+  };
+
   const playerAName = playerAUsername || playerAEmail || 'Spieler A';
   const playerBName = playerBUsername || playerBEmail || 'Spieler B';
+  const playerADisplayName = extractDisplayName(playerAName);
+  const playerBDisplayName = extractDisplayName(playerBName);
+  
   const yourName = playerRole === 'player_a' ? playerAName : playerBName;
   const opponentName = playerRole === 'player_a' ? playerBName : playerAName;
 
@@ -70,150 +91,102 @@ export default function GameResult({
   };
   
   return (
-    <div className="space-y-8">
-      {/* Suspense Header - No spoilers */}
-      {!showFinalResult && (
-        <div className="text-center bg-gradient-to-r from-gray-500 to-gray-600 text-white p-8 rounded-xl shadow-2xl">
-          <div className="text-6xl mb-4">⚽</div>
-          <h1 className="text-3xl font-bold mb-2">
-            Elfmeterschießen läuft...
-          </h1>
-          <p className="text-lg opacity-90 mb-4">
-            Schau dir die spannende Animation an!
-          </p>
-          
-          {/* Skip to Results Button */}
-          <button
-            onClick={skipToResults}
-            className="px-6 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-200"
-          >
-            📊 Direkt zum Ergebnis
-          </button>
-        </div>
-      )}
-
-      {/* Modern Scoreboard Result */}
-      {showFinalResult && (
-        <div className="scoreboard max-w-4xl mx-auto">
-          <h1 className={`score-result ${
-            isDraw ? '' : isWinner ? 'victory' : 'defeat'
-          }`}>
-            {isDraw ? 'Unentschieden' : isWinner ? 'Sieg' : 'Niederlage'}
-          </h1>
-          
-          <div className="score-display">
-            {result.scoreA} : {result.scoreB}
-          </div>
-          
-          <p className="body-lg">
-            {isDraw ? 'Beide gleich stark!' : isWinner ? 'Glückwunsch!' : 'Nächstes Mal besser!'}
-          </p>
-        </div>
-      )}
-
-      {/* Modern Statistics Display */}
-      {showFinalResult && (
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {/* Player Stats */}
-          <div className="modern-card">
-            <h3 className="heading-sm text-center mb-4">Spieler</h3>
-            <div className="flex items-center justify-between">
-              <div className="text-center flex-1">
-                {yourUser ? (
-                  <UserAvatar user={yourUser} size="md" showName={true} />
-                ) : (
-                  <div className="body-sm mb-2">{yourName}</div>
-                )}
-                <div className="stat-value text-3xl mt-2">
-                  {playerRole === 'player_a' ? result.scoreA : result.scoreB}
-                </div>
-                <div className="stat-label">Punkte</div>
-              </div>
-              
-              <div className="body-lg mx-4">vs</div>
-              
-              <div className="text-center flex-1">
-                {opponentUser ? (
-                  <UserAvatar user={opponentUser} size="md" showName={true} />
-                ) : (
-                  <div className="body-sm mb-2">{opponentName}</div>
-                )}
-                <div className="stat-value text-3xl mt-2">
-                  {playerRole === 'player_a' ? result.scoreB : result.scoreA}
-                </div>
-                <div className="stat-label">Punkte</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Round Details */}
-          <div className="modern-card">
-            <h3 className="heading-sm text-center mb-4">Runden</h3>
-            <div className="space-y-3">
-              {result.rounds.map((round, index) => {
-                const isYourRound = round.shooter === playerRole;
-                const youWonRound = (isYourRound && round.goal) || (!isYourRound && !round.goal);
-                return (
-                  <div key={index} className="match-card">
-                    <div className="match-info">
-                      <div className={`match-status ${youWonRound ? 'active' : 'finished'}`}></div>
-                      <div className="match-details">
-                        <div className="match-opponent">
-                          Runde {index + 1}
-                        </div>
-                        <div className="match-type">
-                          {isYourRound ? 'Schuss' : 'Parade'}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="body-sm">
-                      {round.goal ? 'Tor' : 'Gehalten'}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
+    <div className="game-result-container">
       {/* Animated Replay - Only if not skipped */}
       {showAnimation && (
-        <AnimatedGameReplay
-          result={result}
-          playerRole={playerRole}
-          playerAEmail={playerAEmail}
-          playerBEmail={playerBEmail}
-          playerAUsername={playerAUsername}
-          playerBUsername={playerBUsername}
-          playerAAvatar={playerAAvatar}
-          playerBAvatar={playerBAvatar}
-          onAnimationComplete={handleAnimationComplete}
-        />
-      )}
-
-      {/* Modern Action Panel */}
-      <div className="modern-card max-w-2xl mx-auto">
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
-            href="/garderobe"
-            className="btn btn-secondary text-center"
-          >
-            Zurück zur Garderobe
-          </Link>
-          <RevengeButton
+        <>
+          {/* Header only during animation */}
+          <div className="game-header">
+            <div className="pre-result-header">
+              <h1 className="result-title">🏆 Elfmeterschießen läuft...</h1>
+              
+              {/* Skip to Results Button */}
+              <button
+                onClick={skipToResults}
+                className="skip-button"
+              >
+                📊 Direkt zum Ergebnis
+              </button>
+            </div>
+          </div>
+          
+          <AnimatedGameReplay
+            result={result}
+            playerRole={playerRole}
             playerAEmail={playerAEmail}
             playerBEmail={playerBEmail}
             playerAUsername={playerAUsername}
             playerBUsername={playerBUsername}
             playerAAvatar={playerAAvatar}
             playerBAvatar={playerBAvatar}
-            currentPlayerRole={playerRole}
-            opponentKeepermoves={result.rounds.map(round => round.keeperMove)}
-            opponentShooterMoves={result.rounds.map(round => round.shooterMove)}
+            onAnimationComplete={handleAnimationComplete}
           />
+        </>
+      )}
+
+      {/* Authentic LED Scoreboard - Centered */}
+      {showFinalResult && (
+        <div className="led-scoreboard-wrapper">
+          <div className="authentic-led-scoreboard">
+          {/* Stadium Header */}
+          <div className="led-header led-header-notable">
+            PENALTY
+          </div>
+          
+          {/* Main Scoreboard */}
+          <div className="led-main-board">
+            {/* Player A */}
+            <div className="led-player-section">
+              <div className="led-player-name">{playerADisplayName}</div>
+              <div className="led-score-number">{result.scoreA}</div>
+            </div>
+            
+            {/* VS Separator */}
+            <div className="led-vs-separator">VS</div>
+            
+            {/* Player B */}
+            <div className="led-player-section">
+              <div className="led-player-name">{playerBDisplayName}</div>
+              <div className="led-score-number">{result.scoreB}</div>
+            </div>
+          </div>
+          
+          {/* Winner Display */}
+          <div className="led-winner-section">
+            <div className="led-winner-text">
+              GEWINNER: {result.winner === 'player_a' ? playerADisplayName : playerBDisplayName}
+            </div>
+          </div>
+          </div>
+          
+          {/* Action Buttons - Appear after scoreboard animation */}
+          <div className={`led-action-buttons ${isWinner ? 'single-button' : ''}`}>
+            <Link
+              href="/garderobe"
+              className={`btn btn-primary ${isWinner ? 'btn-pill' : 'btn-rounded-left'} led-action-btn`}
+            >
+              ZUR GARDEROBE
+            </Link>
+            
+            {/* Revenge button only for loser */}
+            {!isWinner && (
+              <RevengeButton
+                playerAEmail={playerAEmail}
+                playerBEmail={playerBEmail}
+                playerAUsername={playerAUsername}
+                playerBUsername={playerBUsername}
+                playerAAvatar={playerAAvatar}
+                playerBAvatar={playerBAvatar}
+                currentPlayerRole={playerRole}
+                opponentKeepermoves={result.rounds.map(round => round.keeperMove)}
+                opponentShooterMoves={result.rounds.map(round => round.shooterMove)}
+                className="btn btn-primary btn-rounded-right led-action-btn"
+                buttonText="REVANCHE"
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

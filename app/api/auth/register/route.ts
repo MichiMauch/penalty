@@ -42,9 +42,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Validate avatar
-    const avatarObj = getAvatar(avatar);
-    if (!avatarObj) {
+    // Validate avatar - accept any playerX format
+    if (!avatar || typeof avatar !== 'string' || !avatar.match(/^player\d+$/)) {
       return NextResponse.json(
         { error: 'Ungültiger Avatar' },
         { status: 400 }

@@ -3,7 +3,7 @@ export type SaveDirection = 'links' | 'mitte' | 'rechts';
 export type Move = ShotDirection | SaveDirection;
 
 // Avatar types
-export type AvatarId = 'player1' | 'player2' | 'player3' | 'player4' | 'player5' | 'player6' | 'player7' | 'player8';
+export type AvatarId = string; // Allow any playerX format
 
 // User and Authentication types
 export interface User {

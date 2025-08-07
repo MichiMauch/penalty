@@ -28,15 +28,34 @@ export async function calculateAndUpdateStats(
       getOrCreateUserStats(playerBId)
     ]);
 
+    // Calculate level-up bonuses
+    let playerALevelBonus = 0;
+    let playerBLevelBonus = 0;
+
+    // Check if Player A levels up
+    const oldLevelA = calculateLevel(statsA.total_points);
+    const newLevelA = calculateLevel(statsA.total_points + playerAPoints.totalPoints);
+    if (newLevelA.id > oldLevelA.id) {
+      playerALevelBonus = 10;
+    }
+
+    // Check if Player B levels up
+    const oldLevelB = calculateLevel(statsB.total_points);
+    const newLevelB = calculateLevel(statsB.total_points + playerBPoints.totalPoints);
+    if (newLevelB.id > oldLevelB.id) {
+      playerBLevelBonus = 10;
+    }
+
     // Update stats for Player A
     const newStatsA = {
-      total_points: statsA.total_points + playerAPoints.totalPoints,
+      total_points: statsA.total_points + playerAPoints.totalPoints + playerALevelBonus,
+      current_level: newLevelA.id,
       goals_scored: statsA.goals_scored + result.rounds.filter(r => r.shooter === 'player_a' && r.goal).length,
       saves_made: statsA.saves_made + result.rounds.filter(r => r.shooter === 'player_b' && !r.goal).length,
       games_played: statsA.games_played + 1,
       games_won: statsA.games_won + (result.winner === 'player_a' ? 1 : 0),
       games_lost: statsA.games_lost + (result.winner === 'player_b' ? 1 : 0),
-      games_drawn: statsA.games_drawn + (result.winner === 'draw' ? 1 : 0),
+      games_drawn: statsA.games_drawn,
       current_streak: result.winner === 'player_a' ? statsA.current_streak + 1 : 0,
       best_streak: Math.max(
         statsA.best_streak,
@@ -49,13 +68,14 @@ export async function calculateAndUpdateStats(
 
     // Update stats for Player B
     const newStatsB = {
-      total_points: statsB.total_points + playerBPoints.totalPoints,
+      total_points: statsB.total_points + playerBPoints.totalPoints + playerBLevelBonus,
+      current_level: newLevelB.id,
       goals_scored: statsB.goals_scored + result.rounds.filter(r => r.shooter === 'player_b' && r.goal).length,
       saves_made: statsB.saves_made + result.rounds.filter(r => r.shooter === 'player_a' && !r.goal).length,
       games_played: statsB.games_played + 1,
       games_won: statsB.games_won + (result.winner === 'player_b' ? 1 : 0),
       games_lost: statsB.games_lost + (result.winner === 'player_a' ? 1 : 0),
-      games_drawn: statsB.games_drawn + (result.winner === 'draw' ? 1 : 0),
+      games_drawn: statsB.games_drawn,
       current_streak: result.winner === 'player_b' ? statsB.current_streak + 1 : 0,
       best_streak: Math.max(
         statsB.best_streak,
@@ -81,34 +101,29 @@ function calculatePoints(result: GameResult, player: 'player_a' | 'player_b'): P
   let basePoints = 0;
   let bonusPoints = 0;
 
-  // Count goals and saves
+  // Simple point system: 3 points for win, 0 for loss
+  if (result.winner === player) {
+    basePoints = 3;
+  } else {
+    basePoints = 0;
+  }
+
+  // Perfect game bonus: +5 points for 5/5 performance
   const goalsScored = result.rounds.filter(r => r.shooter === player && r.goal).length;
   const savesMade = result.rounds.filter(r => r.shooter !== player && !r.goal).length;
-
-  // Base points
-  basePoints += goalsScored * 10; // 10 points per goal
-  basePoints += savesMade * 15; // 15 points per save (keeper bonus)
-
-  // Win/Draw bonus
-  if (result.winner === player) {
-    bonusPoints += 50; // Win bonus
-  } else if (result.winner === 'draw') {
-    bonusPoints += 20; // Draw bonus
-  }
-
-  // Perfect game bonus
+  
   if (goalsScored === 5 || savesMade === 5) {
-    bonusPoints += 100;
+    bonusPoints += 5;
   }
 
-  // For now, no streak multiplier (will be calculated based on current streak)
+  // No streak multiplier in new system
   const streakMultiplier = 1;
 
   return {
     basePoints,
     bonusPoints,
     streakMultiplier,
-    totalPoints: Math.floor((basePoints + bonusPoints) * streakMultiplier)
+    totalPoints: basePoints + bonusPoints
   };
 }
 
@@ -126,8 +141,8 @@ async function getOrCreateUserStats(userId: string) {
       sql: `INSERT INTO user_stats (
         user_id, total_points, goals_scored, saves_made, 
         games_played, games_won, games_lost, games_drawn,
-        current_streak, best_streak, perfect_games
-      ) VALUES (?, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)`,
+        current_streak, best_streak, perfect_games, current_level
+      ) VALUES (?, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)`,
       args: [userId]
     });
 
@@ -142,7 +157,8 @@ async function getOrCreateUserStats(userId: string) {
       games_drawn: 0,
       current_streak: 0,
       best_streak: 0,
-      perfect_games: 0
+      perfect_games: 0,
+      current_level: 1
     };
   }
 
@@ -164,6 +180,7 @@ async function updateUserStats(userId: string, stats: any) {
       current_streak = ?,
       best_streak = ?,
       perfect_games = ?,
+      current_level = ?,
       last_updated = CURRENT_TIMESTAMP
     WHERE user_id = ?`,
     args: [
@@ -177,6 +194,7 @@ async function updateUserStats(userId: string, stats: any) {
       stats.current_streak,
       stats.best_streak,
       stats.perfect_games,
+      stats.current_level,
       userId
     ]
   });

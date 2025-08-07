@@ -270,13 +270,12 @@ export async function POST(request: NextRequest) {
       const { matchId, playerAEmail, playerBEmail, playerAUsername, playerBUsername, playerAAvatar, playerBAvatar, originalMatchId } = body;
       
       // Erstelle neues Match mit getauschten Rollen für Revanche
-      // BEIDE Spieler werden direkt erstellt, da Profile bekannt sind
+      // Nur Player A wird erstellt, Player B muss beitreten
       const playerAId = nanoid(); // Neue Player ID für Angreifer
-      const playerBId = nanoid(); // Neue Player ID für Verteidiger
       
       await db.execute({
-        sql: 'INSERT INTO matches (id, player_a, player_a_email, player_a_username, player_a_avatar, player_b, player_b_email, player_b_username, player_b_avatar, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        args: [matchId, playerAId, playerAEmail, playerAUsername, playerAAvatar, playerBId, playerBEmail, playerBUsername, playerBAvatar, 'ready']
+        sql: 'INSERT INTO matches (id, player_a, player_a_email, player_a_username, player_a_avatar, player_b_email, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        args: [matchId, playerAId, playerAEmail, playerAUsername, playerAAvatar, playerBEmail, 'waiting']
       });
       
       // Sende E-Mail-Einladung an Player B (der neue Verteidiger)
@@ -290,6 +289,21 @@ export async function POST(request: NextRequest) {
         if (!emailResult.success) {
           console.error('Failed to send revenge challenge email:', emailResult.error);
         }
+      }
+      
+      // Send push notification to the challenged user
+      try {
+        const challengedUser = await getUserByEmail(playerBEmail);
+        if (challengedUser) {
+          await sendChallengeNotification(
+            challengedUser.id,
+            playerAUsername || playerAEmail || 'Ein Spieler',
+            matchId
+          );
+          console.log('Revenge push notification sent to:', playerBEmail);
+        }
+      } catch (error) {
+        console.error('Error sending revenge push notification:', error);
       }
       
       return NextResponse.json({ 
@@ -320,26 +334,56 @@ export async function POST(request: NextRequest) {
       console.log('Match state before update:', {
         player_a: match.player_a,
         player_b: match.player_b,
+        player_a_email: match.player_a_email,
+        player_b_email: match.player_b_email,
+        submittedPlayerId: playerId,
         isPlayerA,
         isPlayerB,
-        player_a_moves: match.player_a_moves,
-        player_b_moves: match.player_b_moves
+        player_a_moves: !!match.player_a_moves,
+        player_b_moves: !!match.player_b_moves
       });
       
       if (!isPlayerA && !isPlayerB) {
         return NextResponse.json({ error: 'Player not in match' }, { status: 403 });
       }
       
+      // Check if moves already submitted
+      if (isPlayerA && match.player_a_moves) {
+        console.log('Player A already submitted moves');
+        return NextResponse.json({ 
+          error: 'Deine Schüsse wurden bereits abgegeben! Du kannst sie nicht mehr ändern.' 
+        }, { status: 409 });
+      }
+      
+      if (isPlayerB && match.player_b_moves) {
+        console.log('Player B already submitted moves');
+        return NextResponse.json({ 
+          error: 'Deine Abwehr wurde bereits abgegeben! Du kannst sie nicht mehr ändern.' 
+        }, { status: 409 });
+      }
+      
       if (isPlayerA) {
-        await db.execute({
-          sql: 'UPDATE matches SET player_a_moves = ? WHERE id = ?',
+        const updateResult = await db.execute({
+          sql: 'UPDATE matches SET player_a_moves = ? WHERE id = ? AND player_a_moves IS NULL',
           args: [JSON.stringify(moves), matchId]
         });
+        
+        if (updateResult.rowsAffected === 0) {
+          return NextResponse.json({ 
+            error: 'Moves konnten nicht gespeichert werden - bereits vorhanden.' 
+          }, { status: 409 });
+        }
       } else {
-        await db.execute({
-          sql: 'UPDATE matches SET player_b_moves = ? WHERE id = ?',
+        const updateResult = await db.execute({
+          sql: 'UPDATE matches SET player_b_moves = ? WHERE id = ? AND player_b_moves IS NULL',
           args: [JSON.stringify(moves), matchId]
         });
+        
+        if (updateResult.rowsAffected === 0) {
+          return NextResponse.json({ 
+            error: 'Moves konnten nicht gespeichert werden - bereits vorhanden.' 
+          }, { status: 409 });
+        }
       }
       
       // Check if both players have submitted moves

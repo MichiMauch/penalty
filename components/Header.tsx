@@ -27,6 +27,14 @@ export default function Header() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [matchesError, setMatchesError] = useState('');
+  const [viewedMatches, setViewedMatches] = useState<Set<string>>(() => {
+    // Load viewed matches from localStorage on init
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('viewedFinishedMatches');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    }
+    return new Set();
+  });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -34,18 +42,52 @@ export default function Header() {
   const isGarderobe = pathname === '/garderobe';
   const isChallenge = pathname === '/challenge';
 
-  // Fetch matches when user is available or matches dropdown is opened
+  // Fetch matches immediately when user is available
   useEffect(() => {
-    if (user && isMatchesOpen && !isLoadingMatches && matches.length === 0) {
+    if (user) {
       fetchMatches();
     }
-  }, [user, isMatchesOpen]);
+  }, [user]);
+
+  // Auto-refresh matches every 30 seconds
+  useEffect(() => {
+    if (!user) return;
+
+    const interval = setInterval(() => {
+      fetchMatches();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [user]);
+
+  // Refresh matches when window comes back into focus
+  useEffect(() => {
+    if (!user) return;
+
+    const handleFocus = () => {
+      fetchMatches();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [user]);
+
+  // Save viewed matches to localStorage
+  const saveViewedMatches = (matches: Set<string>) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('viewedFinishedMatches', JSON.stringify([...matches]));
+    }
+  };
 
   const fetchMatches = async () => {
     setIsLoadingMatches(true);
     setMatchesError('');
     try {
-      const response = await fetch('/api/matches/pending');
+      // Send viewed matches to API to filter them out
+      const viewedMatchesArray = [...viewedMatches];
+      const url = `/api/matches/pending${viewedMatchesArray.length > 0 ? `?viewed=${encodeURIComponent(JSON.stringify(viewedMatchesArray))}` : ''}`;
+      
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setMatches(data.challenges);
@@ -58,6 +100,14 @@ export default function Header() {
     } finally {
       setIsLoadingMatches(false);
     }
+  };
+
+  const markMatchAsViewed = (matchId: string) => {
+    const newViewedMatches = new Set([...viewedMatches, matchId]);
+    setViewedMatches(newViewedMatches);
+    saveViewedMatches(newViewedMatches);
+    // Refresh matches to remove the viewed one from the list
+    fetchMatches();
   };
 
   // Get avatar emoji
@@ -278,12 +328,15 @@ export default function Header() {
                                     <div className="flex items-center gap-3">
                                       <span className="text-2xl">{getAvatarEmoji(match.challengerAvatar)}</span>
                                       <div>
-                                        <p className="text-white text-sm font-medium">{match.challengerUsername}</p>
+                                        <p className="text-white text-sm font-medium">Gegen {match.challengerUsername}</p>
                                         <p className="text-gray-400 text-xs">{getMatchStatus(match)}</p>
                                       </div>
                                     </div>
                                     <button 
-                                      onClick={() => router.push(`/challenge?match=${match.id}`)}
+                                      onClick={() => {
+                                        markMatchAsViewed(match.id);
+                                        router.push(`/game/${match.id}`);
+                                      }}
                                       className="text-gray-400 hover:text-gray-300 p-1"
                                       title="Ergebnis ansehen"
                                     >

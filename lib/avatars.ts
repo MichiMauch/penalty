@@ -61,7 +61,8 @@ export function getAvatar(id?: AvatarId | string): Avatar | undefined {
 
 export function getAvatarEmoji(avatarId?: AvatarId | string): string {
   const avatar = getAvatarById(avatarId);
-  return avatar?.emoji || '🙂';
+  // For dynamic avatars not in the static list, return a generic emoji
+  return avatar?.emoji || '👤';
 }
 
 export function generateRandomAvatars(count: number): Avatar[] {

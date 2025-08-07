@@ -185,7 +185,7 @@ body {
   background-position: center center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  padding-top: 100px; /* Space for header */
+  padding-top: 20px; /* No header */
 }
 
 .garderobe-page::before {
@@ -205,7 +205,7 @@ body {
   background-position: center center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  padding-top: 100px; /* Space for header */
+  padding-top: 20px; /* No header */
   position: relative;
 }
 
@@ -217,7 +217,7 @@ body {
   background-position: center center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  padding-top: 100px; /* Space for header */
+  padding-top: 20px; /* No header */
   position: relative;
 }
 
@@ -3429,16 +3429,4 @@ header.modern-header.challenge-header {
   }
 }
 
-/* Remove old LED chaos */
-.led-scoreboard,
-.led-panel,
-.led-button,
-.led-text,
-.led-number,
-.led-match-display,
-.led-ticker,
-.stadium-layout,
-.stadium-floodlights,
-.field-strip {
-  display: none !important;
-}
+/* LED classes enabled for scoreboard */

@@ -20,6 +20,11 @@ export async function GET(request: NextRequest) {
     console.log('No session found - returning 401');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  // Get viewed matches from query parameter (sent from client)
+  const { searchParams } = new URL(request.url);
+  const viewedMatchesParam = searchParams.get('viewed');
+  const viewedMatches = viewedMatchesParam ? JSON.parse(viewedMatchesParam) : [];
   
   try {
     console.log('Fetching pending matches for user:', session.user.email);
@@ -77,6 +82,11 @@ export async function GET(request: NextRequest) {
     });
 
     // Find recently finished matches where the user was player_a (challenger) - so they can see the result
+    // Filter out viewed matches
+    const viewedMatchesFilter = viewedMatches.length > 0 
+      ? `AND id NOT IN (${viewedMatches.map(() => '?').join(',')})` 
+      : '';
+    
     const recentlyFinished = await db.execute({
       sql: `
         SELECT 
@@ -101,10 +111,11 @@ export async function GET(request: NextRequest) {
           AND player_a_moves IS NOT NULL
           AND status = 'finished'
           AND datetime(created_at) > datetime('now', '-24 hours')
+          ${viewedMatchesFilter}
         ORDER BY created_at DESC
         LIMIT 5
       `,
-      args: [session.user.email]
+      args: [session.user.email, ...viewedMatches]
     });
     
     // Find matches where the user is player_a and no one has joined yet (can be cancelled)
@@ -134,10 +145,42 @@ export async function GET(request: NextRequest) {
       args: [session.user.email]
     });
     
+    console.log('=== MATCH DEBUG FOR USER:', session.user.email, '===');
     console.log('Found pending matches as player B:', pendingAsPlayerB.rows.length);
+    console.log('Player B matches:', pendingAsPlayerB.rows.map((m: any) => ({
+      id: m.id,
+      player_a: m.player_a_email,
+      player_b: m.player_b,
+      player_b_moves: !!m.player_b_moves,
+      status: m.status
+    })));
+    
     console.log('Found pending matches as player A:', pendingAsPlayerA.rows.length);
+    console.log('Player A matches:', pendingAsPlayerA.rows.map((m: any) => ({
+      id: m.id,
+      player_b: m.player_b_email,
+      player_a_moves: !!m.player_a_moves,
+      player_b_moves: !!m.player_b_moves,
+      status: m.status
+    })));
+    
     console.log('Found recently finished matches:', recentlyFinished.rows.length);
+    console.log('Finished matches:', recentlyFinished.rows.map((m: any) => ({
+      id: m.id,
+      player_b: m.player_b_email,
+      winner: m.winner,
+      status: m.status
+    })));
+    
     console.log('Found cancelable matches:', cancelableMatches.rows.length);
+    console.log('Cancelable matches:', cancelableMatches.rows.map((m: any) => ({
+      id: m.id,
+      player_b_email: m.player_b_email,
+      player_b: m.player_b,
+      player_b_moves: !!m.player_b_moves,
+      status: m.status
+    })));
+    console.log('=== END MATCH DEBUG ===');
     
     const challengesAsPlayerB = pendingAsPlayerB.rows.map((match: any) => ({
       id: match.id,
@@ -162,7 +205,7 @@ export async function GET(request: NextRequest) {
     const finishedRecentMatches = recentlyFinished.rows.map((match: any) => ({
       id: match.id,
       challengerEmail: match.player_b_email,
-      challengerUsername: match.player_b_username,
+      challengerUsername: match.player_b_username, // This is the opponent (player_b)
       challengerAvatar: match.player_b_avatar,
       createdAt: match.created_at,
       type: 'finished_recent' as const,

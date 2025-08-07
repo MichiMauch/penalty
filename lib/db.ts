@@ -114,12 +114,22 @@ export async function initDB() {
       current_streak INTEGER DEFAULT 0,
       best_streak INTEGER DEFAULT 0,
       perfect_games INTEGER DEFAULT 0,
+      current_level INTEGER DEFAULT 1,
       last_updated DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
     )
   `);
 
   // Achievement tables removed - levels are now calculated from total_points
+  
+  // Add current_level column to existing user_stats table if it doesn't exist
+  try {
+    await db.execute(`
+      ALTER TABLE user_stats ADD COLUMN current_level INTEGER DEFAULT 1
+    `);
+  } catch (error) {
+    // Column already exists, ignore error
+  }
 
   // Create push subscriptions table
   await db.execute(`

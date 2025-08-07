@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ShotDirection, PlayerMoves, SaveDirection, AvatarId } from '@/lib/types';
 import GoalAnimation from './GoalAnimation';
 import BruceDialog from './BruceDialog';
@@ -53,6 +53,7 @@ export default function PenaltySelector({
   const [showAnimation, setShowAnimation] = useState(false);
   const [animatingDirection, setAnimatingDirection] = useState<ShotDirection | null>(null);
   const [showBruceDialog, setShowBruceDialog] = useState(false);
+  const [showControlsPulse, setShowControlsPulse] = useState(true);
   
   // Wenn bereits ein Gegner existiert, keine E-Mail-Eingabe nötig
   // Für Keeper-Rolle nie Opponent-Selection anzeigen
@@ -82,6 +83,15 @@ export default function PenaltySelector({
   
   const gameUrl = typeof window !== 'undefined' ? 
     `${window.location.origin}/game/${matchId}` : '';
+
+  // Start pulse animation when component loads
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowControlsPulse(false);
+    }, 4000); // Show pulse for 4 seconds (2 pulses at 2s each)
+
+    return () => clearTimeout(timer);
+  }, []);
   
   const handleShotSelect = useCallback((direction: ShotDirection) => {
     if (shots.length < 5) {
@@ -227,6 +237,7 @@ export default function PenaltySelector({
             canSubmit={canSubmit}
             isSubmitting={isSubmitting}
             role={role}
+            showControlsPulse={showControlsPulse}
           />
         </div>
 

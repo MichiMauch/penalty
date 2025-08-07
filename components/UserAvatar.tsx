@@ -12,6 +12,7 @@ interface UserAvatarProps {
 
 export default function UserAvatar({ user, size = 'md', showName = false, className = '' }: UserAvatarProps) {
   const avatar = getAvatar(user.avatar);
+  const isDynamicAvatar = user.avatar && user.avatar.match(/^player\d+$/);
   
   const sizeClasses = {
     sm: 'w-8 h-8 text-lg',
@@ -27,19 +28,48 @@ export default function UserAvatar({ user, size = 'md', showName = false, classN
     xl: 'text-lg'
   };
 
+  // Generate DiceBear URL for dynamic avatars
+  const generateAvatarUrl = (avatarId: string): string => {
+    const match = avatarId.match(/^player(\d+)$/);
+    if (match) {
+      const number = match[1];
+      return `https://api.dicebear.com/7.x/adventurer/svg?seed=avatar${number}`;
+    }
+    return '';
+  };
+
+  const imageSizes = {
+    sm: '32',
+    md: '48',
+    lg: '64',
+    xl: '80'
+  };
+
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      <div className={`
-        ${sizeClasses[size]} 
-        ${avatar?.color || 'bg-gray-500'} 
-        rounded-full flex items-center justify-center shadow-md
-      `}>
-        {avatar?.emoji || '🙂'}
-      </div>
+      {isDynamicAvatar ? (
+        <div className={`${sizeClasses[size]} rounded-full overflow-hidden shadow-md bg-gray-200`}>
+          <img 
+            src={generateAvatarUrl(user.avatar)}
+            alt={user.username}
+            className="w-full h-full object-cover"
+            width={imageSizes[size]}
+            height={imageSizes[size]}
+          />
+        </div>
+      ) : (
+        <div className={`
+          ${sizeClasses[size]} 
+          ${avatar?.color || 'bg-gray-500'} 
+          rounded-full flex items-center justify-center shadow-md
+        `}>
+          {avatar?.emoji || '👤'}
+        </div>
+      )}
       
       {showName && (
         <div className="flex flex-col">
-          <span className={`font-semibold text-gray-800 ${textSizes[size]}`}>
+          <span className={`font-semibold text-white ${textSizes[size]}`}>
             {user.username}
           </span>
           {size !== 'sm' && avatar && (

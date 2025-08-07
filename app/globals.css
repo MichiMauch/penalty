@@ -5,6 +5,9 @@
 /* Modern Football App Design */
 @import '../styles/modern-football.css';
 
+/* LED Stadium Design - Override modern styles */
+@import '../styles/led-stadium.css';
+
 /* Design System */
 @import '../styles/design-system.css';
 

@@ -15,6 +15,8 @@ interface RevengeButtonProps {
   currentPlayerRole: 'player_a' | 'player_b';
   opponentKeepermoves?: SaveDirection[];
   opponentShooterMoves?: ShotDirection[];
+  className?: string;
+  buttonText?: string;
 }
 
 export default function RevengeButton({ 
@@ -26,7 +28,9 @@ export default function RevengeButton({
   playerBAvatar,
   currentPlayerRole,
   opponentKeepermoves = [],
-  opponentShooterMoves = []
+  opponentShooterMoves = [],
+  className = '',
+  buttonText = 'REVANCHE'
 }: RevengeButtonProps) {
   const [isCreating, setIsCreating] = useState(false);
   const router = useRouter();
@@ -96,8 +100,21 @@ export default function RevengeButton({
         // Speichere die neue Player ID für das neue Match
         localStorage.setItem('playerId', data.playerId);
         
-        // Navigiere zum neuen Match
-        router.push(`/game/${newMatchId}`);
+        // Bei Revanche direkt zum Shooter mit Gegner-Daten
+        const opponentEmail = currentPlayerRole === 'player_a' ? playerBEmail : playerAEmail;
+        const opponentUsername = currentPlayerRole === 'player_a' ? playerBUsername : playerAUsername;
+        const opponentPoints = 0; // TODO: echte Punkte laden wenn nötig
+        
+        const params = new URLSearchParams({
+          match: data.matchId, // Die neue Match ID
+          opponent: opponentEmail || '',
+          name: opponentUsername || 'Gegner',
+          email: opponentEmail || '',
+          points: opponentPoints.toString()
+        });
+        
+        // Direkt zum Shooter für die Revanche
+        router.push(`/shooter?${params.toString()}`);
       } else {
         const error = await response.json();
         alert('Fehler beim Erstellen der Revanche: ' + (error.error || 'Unbekannter Fehler'));
@@ -112,18 +129,16 @@ export default function RevengeButton({
 
 
   return (
-    <>
-      <button
-        onClick={handleRevenge}
-        disabled={isCreating || !playerAEmail || !playerBEmail}
-        className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
-          isCreating || !playerAEmail || !playerBEmail
-            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 transform hover:scale-105'
-        }`}
-      >
-        {isCreating ? '⏳ Erstelle Revanche...' : '🔄 REVANCHE!'}
-      </button>
-    </>
+    <button
+      onClick={handleRevenge}
+      disabled={isCreating || !playerAEmail || !playerBEmail}
+      className={className || `px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+        isCreating || !playerAEmail || !playerBEmail
+          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 transform hover:scale-105'
+      }`}
+    >
+      {isCreating ? 'ERSTELLE REVANCHE...' : buttonText}
+    </button>
   );
 }

@@ -52,6 +52,29 @@ export default function Garderobe() {
     }
   }, [user]);
 
+  // Auto-refresh matches every 30 seconds
+  useEffect(() => {
+    if (!user) return;
+
+    const interval = setInterval(() => {
+      fetchPendingChallenges();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [user]);
+
+  // Refresh matches when window comes back into focus
+  useEffect(() => {
+    if (!user) return;
+
+    const handleFocus = () => {
+      fetchPendingChallenges();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [user]);
+
   // Auto-close welcome modal after 4 seconds
   useEffect(() => {
     if (showWelcomeModal) {
@@ -144,17 +167,19 @@ export default function Garderobe() {
   };
 
   const acceptChallenge = async (challengeId: string, type: 'invitation' | 'active' | 'waiting_for_opponent' | 'cancelable' | 'finished_recent') => {
+    // Mark finished games as viewed when opening them
+    if (type === 'finished_recent') {
+      const newViewedMatches = new Set([...viewedMatches, challengeId]);
+      setViewedMatches(newViewedMatches);
+      saveViewedMatches(newViewedMatches);
+    }
+    
+    // Navigate to appropriate page based on type
     if (type === 'invitation') {
-      // Simply redirect to challenge page - joining will happen there
-      router.push(`/challenge?match=${challengeId}`);
+      router.push(`/keeper?match=${challengeId}`);
+    } else if (type === 'finished_recent') {
+      router.push(`/match/${challengeId}`);
     } else {
-      // Mark finished games as viewed when opening them
-      if (type === 'finished_recent') {
-        const newViewedMatches = new Set([...viewedMatches, challengeId]);
-        setViewedMatches(newViewedMatches);
-        saveViewedMatches(newViewedMatches);
-      }
-      // Just navigate to the match (active, waiting_for_opponent, cancelable, or finished_recent)
       router.push(`/challenge?match=${challengeId}`);
     }
   };

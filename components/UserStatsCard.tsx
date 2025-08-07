@@ -12,7 +12,7 @@ interface UserStats {
   currentStreak: number;
   bestStreak: number;
   perfectGames: number;
-  rank: number;
+  rank: number | null;
   pointsToPrevRank: number | null;
   pointsToNextRank: number | null;
 }
@@ -74,7 +74,8 @@ export default function UserStatsCard({ userId, username, avatar }: UserStatsCar
     return null;
   }
 
-  const getRankEmoji = (rank: number) => {
+  const getRankEmoji = (rank: number | null) => {
+    if (!rank) return '-';
     if (rank === 1) return '🥇';
     if (rank === 2) return '🥈';
     if (rank === 3) return '🥉';
@@ -92,11 +93,13 @@ export default function UserStatsCard({ userId, username, avatar }: UserStatsCar
           <div>
             <p className="text-3xl font-bold text-white">
               {stats.totalPoints} Punkte 
-              {stats.pointsToNextRank && (
+              {stats.rank && stats.pointsToNextRank && (
                 <span className="text-sm text-white font-normal ml-3">Vorsprung zu #{stats.rank + 1}: {stats.pointsToNextRank} Punkte</span>
               )}
             </p>
-            <p className="text-lg text-white">Rang #{stats.rank}</p>
+            <p className="text-lg text-white">
+              {stats.rank ? `Rang #${stats.rank}` : 'Kein Rang'}
+            </p>
           </div>
         </div>
         

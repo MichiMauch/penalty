@@ -18,13 +18,13 @@ export default function CombinedPenaltyAnimation({
   onAnimationComplete,
   playerRole = 'shooter'
 }: CombinedPenaltyAnimationProps) {
-  // Ball state - moved 8% down from previous position (66 + 8% = 71.3)
-  const [ballPosition, setBallPosition] = useState({ x: 50, y: 71 });
+  // Ball state - moved much higher up (penalty spot)
+  const [ballPosition, setBallPosition] = useState({ x: 50, y: 50 });
   const [showBall, setShowBall] = useState(true);
   const [isBallResetting, setIsBallResetting] = useState(false);
   
-  // Keeper state - moved another 5% higher (30 - 5% = 28.5)
-  const [keeperPosition, setKeeperPosition] = useState({ x: 50, y: 28 });
+  // Keeper state - moved much higher up (goal line) 
+  const [keeperPosition, setKeeperPosition] = useState({ x: 50, y: 15 });
   const [showKeeper, setShowKeeper] = useState(true);
   const [isKeeperResetting, setIsKeeperResetting] = useState(false);
   const [isKeeperAnimating, setIsKeeperAnimating] = useState(false);
@@ -39,43 +39,39 @@ export default function CombinedPenaltyAnimation({
       setIsKeeperResetting(false);
       setIsKeeperAnimating(false);
       setShowResult(false);
-      setBallPosition({ x: 50, y: 71 }); // Ball start position adjusted
-      setKeeperPosition({ x: 50, y: 28 }); // Keeper start position adjusted
+      setBallPosition({ x: 50, y: 50 }); // Ball start position - penalty spot
+      setKeeperPosition({ x: 50, y: 50 }); // Keeper start position - same as keeper page
       
-      // Ball animation starts immediately (ball is shot first)
-      const ballAnimationTimer = setTimeout(() => {
-        let ballTargetX = 50;
-        switch (shotDirection) {
-          case 'links':
-            ballTargetX = 20; // Moved 5% less extreme (15 + 5 = 20)
-            break;
-          case 'rechts':
-            ballTargetX = 80; // Moved 5% less extreme (85 - 5 = 80)
-            break;
-          case 'mitte':
-            ballTargetX = 50; // Center unchanged
-            break;
-        }
-        setBallPosition({ x: ballTargetX, y: 23 }); // Moved 10% lower (13 + 10 = 23)
-      }, 100);
+      // Set target positions - more extreme for better corner coverage
+      let ballTargetX = 50;
+      switch (shotDirection) {
+        case 'links':
+          ballTargetX = 25; // More extreme to reach corner
+          break;
+        case 'rechts':
+          ballTargetX = 75; // More extreme to reach corner
+          break;
+        case 'mitte':
+          ballTargetX = 50; // Center unchanged
+          break;
+      }
+      setBallPosition({ x: ballTargetX, y: 50 }); // Set target immediately
       
-      // Keeper animation starts with delay (realistic reaction time)
-      const keeperAnimationTimer = setTimeout(() => {
-        setIsKeeperAnimating(true);
-        let keeperTargetX = 50;
-        switch (saveDirection) {
-          case 'links':
-            keeperTargetX = 20; // Moved 10% further left (30 - 10 = 20)
-            break;
-          case 'rechts':
-            keeperTargetX = 80; // Moved 10% further right (70 + 10 = 80)
-            break;
-          case 'mitte':
-            keeperTargetX = 50; // Center unchanged
-            break;
-        }
-        setKeeperPosition({ x: keeperTargetX, y: 28 }); // Moved another 5% higher (30 - 2 = 28)
-      }, 250); // 150ms delay after ball starts moving
+      // Keeper animation starts immediately with ball
+      setIsKeeperAnimating(true);
+      let keeperTargetX = 50;
+      switch (saveDirection) {
+        case 'links':
+          keeperTargetX = 25; // More extreme to match ball positions
+          break;
+        case 'rechts':
+          keeperTargetX = 75; // More extreme to match ball positions
+          break;
+        case 'mitte':
+          keeperTargetX = 50; // Center unchanged
+          break;
+      }
+      setKeeperPosition({ x: keeperTargetX, y: 50 }); // Keep keeper at same level
 
       // Show result and handle ball visibility
       const resultTimer = setTimeout(() => {
@@ -90,25 +86,30 @@ export default function CombinedPenaltyAnimation({
         }
       }, 1200);
 
-      // Reset positions back to center
+      // Reset positions back to center smoothly
       const resetTimer = setTimeout(() => {
+        setShowResult(false); // Hide TOR message first
+        
+        // Set resetting flags to enable smooth transitions
         setIsBallResetting(true);
         setIsKeeperResetting(true);
         setIsKeeperAnimating(false);
-        setBallPosition({ x: 50, y: 71 }); // Ball back to penalty spot - position adjusted
-        setKeeperPosition({ x: 50, y: 28 }); // Keeper back to center - position adjusted
-        setShowBall(true); // Show ball again
-        setShowResult(false); // Hide TOR message
+        
+        // Smoothly move back to start positions with CSS transitions
+        setBallPosition({ x: 50, y: 50 }); // Ball back to penalty spot
+        setKeeperPosition({ x: 50, y: 50 }); // Keeper back to center
+        setShowBall(true); // Show ball again if it was hidden
       }, 1800);
 
-      // Animation complete - wait longer to ensure ball visually returns
+      // Animation complete - wait for smooth reset to finish
       const completeTimer = setTimeout(() => {
+        // Clear reset flags for next animation
+        setIsBallResetting(false);
+        setIsKeeperResetting(false);
         onAnimationComplete?.();
-      }, 2500);
+      }, 2600);
 
       return () => {
-        clearTimeout(ballAnimationTimer);
-        clearTimeout(keeperAnimationTimer);
         clearTimeout(resultTimer);
         clearTimeout(resetTimer);
         clearTimeout(completeTimer);
@@ -123,9 +124,7 @@ export default function CombinedPenaltyAnimation({
         <div 
           className={`keeper ${isKeeperAnimating && !isKeeperResetting ? 'animate-save' : ''} ${isKeeperResetting ? 'fade-in' : ''}`}
           style={{
-            left: `${keeperPosition.x}%`,
-            top: `${keeperPosition.y}%`,
-            '--target-x': `${keeperPosition.x}%`,
+            '--target-left': `${keeperPosition.x}%`,
             '--save-direction': saveDirection
           } as React.CSSProperties}
         >
@@ -140,10 +139,7 @@ export default function CombinedPenaltyAnimation({
         <div 
           className={`football ${isAnimating && !isBallResetting ? 'animate-shot' : ''} ${isBallResetting ? 'fade-in' : ''}`}
           style={{
-            left: `${ballPosition.x}%`,
-            top: `${ballPosition.y}%`,
-            '--target-x': `${ballPosition.x}%`,
-            '--target-y': `${ballPosition.y}%`
+            '--target-left': `${ballPosition.x}%`
           } as React.CSSProperties}
         >
           ⚽
@@ -177,17 +173,19 @@ export default function CombinedPenaltyAnimation({
           height: 400px;
           background: transparent;
           border-radius: 12px;
-          overflow: hidden;
+          overflow: visible;
           perspective: 1000px;
         }
 
         /* Keeper styles */
         .keeper {
-          position: absolute;
-          transform: translate(-50%, -50%);
+          position: fixed;
+          bottom: 47vh;
+          left: 50%;
+          transform: translateX(-50%);
           z-index: 9;
           filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.5));
-          /* Removed transition - only animate when class is added */
+          transition: all 0.6s ease-out;
         }
 
         .keeper-body {
@@ -205,8 +203,20 @@ export default function CombinedPenaltyAnimation({
         }
 
         .keeper.animate-save {
-          animation: keeperMove 0.8s ease-out forwards;
-          transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          animation: keeperSave 0.55s ease-out forwards;
+        }
+
+        @keyframes keeperSave {
+          0% {
+            transform: translateX(-50%) rotate(0deg);
+            bottom: 47vh;
+            left: 50%;
+          }
+          100% {
+            transform: translateX(-50%) rotate(0deg);
+            bottom: 47vh;
+            left: var(--target-left);
+          }
         }
 
         .keeper.animate-save[style*="links"] .keeper-body {
@@ -247,16 +257,31 @@ export default function CombinedPenaltyAnimation({
 
         /* Ball styles */
         .football {
-          position: absolute;
+          position: fixed;
+          bottom: 20vh;
+          left: 50%;
+          transform: translateX(-50%);
           font-size: 2.5rem;
-          transform: translate(-50%, -50%);
           z-index: 10;
           filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.5));
-          transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          transition: all 0.8s ease-out;
         }
 
         .football.animate-shot {
-          animation: ballFlight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+          animation: ballShot 0.8s ease-out forwards;
+        }
+
+        @keyframes ballShot {
+          0% {
+            transform: translateX(-50%) scale(1) rotate(0deg);
+            bottom: 20vh;
+            left: 50%;
+          }
+          100% {
+            transform: translateX(-50%) scale(0.7) rotate(360deg);
+            bottom: 50vh;
+            left: var(--target-left);
+          }
         }
 
         @keyframes ballFlight {
@@ -280,36 +305,32 @@ export default function CombinedPenaltyAnimation({
 
         /* Fade in animations */
         .keeper.fade-in {
-          animation: fadeInKeeper 0.5s ease-out;
+          animation: fadeInKeeper 0.4s ease-out;
         }
 
         .football.fade-in {
-          animation: fadeInBall 0.6s ease-out;
+          animation: fadeInBall 0.4s ease-out;
         }
 
         @keyframes fadeInKeeper {
           0% {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.8);
+            opacity: 0.7;
+            transform: translateX(-50%) scale(0.9);
           }
           100% {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
+            transform: translateX(-50%) scale(1);
           }
         }
 
         @keyframes fadeInBall {
           0% {
-            opacity: 0.3;
-            transform: translate(-50%, -50%) scale(0.7) translateY(-20px);
-          }
-          50% {
             opacity: 0.7;
-            transform: translate(-50%, -50%) scale(1.1) translateY(-10px);
+            transform: translateX(-50%) scale(0.9);
           }
           100% {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1) translateY(0px);
+            transform: translateX(-50%) scale(1);
           }
         }
 

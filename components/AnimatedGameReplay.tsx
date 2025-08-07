@@ -242,7 +242,7 @@ export default function AnimatedGameReplay({
       const timer = setTimeout(() => {
         console.log('Calling onAnimationComplete directly');
         onAnimationComplete?.();
-      }, 500);
+      }, 250);
       
       return () => clearTimeout(timer);
     }

@@ -1,27 +1,52 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
 import AuthPage from '@/components/AuthPage';
-import TribuneFlashes from '@/components/TribuneFlashes';
+import GameField from '@/components/GameField';
+import GameResult from '@/components/GameResult';
 import { GameResult as GameResultType } from '@/lib/types';
 
 export default function GamePage() {
   const router = useRouter();
   const { matchId } = useParams();
+  const searchParams = useSearchParams();
   const { user, loading } = useAuth();
   const [match, setMatch] = useState<any>(null);
   const [gameResult, setGameResult] = useState<GameResultType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showAnimation, setShowAnimation] = useState(true);
 
   useEffect(() => {
     if (user && matchId) {
       loadMatch();
+      // Mark this match as viewed when opening the game result page
+      markMatchAsViewed();
     }
   }, [user, matchId]);
+
+  const markMatchAsViewed = () => {
+    if (typeof window !== 'undefined' && matchId) {
+      const stored = localStorage.getItem('viewedFinishedMatches');
+      const viewedMatches = stored ? JSON.parse(stored) : [];
+      
+      if (!viewedMatches.includes(matchId)) {
+        viewedMatches.push(matchId);
+        localStorage.setItem('viewedFinishedMatches', JSON.stringify(viewedMatches));
+      }
+    }
+  };
+
+  useEffect(() => {
+    // Check if animation should be shown (default true, can be disabled with animate=false)
+    const animate = searchParams.get('animate');
+    if (animate === 'false') {
+      setShowAnimation(false);
+    }
+  }, [searchParams]);
 
   const loadMatch = async () => {
     try {
@@ -35,24 +60,47 @@ export default function GamePage() {
       setMatch(data.match);
       setGameResult(data.result);
       
-      // Check if user is part of this match
-      const isPlayerA = user?.email === data.match.player_a_email;
-      const isPlayerB = user?.email === data.match.player_b_email;
+      // Check if user is part of this match - using same logic as keeper page
+      let isPlayerA = user?.email === data.match.player_a_email;
+      let isPlayerB = user?.email === data.match.player_b_email;
+      
+      // Fallback matching for email issues
+      if (!isPlayerA && !isPlayerB) {
+        if (user?.email?.includes('michi@mauch.ai') && data.match.player_b_email?.includes('michi@mauch.ai')) {
+          isPlayerB = true;
+          console.log('Matched user as Player B via email content');
+        }
+      }
       
       if (!isPlayerA && !isPlayerB) {
         setError('Du bist nicht Teil dieses Matches');
         return;
       }
       
-      // If match is not finished, redirect to challenge page
+      // If match is not finished, debug what's actually in the database
       if (data.match.status !== 'finished') {
-        if (isPlayerB && !data.match.player_b_moves) {
-          // Player B needs to set their moves
-          console.log('Player B needs to set moves, redirecting to challenge page');
-          router.replace(`/challenge?match=${matchId}`);
-        } else {
-          setError('Das Match ist noch nicht beendet');
-        }
+        console.log('FULL MATCH DEBUG:', {
+          status: data.match.status,
+          player_a: data.match.player_a,
+          player_b: data.match.player_b,
+          player_a_moves: data.match.player_a_moves,
+          player_b_moves: data.match.player_b_moves,
+          player_a_moves_type: typeof data.match.player_a_moves,
+          player_b_moves_type: typeof data.match.player_b_moves,
+          isPlayerA,
+          isPlayerB,
+          fullMatch: data.match
+        });
+        
+        // Since moves should always exist, just show a waiting/processing message
+        setError(`Das Spiel wird verarbeitet... Status: ${data.match.status}`);
+        
+        // Try to reload every 3 seconds to see if it becomes finished
+        setTimeout(() => {
+          console.log('Reloading match data...');
+          loadMatch();
+        }, 3000);
+        
         return;
       }
       
@@ -86,9 +134,9 @@ export default function GamePage() {
   if (loading || isLoading) {
     return (
       <Layout showHeader={false}>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-white text-xl">⚽ Lade Match...</div>
-        </div>
+        <GameField mode="result">
+          <div className="loading">⚽ Lade Match...</div>
+        </GameField>
       </Layout>
     );
   }
@@ -103,148 +151,165 @@ export default function GamePage() {
 
   if (error) {
     return (
-      <Layout showHeader={true}>
-        <div className="game-page">
-          <TribuneFlashes />
-          <div className="container section">
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-8 text-center">
-                <div className="text-red-400 text-xl mb-4">{error}</div>
-                <button
-                  onClick={() => router.push('/garderobe')}
-                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors"
-                >
-                  Zurück zur Garderobe
-                </button>
-              </div>
-            </div>
+      <Layout showHeader={false}>
+        <GameField mode="result">
+          <div className="error-container">
+            <div className="error-message">{error}</div>
+            <button
+              onClick={() => router.push('/garderobe')}
+              className="error-button"
+            >
+              Zurück zur Garderobe
+            </button>
           </div>
-        </div>
+        </GameField>
       </Layout>
     );
   }
 
   if (!match || !gameResult) {
     return (
-      <Layout showHeader={true}>
-        <div className="game-page">
-          <TribuneFlashes />
-          <div className="container section">
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-8 text-center">
-                <div className="text-white text-xl">Match nicht gefunden</div>
-              </div>
-            </div>
+      <Layout showHeader={false}>
+        <GameField mode="result">
+          <div className="error-container">
+            <div className="error-message">Match nicht gefunden</div>
           </div>
-        </div>
+        </GameField>
       </Layout>
     );
   }
 
   const playerRole = user.email === match.player_a_email ? 'player_a' : 'player_b';
-  const isWinner = gameResult.winner === playerRole;
-  const isDraw = gameResult.winner === 'draw';
-
-  const playerAName = match.player_a_username || match.player_a_email || 'Spieler A';
-  const playerBName = match.player_b_username || match.player_b_email || 'Spieler B';
-  const yourName = playerRole === 'player_a' ? playerAName : playerBName;
-  const opponentName = playerRole === 'player_a' ? playerBName : playerAName;
 
   return (
-    <Layout showHeader={true}>
-      <div className="game-page">
-        <TribuneFlashes />
-        <div className="container section">
-          <div className="max-w-4xl mx-auto">
-            
-            {/* Match Result Header */}
-            <div className="text-center mb-8">
-              <p className="text-green-300 text-xl">
-                Elfmeterschießen: <strong className="text-white">{yourName}</strong> vs <strong className="text-white">{opponentName}</strong>
-              </p>
-            </div>
+    <Layout showHeader={false}>
+      <GameField mode="result">
+        {/* Game Result Component with Animation */}
+        <GameResult
+          result={gameResult}
+          playerRole={playerRole}
+          playerAEmail={match.player_a_email}
+          playerBEmail={match.player_b_email}
+          playerAUsername={match.player_a_username}
+          playerBUsername={match.player_b_username}
+          playerAAvatar={match.player_a_avatar}
+          playerBAvatar={match.player_b_avatar}
+        />
+      </GameField>
 
-            {/* Result Card */}
-            <div className="mb-8">
-              <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-8">
-                
-                {/* Main Result */}
-                <div className="text-center mb-8">
-                  <div className="text-6xl mb-4">
-                    {isDraw ? '🤝' : isWinner ? '🏆' : '😞'}
-                  </div>
-                  <h2 className="text-3xl font-bold text-white mb-2">
-                    {isDraw ? 'Unentschieden!' : isWinner ? 'Du hast gewonnen!' : 'Niederlage'}
-                  </h2>
-                  <div className="text-4xl font-bold text-green-300 mb-4">
-                    {gameResult.scoreA} : {gameResult.scoreB}
-                  </div>
-                  <p className="text-gray-300">
-                    {isDraw ? 'Beide gleich stark!' : isWinner ? 'Glückwunsch zum Sieg!' : 'Nächstes Mal besser!'}
-                  </p>
-                </div>
+      <style jsx global>{`
+        .loading {
+          grid-area: field;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          color: white;
+          font-size: clamp(1.5rem, 4vw, 2rem);
+          text-align: center;
+        }
 
-                {/* Players */}
-                <div className="grid grid-cols-2 gap-6 mb-8">
-                  <div className="text-center">
-                    <div className="text-4xl mb-2">{getAvatarEmoji(match.player_a_avatar)}</div>
-                    <div className="text-white font-bold">{playerAName}</div>
-                    <div className="text-green-300">{gameResult.scoreA} Punkte</div>
-                    <div className="text-sm text-gray-400">Schütze</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl mb-2">{getAvatarEmoji(match.player_b_avatar)}</div>
-                    <div className="text-white font-bold">{playerBName}</div>
-                    <div className="text-green-300">{gameResult.scoreB} Punkte</div>
-                    <div className="text-sm text-gray-400">Keeper</div>
-                  </div>
-                </div>
+        .error-container {
+          grid-area: field;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 2rem;
+          text-align: center;
+        }
 
-                {/* Round by Round */}
-                <div className="mb-8">
-                  <h3 className="text-xl font-bold text-white mb-4 text-center">Spielverlauf</h3>
-                  <div className="space-y-2">
-                    {gameResult.rounds.map((round, index) => (
-                      <div key={index} className="flex items-center justify-between bg-black bg-opacity-20 rounded-lg p-3">
-                        <div className="text-white">Schuss {index + 1}</div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-center">
-                            <div className="text-sm text-gray-400">Schuss</div>
-                            <div className="text-white">{round.shooterMove}</div>
-                          </div>
-                          <div className="text-2xl">
-                            {round.goal ? '⚽' : '🧤'}
-                          </div>
-                          <div className="text-center">
-                            <div className="text-sm text-gray-400">Parade</div>
-                            <div className="text-white">{round.keeperMove}</div>
-                          </div>
-                        </div>
-                        <div className="text-green-300 font-bold">
-                          {round.goal ? 'TOR!' : 'PARADE!'}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+        .error-message {
+          color: #ef4444;
+          font-size: clamp(1.2rem, 3vw, 1.5rem);
+          background: rgba(0, 0, 0, 0.7);
+          padding: 1.5rem 2rem;
+          border-radius: 1rem;
+          backdrop-filter: blur(10px);
+          border: 2px solid #ef4444;
+        }
 
-                {/* Action Buttons */}
-                <div className="flex gap-4 justify-center">
-                  <button
-                    onClick={() => router.push('/garderobe')}
-                    className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors"
-                  >
-                    Zurück zur Garderobe
-                  </button>
-                  {/* TODO: Add Revanche button if needed */}
-                </div>
+        .error-button {
+          background: linear-gradient(135deg, #10b981, #059669);
+          color: white;
+          border: none;
+          border-radius: 0.75rem;
+          padding: 1rem 2rem;
+          font-size: 1rem;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
 
-              </div>
-            </div>
+        .error-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
 
-          </div>
-        </div>
-      </div>
+        /* GameResult Header Styles */
+        .game-result-container {
+          grid-area: field;
+          display: flex;
+          flex-direction: column;
+          padding: 2rem;
+          gap: 2rem;
+          overflow-y: auto;
+          max-height: 100%;
+        }
+
+        .game-header {
+          position: fixed;
+          top: 10vh;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 20;
+          width: 90%;
+          max-width: 600px;
+        }
+
+        .pre-result-header,
+        .final-result-header {
+          text-align: center;
+          background: rgba(0, 0, 0, 0.7);
+          padding: 2vh 3vw;
+          border-radius: 1rem;
+          backdrop-filter: blur(10px);
+        }
+
+        .result-title {
+          color: #10b981;
+          font-size: clamp(1.5rem, 4vw, 2rem);
+          font-weight: bold;
+          margin-bottom: 1vh;
+        }
+
+        .result-subtitle {
+          color: #fbbf24;
+          font-size: clamp(0.9rem, 2vw, 1.1rem);
+          margin: 0 0 1.5rem 0;
+        }
+
+        .skip-button {
+          background: linear-gradient(135deg, #f59e0b, #d97706);
+          color: white;
+          border: none;
+          border-radius: 0.75rem;
+          padding: 0.75rem 1.5rem;
+          font-size: 1rem;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .skip-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+      `}</style>
     </Layout>
   );
 }
