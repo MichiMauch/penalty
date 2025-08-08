@@ -176,14 +176,14 @@ function KeeperPageContent() {
         hasPlayerB: !!match.player_b
       });
       
-      // The problem: player_b is null in the database, but we need to save keeper moves
-      // Solution: We need to update the match to set player_b properly first
+      // Determine player ID - for revenge matches, both players are already set
+      // For regular challenges, player_b might be null and needs to join first
       let playerId = match.player_b;
       
       if (!playerId) {
-        console.log('Player B is null, need to join match first');
+        console.log('Player B is null, need to join match first (regular challenge)');
         
-        // First join the match as player B
+        // First join the match as player B (only for regular challenges)
         const joinResponse = await fetch('/api/match', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -205,6 +205,8 @@ function KeeperPageContent() {
         const joinData = await joinResponse.json();
         playerId = joinData.playerId;
         console.log('Joined match as Player B:', playerId);
+      } else {
+        console.log('Player B already set (revenge match):', playerId);
       }
       
       if (!playerId) {

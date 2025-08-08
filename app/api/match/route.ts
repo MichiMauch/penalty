@@ -271,16 +271,18 @@ export async function POST(request: NextRequest) {
       const { matchId, playerAEmail, playerBEmail, playerAUsername, playerBUsername, playerAAvatar, playerBAvatar, originalMatchId } = body;
       
       // Erstelle neues Match mit getauschten Rollen für Revanche
-      // Beide Player erhalten neue IDs für das neue Match
-      const playerAId = nanoid(); // Neue Player ID für Player A (Angreifer)
+      // Beide Player erhalten neue IDs für das neue Match und werden automatisch als "joined" markiert
+      const playerAId = nanoid(); // Neue Player ID für Player A (Angreifer)  
       const playerBId = nanoid(); // Neue Player ID für Player B (Verteidiger)
       
+      // Bei Revenge Matches sind beide Spieler bereits bekannt und akzeptiert
+      // Deshalb setzen wir Status auf 'active' statt 'waiting'
       await db.execute({
         sql: 'INSERT INTO matches (id, player_a, player_a_email, player_a_username, player_a_avatar, player_b, player_b_email, player_b_username, player_b_avatar, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        args: [matchId, playerAId, playerAEmail, playerAUsername, playerAAvatar, playerBId, playerBEmail, playerBUsername, playerBAvatar, 'waiting']
+        args: [matchId, playerAId, playerAEmail, playerAUsername, playerAAvatar, playerBId, playerBEmail, playerBUsername, playerBAvatar, 'active']
       });
       
-      // Sende E-Mail-Einladung an Player B (der neue Verteidiger)
+      // Sende E-Mail-Benachrichtigung (nicht Einladung) an Player B
       if (process.env.RESEND_API_KEY) {
         const emailResult = await sendChallengeEmail({
           to: playerBEmail,
@@ -290,11 +292,11 @@ export async function POST(request: NextRequest) {
         });
         
         if (!emailResult.success) {
-          console.error('Failed to send revenge challenge email:', emailResult.error);
+          console.error('Failed to send revenge notification email:', emailResult.error);
         }
       }
       
-      // Send push notification to the challenged user
+      // Send push notification to the challenged user  
       try {
         const challengedUser = await getUserByEmail(playerBEmail);
         if (challengedUser) {
@@ -314,7 +316,7 @@ export async function POST(request: NextRequest) {
         playerAId, // Player A ID für das neue Match
         playerBId, // Player B ID für das neue Match
         success: true, 
-        message: 'Revanche erstellt - Einladung gesendet!' 
+        message: 'Revanche erstellt - Benachrichtigung gesendet!' 
       });
     }
 
