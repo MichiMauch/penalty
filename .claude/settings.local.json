@@ -20,7 +20,9 @@
       "Bash(npm ls:*)",
       "Bash(true)",
       "Bash(-H \"Content-Type: application/json\")",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(turso db shell:*)",
+      "Bash(turso db:*)"
     ],
     "deny": []
   }

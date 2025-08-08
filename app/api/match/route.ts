@@ -3,7 +3,7 @@ import { db, initDB } from '@/lib/db';
 import { nanoid } from '@/lib/utils';
 import { calculateGameResult } from '@/lib/gameLogic';
 import { PlayerMoves } from '@/lib/types';
-import { sendChallengeEmail } from '@/lib/email';
+import { sendChallengeEmail, sendMatchCompletedEmail } from '@/lib/email';
 import { calculateAndUpdateStats } from '@/lib/stats';
 import { sendChallengeNotification } from '@/lib/pushNotifications';
 import { getUserByEmail } from '@/lib/auth';
@@ -157,6 +157,7 @@ export async function POST(request: NextRequest) {
         const emailResult = await sendChallengeEmail({
           to: email,
           challengerEmail: match.player_a_email as string || 'Ein Spieler',
+          challengerUsername: match.player_a_username as string || 'Ein Spieler',
           matchId
         });
         
@@ -270,12 +271,13 @@ export async function POST(request: NextRequest) {
       const { matchId, playerAEmail, playerBEmail, playerAUsername, playerBUsername, playerAAvatar, playerBAvatar, originalMatchId } = body;
       
       // Erstelle neues Match mit getauschten Rollen für Revanche
-      // Nur Player A wird erstellt, Player B muss beitreten
-      const playerAId = nanoid(); // Neue Player ID für Angreifer
+      // Beide Player erhalten neue IDs für das neue Match
+      const playerAId = nanoid(); // Neue Player ID für Player A (Angreifer)
+      const playerBId = nanoid(); // Neue Player ID für Player B (Verteidiger)
       
       await db.execute({
-        sql: 'INSERT INTO matches (id, player_a, player_a_email, player_a_username, player_a_avatar, player_b_email, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        args: [matchId, playerAId, playerAEmail, playerAUsername, playerAAvatar, playerBEmail, 'waiting']
+        sql: 'INSERT INTO matches (id, player_a, player_a_email, player_a_username, player_a_avatar, player_b, player_b_email, player_b_username, player_b_avatar, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        args: [matchId, playerAId, playerAEmail, playerAUsername, playerAAvatar, playerBId, playerBEmail, playerBUsername, playerBAvatar, 'waiting']
       });
       
       // Sende E-Mail-Einladung an Player B (der neue Verteidiger)
@@ -283,6 +285,7 @@ export async function POST(request: NextRequest) {
         const emailResult = await sendChallengeEmail({
           to: playerBEmail,
           challengerEmail: playerAEmail,
+          challengerUsername: playerAUsername,
           matchId
         });
         
@@ -308,7 +311,8 @@ export async function POST(request: NextRequest) {
       
       return NextResponse.json({ 
         matchId, 
-        playerId: playerAId, // Player der Revanche startet wird Player A
+        playerAId, // Player A ID für das neue Match
+        playerBId, // Player B ID für das neue Match
         success: true, 
         message: 'Revanche erstellt - Einladung gesendet!' 
       });
@@ -424,6 +428,34 @@ export async function POST(request: NextRequest) {
         
         if (playerAId && playerBId) {
           await calculateAndUpdateStats(matchId, playerAId, playerBId, result);
+        }
+
+        // Send match completion email to both players
+        if (process.env.RESEND_API_KEY) {
+          try {
+            // Send email to Player A
+            const playerAWon = result.winner === 'player_a';
+            await sendMatchCompletedEmail({
+              to: updatedMatch.player_a_email as string,
+              opponentUsername: updatedMatch.player_b_username as string || updatedMatch.player_b_email as string || 'Gegner',
+              matchId,
+              userWon: playerAWon
+            });
+
+            // Send email to Player B
+            const playerBWon = result.winner === 'player_b';
+            await sendMatchCompletedEmail({
+              to: updatedMatch.player_b_email as string,
+              opponentUsername: updatedMatch.player_a_username as string || updatedMatch.player_a_email as string || 'Gegner',
+              matchId,
+              userWon: playerBWon
+            });
+
+            console.log('Match completion emails sent to both players');
+          } catch (error) {
+            console.error('Error sending match completion emails:', error);
+            // Don't fail the request if emails fail
+          }
         }
         
         console.log('Returning finished status to client');

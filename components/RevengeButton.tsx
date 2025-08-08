@@ -97,8 +97,19 @@ export default function RevengeButton({
 
       if (response.ok) {
         const data = await response.json();
+        
+        // Bestimme die richtige Player-ID basierend darauf, wer ich im neuen Match bin
+        let myNewPlayerId;
+        if (currentPlayerRole === 'player_b') {
+          // Ich war Verteidiger, bin jetzt Player A (Angreifer)
+          myNewPlayerId = data.playerAId;
+        } else {
+          // Ich war Angreifer, bin jetzt Player B (Verteidiger)
+          myNewPlayerId = data.playerBId;
+        }
+        
         // Speichere die neue Player ID für das neue Match
-        localStorage.setItem('playerId', data.playerId);
+        localStorage.setItem('playerId', myNewPlayerId);
         
         // Bei Revanche direkt zum Shooter mit Gegner-Daten
         const opponentEmail = currentPlayerRole === 'player_a' ? playerBEmail : playerAEmail;

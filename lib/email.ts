@@ -5,12 +5,14 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 interface SendChallengeEmailParams {
   to: string;
   challengerEmail: string;
+  challengerUsername: string;
   matchId: string;
 }
 
 export async function sendChallengeEmail({
   to,
   challengerEmail,
+  challengerUsername,
   matchId
 }: SendChallengeEmailParams) {
   if (!resend) {
@@ -18,112 +20,108 @@ export async function sendChallengeEmail({
     return { success: false, error: 'Email service not configured' };
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://penalty.mauch.ai';
   const gameUrl = `${appUrl}/challenge?match=${matchId}`;
   
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Fußballpause <michi@kokomo.house>',
+      from: 'Penalty <michi@kokomo.house>',
       to: [to],
-      subject: `${challengerEmail} fordert dich zum Elfmeterschießen heraus! ⚽`,
+      subject: `${challengerUsername} fordert dich heraus! ⚽`,
       html: `
         <!DOCTYPE html>
         <html>
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Fußballpause Elfmeter-Herausforderung</title>
+            <title>Penalty Herausforderung</title>
             <style>
               body {
                 margin: 0;
                 padding: 0;
                 font-family: Arial, sans-serif;
-                background-color: #f3f4f6;
+                background: radial-gradient(ellipse at top, #065f46, #064e3b, #0a0a0a);
+                min-height: 100vh;
               }
               .container {
                 max-width: 600px;
                 margin: 0 auto;
-                background-color: #ffffff;
-                border-radius: 8px;
+                background: rgba(22, 101, 52, 0.95);
+                border-radius: 16px;
                 overflow: hidden;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                border: 2px solid #10b981;
+                box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
               }
               .header {
-                background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+                background: linear-gradient(135deg, #059669, #10b981);
                 color: white;
                 padding: 40px 20px;
                 text-align: center;
+                border-bottom: 2px solid #10b981;
               }
               .header h1 {
                 margin: 0;
                 font-size: 36px;
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+                font-weight: bold;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+                letter-spacing: 2px;
               }
               .content {
                 padding: 40px 20px;
                 text-align: center;
+                color: white;
               }
               .challenge-box {
-                background-color: #fef3c7;
-                border: 2px solid #f59e0b;
-                border-radius: 8px;
-                padding: 20px;
+                background: rgba(0, 0, 0, 0.7);
+                border: 2px solid #10b981;
+                border-radius: 16px;
+                padding: 30px;
                 margin: 20px 0;
+                backdrop-filter: blur(10px);
               }
               .challenge-box h2 {
-                color: #d97706;
-                margin: 0 0 10px 0;
-                font-size: 24px;
+                color: #10b981;
+                margin: 0 0 15px 0;
+                font-size: 26px;
+                font-weight: bold;
+              }
+              .challenge-text {
+                color: white;
+                font-size: 18px;
+                margin: 15px 0;
               }
               .button {
                 display: inline-block;
-                background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+                background: linear-gradient(135deg, #10b981, #059669);
                 color: white;
                 text-decoration: none;
-                padding: 16px 48px;
-                border-radius: 8px;
-                font-size: 20px;
+                padding: 20px 50px;
+                border-radius: 12px;
+                font-size: 22px;
                 font-weight: bold;
                 margin: 30px 0;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                transition: transform 0.2s;
+                border: 2px solid #10b981;
+                box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 1px;
               }
               .button:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-              }
-              .rules {
-                background-color: #e0e7ff;
-                border-radius: 8px;
-                padding: 20px;
-                margin: 30px 0;
-                text-align: left;
-              }
-              .rules h3 {
-                color: #4338ca;
-                margin: 0 0 15px 0;
-              }
-              .rule-item {
-                display: flex;
-                align-items: center;
-                margin: 10px 0;
-                font-size: 14px;
-              }
-              .rule-icon {
-                font-size: 20px;
-                margin-right: 10px;
-                min-width: 30px;
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+                background: linear-gradient(135deg, #059669, #047857);
               }
               .footer {
-                background-color: #f3f4f6;
+                background: rgba(0, 0, 0, 0.8);
                 padding: 20px;
                 text-align: center;
                 font-size: 12px;
-                color: #6b7280;
+                color: #9ca3af;
+                border-top: 1px solid #10b981;
               }
               .link-fallback {
                 word-break: break-all;
-                color: #6366f1;
+                color: #10b981;
                 text-decoration: underline;
                 font-size: 14px;
               }
@@ -141,59 +139,25 @@ export async function sendChallengeEmail({
           <body>
             <div class="container">
               <div class="header">
-                <h1>⚽ FUßBALLPAUSE ⚽</h1>
+                <h1>⚽ PENALTY ⚽</h1>
               </div>
               
               <div class="content">
                 <div class="challenge-box">
-                  <h2>⚽ Du wurdest zum Elfmeterschießen herausgefordert! ⚽</h2>
-                  <p style="font-size: 18px; margin: 10px 0;">
-                    <strong>${challengerEmail}</strong> wartet auf dich!
+                  <h2>⚽ Neue Herausforderung! ⚽</h2>
+                  <p class="challenge-text">
+                    <strong>${challengerUsername}</strong> wartet auf dich!
+                  </p>
+                  <p class="challenge-text">
+                    Zeig dein Können beim Elfmeterschießen!
                   </p>
                 </div>
                 
-                <p style="font-size: 16px; color: #4b5563; margin: 20px 0;">
-                  Zeig dein Können beim Elfmeterschießen!<br>
-                  Wähle deine Schüsse und Paraden strategisch.
-                </p>
-                
                 <a href="${gameUrl}" class="button">
-                  ELFMETERSCHIESSEN ANNEHMEN! ⚽
+                  Herausforderung annehmen ⚽
                 </a>
                 
-                <div class="rules">
-                  <h3>⚽ So funktioniert's:</h3>
-                  <div class="rule-item">
-                    <span class="rule-icon">1️⃣</span>
-                    <span>Als Schütze: Wähle 5 Schussrichtungen strategisch</span>
-                  </div>
-                  <div class="rule-item">
-                    <span class="rule-icon">2️⃣</span>
-                    <span>Als Torwart: Wähle 5 Sprungrichtungen zum Halten</span>
-                  </div>
-                  <div class="rule-item">
-                    <span class="rule-icon">3️⃣</span>
-                    <span>Erfolgreich halten durch richtige Sprungrichtung:</span>
-                  </div>
-                  <div class="rule-item" style="margin-left: 40px;">
-                    <span class="rule-icon">⬅️</span>
-                    <span>Links geschossen → ⬅️ Links springen</span>
-                  </div>
-                  <div class="rule-item" style="margin-left: 40px;">
-                    <span class="rule-icon">🎯</span>
-                    <span>Mitte geschossen → 🎯 Mitte bleiben</span>
-                  </div>
-                  <div class="rule-item" style="margin-left: 40px;">
-                    <span class="rule-icon">➡️</span>
-                    <span>Rechts geschossen → ➡️ Rechts springen</span>
-                  </div>
-                  <div class="rule-item">
-                    <span class="rule-icon">🏆</span>
-                    <span>Punkte für erfolgreiche Tore und Paraden!</span>
-                  </div>
-                </div>
-                
-                <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
+                <p style="font-size: 14px; color: #9ca3af; margin-top: 30px;">
                   Falls der Button nicht funktioniert, kopiere diesen Link:<br>
                   <a href="${gameUrl}" class="link-fallback">${gameUrl}</a>
                 </p>
@@ -201,8 +165,8 @@ export async function sendChallengeEmail({
               
               <div class="footer">
                 <p>
-                  Du erhältst diese Email, weil dich jemand zu Fußballpause herausgefordert hat.<br>
-                  Fußballpause - Das Elfmeterschießen-Spiel ⚽
+                  Du erhältst diese Email, weil dich jemand zu Penalty herausgefordert hat.<br>
+                  Penalty - Das Elfmeterschießen-Spiel ⚽
                 </p>
               </div>
             </div>
@@ -210,20 +174,13 @@ export async function sendChallengeEmail({
         </html>
       `,
       text: `
-${challengerEmail} fordert dich zum Elfmeterschießen heraus!
+${challengerUsername} fordert dich heraus!
 
 Nimm die Herausforderung an: ${gameUrl}
 
-So funktioniert's:
-1. Als Schütze: Wähle 5 Schussrichtungen strategisch
-2. Als Torwart: Wähle 5 Sprungrichtungen zum Halten
-3. Erfolgreich halten durch richtige Sprungrichtung:
-   - Links geschossen → Links springen
-   - Mitte geschossen → Mitte bleiben
-   - Rechts geschossen → Rechts springen
-4. Punkte für erfolgreiche Tore und Paraden!
+Zeig dein Können beim Elfmeterschießen!
 
-Viel Erfolg beim Elfmeterschießen!
+Penalty - Das Elfmeterschießen-Spiel ⚽
       `
     });
 
@@ -255,14 +212,14 @@ export async function sendPasswordResetEmail({
     return { success: false, error: 'Email service not configured' };
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://penalty.mauch.ai';
   const resetUrl = `${appUrl}/reset-password/${resetToken}`;
   
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Penalty Shootout <michi@kokomo.house>',
+      from: 'Penalty <michi@kokomo.house>',
       to: [to],
-      subject: 'Passwort zurücksetzen - Penalty Shootout ⚽',
+      subject: 'Passwort zurücksetzen - Penalty ⚽',
       html: `
         <!DOCTYPE html>
         <html>
@@ -275,79 +232,92 @@ export async function sendPasswordResetEmail({
                 margin: 0;
                 padding: 0;
                 font-family: Arial, sans-serif;
-                background-color: #f3f4f6;
+                background: radial-gradient(ellipse at top, #065f46, #064e3b, #0a0a0a);
+                min-height: 100vh;
               }
               .container {
                 max-width: 600px;
                 margin: 0 auto;
-                background-color: #ffffff;
-                border-radius: 8px;
+                background: rgba(22, 101, 52, 0.95);
+                border-radius: 16px;
                 overflow: hidden;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                border: 2px solid #ef4444;
+                box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
               }
               .header {
-                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                background: linear-gradient(135deg, #dc2626, #ef4444);
                 color: white;
                 padding: 40px 20px;
                 text-align: center;
+                border-bottom: 2px solid #ef4444;
               }
               .header h1 {
                 margin: 0;
                 font-size: 32px;
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+                font-weight: bold;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+                letter-spacing: 2px;
               }
               .content {
                 padding: 40px 20px;
                 text-align: center;
+                color: white;
               }
               .reset-box {
-                background-color: #fef3c7;
-                border: 2px solid #f59e0b;
-                border-radius: 8px;
-                padding: 20px;
+                background: rgba(0, 0, 0, 0.7);
+                border: 2px solid #ef4444;
+                border-radius: 16px;
+                padding: 30px;
                 margin: 20px 0;
+                backdrop-filter: blur(10px);
               }
               .reset-box h2 {
-                color: #d97706;
-                margin: 0 0 10px 0;
-                font-size: 22px;
+                color: #ef4444;
+                margin: 0 0 15px 0;
+                font-size: 24px;
+                font-weight: bold;
               }
               .button {
                 display: inline-block;
-                background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+                background: linear-gradient(135deg, #ef4444, #dc2626);
                 color: white;
                 text-decoration: none;
-                padding: 16px 48px;
-                border-radius: 8px;
-                font-size: 18px;
+                padding: 20px 50px;
+                border-radius: 12px;
+                font-size: 20px;
                 font-weight: bold;
                 margin: 30px 0;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                transition: transform 0.2s;
+                border: 2px solid #ef4444;
+                box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 1px;
               }
               .button:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6);
+                background: linear-gradient(135deg, #dc2626, #b91c1c);
               }
               .warning {
-                background-color: #fef2f2;
-                border: 1px solid #fecaca;
-                border-radius: 8px;
-                padding: 15px;
+                background: rgba(0, 0, 0, 0.6);
+                border: 2px solid #f59e0b;
+                border-radius: 12px;
+                padding: 20px;
                 margin: 20px 0;
-                color: #991b1b;
+                color: #fbbf24;
                 font-size: 14px;
               }
               .footer {
-                background-color: #f3f4f6;
+                background: rgba(0, 0, 0, 0.8);
                 padding: 20px;
                 text-align: center;
                 font-size: 12px;
-                color: #6b7280;
+                color: #9ca3af;
+                border-top: 1px solid #ef4444;
               }
               .link-fallback {
                 word-break: break-all;
-                color: #6366f1;
+                color: #10b981;
                 text-decoration: underline;
                 font-size: 14px;
               }
@@ -365,7 +335,7 @@ export async function sendPasswordResetEmail({
           <body>
             <div class="container">
               <div class="header">
-                <h1>🔒 PASSWORT ZURÜCKSETZEN</h1>
+                <h1>🔒 PENALTY</h1>
               </div>
               
               <div class="content">
@@ -376,8 +346,8 @@ export async function sendPasswordResetEmail({
                   </p>
                 </div>
                 
-                <p style="font-size: 16px; color: #4b5563; margin: 20px 0;">
-                  Du hast eine Passwort-Zurücksetzung für deinen Penalty Shootout Account angefordert.<br>
+                <p style="font-size: 16px; color: white; margin: 20px 0;">
+                  Du hast eine Passwort-Zurücksetzung für deinen Penalty Account angefordert.<br>
                   Klicke auf den Button unten, um ein neues Passwort zu setzen.
                 </p>
                 
@@ -392,7 +362,7 @@ export async function sendPasswordResetEmail({
                   • Falls du kein neues Passwort angefordert hast, ignoriere diese Email
                 </div>
                 
-                <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
+                <p style="font-size: 14px; color: #9ca3af; margin-top: 30px;">
                   Falls der Button nicht funktioniert, kopiere diesen Link:<br>
                   <a href="${resetUrl}" class="link-fallback">${resetUrl}</a>
                 </p>
@@ -401,7 +371,7 @@ export async function sendPasswordResetEmail({
               <div class="footer">
                 <p>
                   Diese Email wurde automatisch generiert.<br>
-                  Penalty Shootout - Das Elfmeterschießen-Spiel ⚽
+                  Penalty - Das Elfmeterschießen-Spiel ⚽
                 </p>
               </div>
             </div>
@@ -409,11 +379,11 @@ export async function sendPasswordResetEmail({
         </html>
       `,
       text: `
-Passwort zurücksetzen - Penalty Shootout
+Passwort zurücksetzen - Penalty
 
 Hallo ${username}!
 
-Du hast eine Passwort-Zurücksetzung für deinen Penalty Shootout Account angefordert.
+Du hast eine Passwort-Zurücksetzung für deinen Penalty Account angefordert.
 Besuche den folgenden Link, um ein neues Passwort zu setzen:
 
 ${resetUrl}
@@ -423,7 +393,7 @@ WICHTIGE SICHERHEITSHINWEISE:
 - Der Link kann nur einmal verwendet werden
 - Falls du kein neues Passwort angefordert hast, ignoriere diese Email
 
-Penalty Shootout Team
+Penalty Team
       `
     });
 
@@ -435,6 +405,202 @@ Penalty Shootout Team
     return { success: true, data };
   } catch (error) {
     console.error('Password reset email service error:', error);
+    return { success: false, error };
+  }
+}
+
+interface SendMatchCompletedEmailParams {
+  to: string;
+  opponentUsername: string;
+  matchId: string;
+  userWon: boolean; // true if the email recipient won, false if they lost
+}
+
+export async function sendMatchCompletedEmail({
+  to,
+  opponentUsername,
+  matchId,
+  userWon
+}: SendMatchCompletedEmailParams) {
+  if (!resend) {
+    console.warn('Resend not configured - match completed email will not be sent');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://penalty.mauch.ai';
+  const resultUrl = `${appUrl}/game/${matchId}`;
+  const resultText = userWon ? 'Gewonnen! 🎉' : 'Verloren 😔';
+  const resultColor = userWon ? '#10b981' : '#ef4444';
+  
+  try {
+    const { data, error } = await resend.emails.send({
+      from: 'Penalty <michi@kokomo.house>',
+      to: [to],
+      subject: `Match beendet - ${resultText} ⚽`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Match beendet - Penalty</title>
+            <style>
+              body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+                background: radial-gradient(ellipse at top, #065f46, #064e3b, #0a0a0a);
+                min-height: 100vh;
+              }
+              .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: rgba(22, 101, 52, 0.95);
+                border-radius: 16px;
+                overflow: hidden;
+                border: 2px solid ${resultColor};
+                box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+              }
+              .header {
+                background: linear-gradient(135deg, #059669, #10b981);
+                color: white;
+                padding: 40px 20px;
+                text-align: center;
+                border-bottom: 2px solid ${resultColor};
+              }
+              .header h1 {
+                margin: 0;
+                font-size: 36px;
+                font-weight: bold;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+                letter-spacing: 2px;
+              }
+              .content {
+                padding: 40px 20px;
+                text-align: center;
+                color: white;
+              }
+              .result-box {
+                background: rgba(0, 0, 0, 0.7);
+                border: 2px solid ${resultColor};
+                border-radius: 16px;
+                padding: 30px;
+                margin: 20px 0;
+                backdrop-filter: blur(10px);
+              }
+              .result-box h2 {
+                color: ${resultColor};
+                margin: 0 0 15px 0;
+                font-size: 26px;
+                font-weight: bold;
+              }
+              .result-text {
+                color: white;
+                font-size: 18px;
+                margin: 15px 0;
+              }
+              .button {
+                display: inline-block;
+                background: linear-gradient(135deg, ${resultColor}, ${userWon ? '#059669' : '#dc2626'});
+                color: white;
+                text-decoration: none;
+                padding: 20px 50px;
+                border-radius: 12px;
+                font-size: 22px;
+                font-weight: bold;
+                margin: 30px 0;
+                border: 2px solid ${resultColor};
+                box-shadow: 0 6px 20px rgba(${userWon ? '16, 185, 129' : '239, 68, 68'}, 0.4);
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+              }
+              .button:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(${userWon ? '16, 185, 129' : '239, 68, 68'}, 0.6);
+                background: linear-gradient(135deg, ${userWon ? '#059669' : '#dc2626'}, ${userWon ? '#047857' : '#b91c1c'});
+              }
+              .footer {
+                background: rgba(0, 0, 0, 0.8);
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #9ca3af;
+                border-top: 1px solid ${resultColor};
+              }
+              .link-fallback {
+                word-break: break-all;
+                color: ${resultColor};
+                text-decoration: underline;
+                font-size: 14px;
+              }
+              @media only screen and (max-width: 600px) {
+                .header h1 {
+                  font-size: 28px;
+                }
+                .button {
+                  padding: 18px 40px;
+                  font-size: 20px;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>⚽ PENALTY ⚽</h1>
+              </div>
+              
+              <div class="content">
+                <div class="result-box">
+                  <h2>${resultText}</h2>
+                  <p class="result-text">
+                    Das Match gegen <strong>${opponentUsername}</strong> ist beendet!
+                  </p>
+                  <p class="result-text">
+                    Schau dir das komplette Ergebnis und die Spielzüge an.
+                  </p>
+                </div>
+                
+                <a href="${resultUrl}" class="button">
+                  Ergebnis anschauen ⚽
+                </a>
+                
+                <p style="font-size: 14px; color: #9ca3af; margin-top: 30px;">
+                  Falls der Button nicht funktioniert, kopiere diesen Link:<br>
+                  <a href="${resultUrl}" class="link-fallback">${resultUrl}</a>
+                </p>
+              </div>
+              
+              <div class="footer">
+                <p>
+                  Das Match wurde soeben beendet.<br>
+                  Penalty - Das Elfmeterschießen-Spiel ⚽
+                </p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+      text: `
+Match beendet - ${resultText}
+
+Das Match gegen ${opponentUsername} ist beendet!
+
+Schau dir das Ergebnis an: ${resultUrl}
+
+Penalty - Das Elfmeterschießen-Spiel ⚽
+      `
+    });
+
+    if (error) {
+      console.error('Failed to send match completed email:', error);
+      return { success: false, error };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Match completed email service error:', error);
     return { success: false, error };
   }
 }
