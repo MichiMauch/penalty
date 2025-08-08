@@ -244,17 +244,24 @@ function KeeperPageContent() {
       // Wait a bit to show success message
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Redirect to match result page with animation
-      const redirectUrl = `/game/${match.id}?animate=true`;
-      console.log('Redirecting to:', redirectUrl);
-      
-      try {
-        await router.push(redirectUrl);
-        console.log('Router.push completed');
-      } catch (redirectError) {
-        console.error('Router.push failed:', redirectError);
-        // Fallback: use window.location
-        window.location.href = redirectUrl;
+      // Check response status to determine redirect
+      if (responseData.status === 'finished') {
+        // Game is finished, redirect to result page
+        const redirectUrl = `/game/${match.id}?animate=true`;
+        console.log('Game finished, redirecting to result page:', redirectUrl);
+        
+        try {
+          await router.push(redirectUrl);
+          console.log('Router.push completed');
+        } catch (redirectError) {
+          console.error('Router.push failed:', redirectError);
+          // Fallback: use window.location
+          window.location.href = redirectUrl;
+        }
+      } else {
+        // Game still waiting, redirect to garderobe
+        console.log('Game still waiting, redirecting to garderobe');
+        router.push('/garderobe?success=moves-submitted&refreshLeaderboard=true');
       }
       
     } catch (error) {
