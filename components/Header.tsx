@@ -441,6 +441,18 @@ export default function Header() {
                 </div>
                 
                 <span className="text-white text-sm">|</span>
+                
+                {/* Admin Navigation */}
+                {user.is_admin && (
+                  <button
+                    onClick={() => router.push('/admin')}
+                    className="nav-link p-2 text-white hover:text-blue-400 transition-colors"
+                    title="Admin-Panel"
+                  >
+                    🛡️
+                  </button>
+                )}
+                
                 <div className="header-avatar">
                   <UserAvatar user={user} size="sm" showName={true} />
                 </div>

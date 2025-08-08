@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/auth';
 import { db, initDB } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
-  if (!db) {
-    return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
-  }
-  
-  await initDB();
-  
   try {
+    // Require admin authentication
+    await requireAdmin(request);
+    
+    if (!db) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+    }
+    
+    await initDB();
     // Get all non-finished matches with full details
     const openMatches = await db.execute({
       sql: `
@@ -54,6 +57,14 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error fetching admin matches:', error);
+    
+    // Handle auth errors
+    if (error instanceof Error) {
+      if (error.message.includes('Admin-Berechtigung') || error.message.includes('Authentifizierung')) {
+        return NextResponse.json({ error: error.message }, { status: 403 });
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch matches' },
       { status: 500 }

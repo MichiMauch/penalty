@@ -88,6 +88,25 @@ export async function initDB() {
     // Column already exists, ignore error
   }
 
+  // Add admin column to users table
+  try {
+    await db.execute(`ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE`);
+  } catch (error) {
+    // Column already exists, ignore error
+  }
+
+  // Set Roberto Böckli as admin if he exists
+  try {
+    await db.execute(`
+      UPDATE users 
+      SET is_admin = TRUE 
+      WHERE username LIKE '%Roberto%' AND username LIKE '%Böckli%'
+      OR username LIKE '%Roberto%' AND username LIKE '%Boeckli%'
+    `);
+  } catch (error) {
+    console.error('Error setting Roberto Böckli as admin:', error);
+  }
+
   try {
     await db.execute(`ALTER TABLE matches ADD COLUMN player_a_avatar TEXT`);
   } catch (error) {

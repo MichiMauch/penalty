@@ -13,6 +13,7 @@ export interface User {
   avatar: AvatarId;
   created_at: string;
   updated_at: string;
+  is_admin?: boolean;
 }
 
 export interface UserSession {

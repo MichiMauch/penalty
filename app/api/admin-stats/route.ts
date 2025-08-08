@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { getSession } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/auth';
 import { db } from '@/lib/db';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // No auth required for public stats
+    // Require admin authentication
+    await requireAdmin(request);
 
     if (!db) {
       return NextResponse.json({ error: 'Datenbankverbindung fehlgeschlagen' }, { status: 500 });
@@ -104,6 +104,14 @@ export async function GET() {
     return NextResponse.json(stats);
   } catch (error) {
     console.error('Error fetching admin stats:', error);
+    
+    // Handle auth errors
+    if (error instanceof Error) {
+      if (error.message.includes('Admin-Berechtigung') || error.message.includes('Authentifizierung')) {
+        return NextResponse.json({ error: error.message }, { status: 403 });
+      }
+    }
+    
     return NextResponse.json({ error: 'Fehler beim Abrufen der Statistiken' }, { status: 500 });
   }
 }
