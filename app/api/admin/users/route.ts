@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
         u.avatar,
         u.created_at,
         u.is_admin,
+        u.is_blocked,
         COALESCE(s.total_points, 0) as total_points,
         COALESCE(s.games_played, 0) as games_played,
         COALESCE(s.games_won, 0) as games_won

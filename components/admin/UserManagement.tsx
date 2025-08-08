@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FaSearch, FaUserShield, FaUser, FaSpinner } from 'react-icons/fa';
+import { FaSearch, FaUserShield, FaUser, FaSpinner, FaBan, FaTrash, FaCheckCircle } from 'react-icons/fa';
 
 interface User {
   id: string;
@@ -10,6 +10,7 @@ interface User {
   avatar: string;
   created_at: string;
   is_admin: boolean;
+  is_blocked: boolean;
   total_points: number;
   games_played: number;
   games_won: number;
@@ -30,6 +31,7 @@ export default function UserManagement() {
   const [page, setPage] = useState(1);
   const [error, setError] = useState('');
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
   const limit = 20;
 
@@ -111,6 +113,85 @@ export default function UserManagement() {
     }
   };
 
+  const toggleBlockStatus = async (userId: string, currentStatus: boolean) => {
+    if (updatingUserId) return; // Prevent multiple requests
+
+    const confirmMessage = currentStatus 
+      ? 'User entsperren?' 
+      : 'User sperren?';
+    
+    if (!window.confirm(confirmMessage)) return;
+
+    setUpdatingUserId(userId);
+    
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          is_blocked: !currentStatus
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Fehler beim Update');
+      }
+
+      const result = await response.json();
+      console.log(result.message);
+
+      // Update the local state
+      setUsers(users.map(user => 
+        user.id === userId 
+          ? { ...user, is_blocked: !currentStatus }
+          : user
+      ));
+
+    } catch (error) {
+      console.error('Error updating block status:', error);
+      alert(error instanceof Error ? error.message : 'Fehler beim Update');
+    } finally {
+      setUpdatingUserId(null);
+    }
+  };
+
+  const deleteUser = async (userId: string, username: string) => {
+    if (deletingUserId) return; // Prevent multiple requests
+
+    const confirmMessage = `User "${username}" wirklich löschen?\n\nDies kann nicht rückgängig gemacht werden!`;
+    
+    if (!window.confirm(confirmMessage)) return;
+
+    setDeletingUserId(userId);
+    
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Fehler beim Löschen');
+      }
+
+      const result = await response.json();
+      console.log(result.message);
+
+      // Remove user from local state
+      setUsers(users.filter(user => user.id !== userId));
+      setTotal(total - 1);
+
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert(error instanceof Error ? error.message : 'Fehler beim Löschen');
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
     setPage(1); // Reset to first page when searching
@@ -179,8 +260,8 @@ export default function UserManagement() {
                 <th className="px-4 py-3 text-left text-white font-medium">Email</th>
                 <th className="px-4 py-3 text-left text-white font-medium">Punkte</th>
                 <th className="px-4 py-3 text-left text-white font-medium">Spiele</th>
-                <th className="px-4 py-3 text-left text-white font-medium">Registriert</th>
-                <th className="px-4 py-3 text-center text-white font-medium">Admin</th>
+                <th className="px-4 py-3 text-left text-white font-medium">Status</th>
+                <th className="px-4 py-3 text-center text-white font-medium">Aktionen</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-600">
@@ -199,17 +280,24 @@ export default function UserManagement() {
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-700 transition-colors">
+                  <tr key={user.id} className={`hover:bg-gray-700 transition-colors ${user.is_blocked ? 'bg-red-900 bg-opacity-20' : ''}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{getAvatarEmoji(user.avatar)}</span>
                         <div>
-                          <div className="text-white font-medium">{user.username}</div>
+                          <div className={`font-medium ${user.is_blocked ? 'text-red-300' : 'text-white'}`}>
+                            {user.username}
+                            {user.is_blocked && <span className="ml-2 text-xs text-red-400">(GESPERRT)</span>}
+                          </div>
                           <div className="text-xs text-gray-400">ID: {user.id.slice(0, 8)}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-300">{user.email}</td>
+                    <td className="px-4 py-3">
+                      <div className={user.is_blocked ? 'text-red-300' : 'text-gray-300'}>
+                        {user.email}
+                      </div>
+                    </td>
                     <td className="px-4 py-3">
                       <span className="text-yellow-400 font-medium">{user.total_points}</span>
                     </td>
@@ -220,28 +308,75 @@ export default function UserManagement() {
                         <span>{user.games_played}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-300 text-sm">
-                      {formatDate(user.created_at)}
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        <div className={`text-sm font-medium ${user.is_admin ? 'text-blue-400' : 'text-gray-400'}`}>
+                          {user.is_admin ? '🛡️ Admin' : '👤 User'}
+                        </div>
+                        <div className={`text-xs ${user.is_blocked ? 'text-red-400' : 'text-green-400'}`}>
+                          {user.is_blocked ? '🔒 Gesperrt' : '✅ Aktiv'}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {formatDate(user.created_at)}
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => toggleAdminStatus(user.id, user.is_admin)}
-                        disabled={updatingUserId === user.id}
-                        className={`p-2 rounded-lg transition-all duration-200 ${
-                          user.is_admin
-                            ? 'bg-blue-600 hover:bg-blue-500 text-white'
-                            : 'bg-gray-600 hover:bg-gray-500 text-gray-300'
-                        } disabled:opacity-50 disabled:cursor-not-allowed`}
-                        title={user.is_admin ? 'Admin-Rechte entfernen' : 'Admin-Rechte gewähren'}
-                      >
-                        {updatingUserId === user.id ? (
-                          <FaSpinner className="animate-spin" />
-                        ) : user.is_admin ? (
-                          <FaUserShield />
-                        ) : (
-                          <FaUser />
-                        )}
-                      </button>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-center gap-2">
+                        {/* Admin Toggle */}
+                        <button
+                          onClick={() => toggleAdminStatus(user.id, user.is_admin)}
+                          disabled={updatingUserId === user.id}
+                          className={`p-2 rounded-lg transition-all duration-200 ${
+                            user.is_admin
+                              ? 'bg-blue-600 hover:bg-blue-500 text-white'
+                              : 'bg-gray-600 hover:bg-gray-500 text-gray-300'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          title={user.is_admin ? 'Admin-Rechte entfernen' : 'Admin-Rechte gewähren'}
+                        >
+                          {updatingUserId === user.id ? (
+                            <FaSpinner className="animate-spin" />
+                          ) : user.is_admin ? (
+                            <FaUserShield />
+                          ) : (
+                            <FaUser />
+                          )}
+                        </button>
+
+                        {/* Block Toggle */}
+                        <button
+                          onClick={() => toggleBlockStatus(user.id, user.is_blocked)}
+                          disabled={updatingUserId === user.id}
+                          className={`p-2 rounded-lg transition-all duration-200 ${
+                            user.is_blocked
+                              ? 'bg-green-600 hover:bg-green-500 text-white'
+                              : 'bg-orange-600 hover:bg-orange-500 text-white'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          title={user.is_blocked ? 'User entsperren' : 'User sperren'}
+                        >
+                          {updatingUserId === user.id ? (
+                            <FaSpinner className="animate-spin" />
+                          ) : user.is_blocked ? (
+                            <FaCheckCircle />
+                          ) : (
+                            <FaBan />
+                          )}
+                        </button>
+
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => deleteUser(user.id, user.username)}
+                          disabled={deletingUserId === user.id || updatingUserId === user.id}
+                          className="p-2 rounded-lg bg-red-600 hover:bg-red-500 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="User löschen"
+                        >
+                          {deletingUserId === user.id ? (
+                            <FaSpinner className="animate-spin" />
+                          ) : (
+                            <FaTrash />
+                          )}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

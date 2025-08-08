@@ -34,7 +34,7 @@ export async function getSession(sessionId: string): Promise<UserSession | null>
   
   const result = await db.execute({
     sql: `
-      SELECT s.id, s.expires_at, u.id as user_id, u.email, u.username, u.avatar, u.created_at, u.updated_at, u.is_admin
+      SELECT s.id, s.expires_at, u.id as user_id, u.email, u.username, u.avatar, u.created_at, u.updated_at, u.is_admin, u.is_blocked
       FROM sessions s
       JOIN users u ON s.user_id = u.id
       WHERE s.id = ? AND s.expires_at > datetime('now')
@@ -54,7 +54,8 @@ export async function getSession(sessionId: string): Promise<UserSession | null>
       avatar: row.avatar as any,
       created_at: row.created_at as string,
       updated_at: row.updated_at as string,
-      is_admin: Boolean(row.is_admin)
+      is_admin: Boolean(row.is_admin),
+      is_blocked: Boolean(row.is_blocked)
     },
     expires_at: row.expires_at as string
   };
@@ -90,6 +91,10 @@ export async function requireAdmin(request: NextRequest): Promise<User> {
   
   if (!session?.user) {
     throw new Error('Ungültige Session');
+  }
+  
+  if (session.user.is_blocked) {
+    throw new Error('Account ist gesperrt');
   }
   
   if (!session.user.is_admin) {

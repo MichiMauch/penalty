@@ -95,6 +95,13 @@ export async function initDB() {
     // Column already exists, ignore error
   }
 
+  // Add blocked column to users table
+  try {
+    await db.execute(`ALTER TABLE users ADD COLUMN is_blocked BOOLEAN DEFAULT FALSE`);
+  } catch (error) {
+    // Column already exists, ignore error
+  }
+
   // Set Roberto Böckli as admin if he exists
   try {
     await db.execute(`
