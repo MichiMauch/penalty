@@ -229,18 +229,50 @@ export default function GameControls({
 
         /* Mobile optimizations */
         @media (max-width: 768px) {
-          .controls-wrapper {
-            gap: 6vw;
+          .game-controls {
+            padding-bottom: 2vh;
+            width: 100%;
           }
           
-          .control-btn, .submit-btn {
-            width: 18vw;
-            height: 18vw;
-            font-size: min(10vw, 32px);
+          .controls-wrapper {
+            width: 100%;
+            gap: 2px;
+            padding: 0 2vw;
+            max-width: 100%;
+          }
+          
+          .control-btn {
+            /* Square buttons with full width */
+            border-radius: 12px;
+            width: 100%;
+            height: 70px;
+            max-width: none;
+            max-height: none;
+            min-width: auto;
+            min-height: auto;
+            flex: 1;
+            font-size: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.9);
           }
           
           .submit-btn {
-            font-size: min(6vw, 20px);
+            /* Square submit button */
+            border-radius: 12px;
+            width: 100%;
+            height: 70px;
+            max-width: none;
+            max-height: none;
+            min-width: auto;
+            min-height: auto;
+            flex: 1;
+            font-size: 18px;
+            font-weight: 900;
+            border: 3px solid rgba(255, 255, 255, 0.9);
+          }
+          
+          .control-btn:hover:not(:disabled),
+          .submit-btn:hover:not(:disabled) {
+            transform: scale(1.02) translateY(-1px);
           }
         }
       `}</style>

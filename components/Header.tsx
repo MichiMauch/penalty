@@ -49,28 +49,34 @@ export default function Header() {
     }
   }, [user]);
 
-  // Auto-refresh matches every 30 seconds
+  // Auto-refresh matches every 30 seconds (only when menu is closed)
   useEffect(() => {
     if (!user) return;
 
     const interval = setInterval(() => {
-      fetchMatches();
+      // Only fetch matches if menu is not open
+      if (!isMatchesOpen) {
+        fetchMatches();
+      }
     }, 30000); // 30 seconds
 
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, isMatchesOpen]);
 
-  // Refresh matches when window comes back into focus
+  // Refresh matches when window comes back into focus (only when menu is closed)
   useEffect(() => {
     if (!user) return;
 
     const handleFocus = () => {
-      fetchMatches();
+      // Only fetch matches if menu is not open
+      if (!isMatchesOpen) {
+        fetchMatches();
+      }
     };
 
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, [user]);
+  }, [user, isMatchesOpen]);
 
   // Save viewed matches to localStorage
   const saveViewedMatches = (matches: Set<string>) => {
@@ -141,17 +147,23 @@ export default function Header() {
 
   const newMatchesCount = matches.filter(m => m.type === 'invitation' || m.type === 'finished_recent').length;
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside - TEMPORARILY DISABLED FOR DEBUGGING
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      console.log('Click outside detected, target:', event.target);
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        console.log('Closing matches dropdown due to outside click');
         setIsMatchesOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    // TEMPORARILY DISABLED
+    // if (isMatchesOpen) {
+    //   document.addEventListener('mousedown', handleClickOutside);
+    // }
+    
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isMatchesOpen]);
 
   const handleLogout = async () => {
     try {
@@ -194,7 +206,7 @@ export default function Header() {
         <div className="header-content">
           {/* Logo/Title */}
           <a href={user ? "/garderobe" : "/"} className={`logo ${isGarderobe ? 'garderobe-logo' : ''}`}>
-            ⚽ <span className="hidden sm:inline">PENALTY</span>
+            <span className="md:inline hidden">⚽ </span>PENALTY
           </a>
 
           {/* Show navigation only if user is logged in */}
@@ -305,7 +317,7 @@ export default function Header() {
                                       <span className="text-gray-500 text-xs px-2">Warte auf Antwort</span>
                                     ) : (
                                       <button 
-                                        onClick={() => router.push(`/challenge?match=${match.id}`)}
+                                        onClick={() => router.push(`/match/${match.id}`)}
                                         className="text-blue-400 hover:text-blue-300 p-1"
                                         title="Match öffnen"
                                       >
@@ -370,10 +382,19 @@ export default function Header() {
 
               {/* Mobile Menu Button */}
               <div className="md:hidden flex items-center space-x-3">
+                {/* Challenge Button - Mobile only */}
+                <button 
+                  onClick={() => setIsChallengeModalOpen(true)}
+                  className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-lg transition-all duration-200 transform hover:scale-105"
+                  title="Herausfordern"
+                >
+                  <GiCrossedSwords size={20} />
+                </button>
+                
                 <UserAvatar user={user} size="sm" showName={false} />
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="nav-link p-2"
+                  className="nav-link p-2 relative"
                 >
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     {isMenuOpen ? (
@@ -382,6 +403,11 @@ export default function Header() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                     )}
                   </svg>
+                  {newMatchesCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 font-bold min-w-[20px] text-center">
+                      {newMatchesCount}
+                    </span>
+                  )}
                 </button>
               </div>
             </>
@@ -404,9 +430,11 @@ export default function Header() {
               </button>
               
               <button 
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  setIsMatchesOpen(true);
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  console.log('Mobile matches button clicked, current state:', isMatchesOpen);
+                  setIsMatchesOpen(!isMatchesOpen);
                 }}
                 className="nav-link block w-full text-left text-white flex items-center justify-between"
               >
@@ -417,6 +445,128 @@ export default function Header() {
                   </span>
                 )}
               </button>
+              
+              {/* Mobile Matches Dropdown */}
+              {isMatchesOpen && (
+                <div className="bg-gray-800 bg-opacity-95 backdrop-blur-md rounded-lg border border-green-600 mx-3 p-4">
+                  <h3 className="text-white font-bold text-lg mb-3">Deine Matches</h3>
+                  
+                  {isLoadingMatches ? (
+                    <div className="text-center py-6">
+                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-green-400 border-t-transparent mx-auto mb-2"></div>
+                      <p className="text-gray-400 text-sm">Lade Matches...</p>
+                    </div>
+                  ) : matchesError ? (
+                    <div className="text-center py-6">
+                      <p className="text-red-400 text-sm">{matchesError}</p>
+                      <button 
+                        onClick={fetchMatches}
+                        className="mt-2 text-green-400 hover:text-green-300 text-sm"
+                      >
+                        Erneut versuchen
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Neue Herausforderungen */}
+                      <div className="mb-4">
+                        <h4 className="text-green-400 text-sm font-semibold mb-2">Neue Herausforderungen</h4>
+                        {matches.filter(m => m.type === 'invitation').length === 0 ? (
+                          <p className="text-gray-400 text-xs py-2">Keine neuen Herausforderungen</p>
+                        ) : (
+                          matches.filter(m => m.type === 'invitation').map(match => (
+                            <div key={match.id} className="flex items-center justify-between p-2 hover:bg-green-900 hover:bg-opacity-30 rounded transition-colors mb-1">
+                              <div 
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  console.log('Challenge row clicked for match:', match.id);
+                                  setIsMenuOpen(false);
+                                  setIsMatchesOpen(false);
+                                  router.push(`/challenge?match=${match.id}`);
+                                }}
+                                className="flex items-center gap-3 flex-1 cursor-pointer"
+                              >
+                                <span className="text-2xl">{getAvatarEmoji(match.challengerAvatar)}</span>
+                                <div>
+                                  <p className="text-white text-sm font-medium">{match.challengerUsername}</p>
+                                  <p className="text-gray-400 text-xs">{getMatchStatus(match)}</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <button 
+                                  onClick={(event) => {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    console.log('Accept button clicked for match:', match.id);
+                                    setIsMenuOpen(false);
+                                    setIsMatchesOpen(false);
+                                    router.push(`/challenge?match=${match.id}`);
+                                  }}
+                                  className="text-green-400 hover:text-green-300 p-1"
+                                  title="Herausforderung annehmen"
+                                >
+                                  <FaCheck size={14} />
+                                </button>
+                                <button 
+                                  onClick={(event) => {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    console.log('Decline button clicked for match:', match.id);
+                                    // TODO: Implement decline functionality
+                                  }}
+                                  className="text-red-400 hover:text-red-300 p-1" 
+                                  title="Ablehnen"
+                                >
+                                  <FaTimes size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      
+                      {/* Aktive Matches */}
+                      <div className="mb-4">
+                        <h4 className="text-yellow-400 text-sm font-semibold mb-2">Aktive Matches</h4>
+                        {matches.filter(m => m.type === 'active' || m.type === 'waiting_for_opponent' || m.type === 'cancelable').length === 0 ? (
+                          <p className="text-gray-400 text-xs py-2">Keine aktiven Matches</p>
+                        ) : (
+                          matches.filter(m => m.type === 'active' || m.type === 'waiting_for_opponent' || m.type === 'cancelable').map(match => (
+                            <div key={match.id} className="flex items-center justify-between p-2 hover:bg-green-900 hover:bg-opacity-30 rounded transition-colors mb-1">
+                              <div className="flex items-center gap-3">
+                                <span className="text-2xl">{getAvatarEmoji(match.challengerAvatar)}</span>
+                                <div>
+                                  <p className="text-white text-sm font-medium">{match.challengerUsername}</p>
+                                  <p className="text-gray-400 text-xs">{getMatchStatus(match)}</p>
+                                </div>
+                              </div>
+                              {match.type === 'cancelable' ? (
+                                <span className="text-gray-500 text-xs px-2">Warte auf Antwort</span>
+                              ) : (
+                                <button 
+                                  onClick={(event) => {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    console.log('Match button clicked:', match.id, match.type);
+                                    setIsMenuOpen(false);
+                                    setIsMatchesOpen(false);
+                                    router.push(`/match/${match.id}`);
+                                  }}
+                                  className="text-blue-400 hover:text-blue-300 p-1"
+                                  title="Match öffnen"
+                                >
+                                  <FaExternalLinkAlt size={14} />
+                                </button>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
               
               <hr className="border-subtle my-2" />
               

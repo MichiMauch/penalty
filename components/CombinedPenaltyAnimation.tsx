@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import GameField from './GameField';
 import { ShotDirection, SaveDirection } from '@/lib/types';
 
 interface CombinedPenaltyAnimationProps {
@@ -118,212 +119,275 @@ export default function CombinedPenaltyAnimation({
   }, [isAnimating, shotDirection, saveDirection, onAnimationComplete]);
 
   return (
-    <div className="combined-penalty-animation">
-      {/* Keeper */}
-      {showKeeper && (
-        <div 
-          className={`keeper ${isKeeperAnimating && !isKeeperResetting ? 'animate-save' : ''} ${isKeeperResetting ? 'fade-in' : ''}`}
-          style={{
-            '--target-left': `${keeperPosition.x}%`,
-            '--save-direction': saveDirection
-          } as React.CSSProperties}
-        >
-          <div className="keeper-body">
-            <img src="/gloves.png" alt="Keeper gloves" className="keeper-gloves" />
-          </div>
+    <GameField mode="result">
+      {/* Animation Info Header */}
+      <div className="game-header">
+        <div className="animation-info">
+          <h1 className="animation-title">
+            {shotDirection !== saveDirection ? '⚽ TOR!' : '🧤 PARADE!'}
+          </h1>
         </div>
-      )}
-      
-      {/* Ball */}
-      {showBall && (
-        <div 
-          className={`football ${isAnimating && !isBallResetting ? 'animate-shot' : ''} ${isBallResetting ? 'fade-in' : ''}`}
-          style={{
-            '--target-left': `${ballPosition.x}%`
-          } as React.CSSProperties}
-        >
-          ⚽
-        </div>
-      )}
-      
-      {/* Goal/Save Result */}
-      {showResult && (
-        <div className="goal-result-overlay">
-          <div className={`goal-result-message ${(() => {
-            const isGoal = shotDirection !== saveDirection;
-            if (isGoal) {
-              // Tor: Gut für Schütze, schlecht für Keeper
-              return playerRole === 'shooter' ? 'success' : 'failure';
-            } else {
-              // Parade: Gut für Keeper, schlecht für Schütze
-              return playerRole === 'keeper' ? 'success' : 'failure';
-            }
-          })()}`}>
-            <div className="goal-text">
-              {shotDirection !== saveDirection ? '⚽ TOR!' : '🧤 PARADE!'}
+      </div>
+
+      {/* Game Area */}
+      <div className="game-area">
+        <div className="field-container">
+          {/* Keeper */}
+          {showKeeper && (
+            <div 
+              className={`keeper ${isKeeperAnimating && !isKeeperResetting ? 'keeper-animate' : ''} ${isKeeperResetting ? 'fade-in' : ''}`}
+              style={{
+                '--target-left': saveDirection === 'links' ? '30%' : 
+                                saveDirection === 'rechts' ? '70%' : '50%',
+                '--target-left-notebook': saveDirection === 'links' ? '35%' : 
+                                         saveDirection === 'rechts' ? '65%' : '50%',
+                '--target-left-mobile': saveDirection === 'links' ? '20%' : 
+                                        saveDirection === 'rechts' ? '80%' : '50%',
+                '--keeper-rotation': saveDirection === 'links' ? '-40deg' : 
+                                   saveDirection === 'rechts' ? '40deg' : '0deg'
+              } as React.CSSProperties}
+            >
+              <img src="/gloves.png" alt="Keeper Gloves" className="keeper-gloves" />
             </div>
-          </div>
+          )}
+          
+          {/* Ball */}
+          {showBall && (
+            <div 
+              className={`ball ${isAnimating && !isBallResetting ? 'ball-animate' : ''} ${isBallResetting ? 'fade-in' : ''}`}
+              style={{
+                '--target-left': shotDirection === 'links' ? '30%' : 
+                                shotDirection === 'rechts' ? '70%' : '50%',
+                '--target-left-notebook': shotDirection === 'links' ? '35%' : 
+                                         shotDirection === 'rechts' ? '65%' : '50%',
+                '--target-left-mobile': shotDirection === 'links' ? '20%' : 
+                                        shotDirection === 'rechts' ? '80%' : '50%'
+              } as React.CSSProperties}
+            >
+              ⚽
+            </div>
+          )}
+          
+          {/* Goal/Save Result */}
+          {showResult && (
+            <div className="goal-result-overlay">
+              <div className={`goal-result-message ${(() => {
+                const isGoal = shotDirection !== saveDirection;
+                if (isGoal) {
+                  // Tor: Gut für Schütze, schlecht für Keeper
+                  return playerRole === 'shooter' ? 'success' : 'failure';
+                } else {
+                  // Parade: Gut für Keeper, schlecht für Schütze
+                  return playerRole === 'keeper' ? 'success' : 'failure';
+                }
+              })()}`}>
+                <div className="goal-text">
+                  {shotDirection !== saveDirection ? '⚽ TOR!' : '🧤 PARADE!'}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       <style jsx>{`
-        .combined-penalty-animation {
+        .game-header {
+          grid-area: header;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 2vh 0;
+          z-index: 20;
+        }
+
+        .animation-info {
+          text-align: center;
+          background: rgba(0, 0, 0, 0.7);
+          padding: 2vh 3vw;
+          border-radius: 1rem;
+          backdrop-filter: blur(10px);
+        }
+
+        .animation-title {
+          color: #10b981;
+          font-size: clamp(1.5rem, 4vw, 2rem);
+          font-weight: bold;
+          margin: 0;
+        }
+
+        .game-area {
+          grid-area: field;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+        }
+
+        .field-container {
           position: relative;
           width: 100%;
-          height: 400px;
-          background: transparent;
-          border-radius: 12px;
-          overflow: visible;
-          perspective: 1000px;
-        }
-
-        /* Keeper styles */
-        .keeper {
-          position: fixed;
-          bottom: 47vh;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 9;
-          filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.5));
-          transition: all 0.6s ease-out;
-        }
-
-        .keeper-body {
+          height: 100%;
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          transition: transform 0.8s ease-out;
         }
 
-        .keeper-gloves {
-          width: 60px;
-          height: 60px;
-          object-fit: contain;
-          transition: transform 0.8s ease-out;
-        }
-
-        .keeper.animate-save {
-          animation: keeperSave 0.55s ease-out forwards;
-        }
-
-        @keyframes keeperSave {
-          0% {
-            transform: translateX(-50%) rotate(0deg);
-            bottom: 47vh;
-            left: 50%;
-          }
-          100% {
-            transform: translateX(-50%) rotate(0deg);
-            bottom: 47vh;
-            left: var(--target-left);
-          }
-        }
-
-        .keeper.animate-save[style*="links"] .keeper-body {
-          transform: rotate(-20deg);
-        }
-
-        .keeper.animate-save[style*="links"] .keeper-gloves {
-          transform: rotate(-15deg) scale(1.2);
-        }
-
-        .keeper.animate-save[style*="rechts"] .keeper-body {
-          transform: rotate(20deg);
-        }
-
-        .keeper.animate-save[style*="rechts"] .keeper-gloves {
-          transform: rotate(15deg) scale(1.2);
-        }
-
-        .keeper.animate-save[style*="mitte"] .keeper-body {
-          transform: scale(1.1);
-        }
-
-        .keeper.animate-save[style*="mitte"] .keeper-gloves {
-          transform: translateY(-10px) scale(1.3);
-        }
-
-        @keyframes keeperMove {
-          0% {
-            transform: translate(-50%, -50%) scale(1);
-          }
-          50% {
-            transform: translate(-50%, -50%) scale(1.05);
-          }
-          100% {
-            transform: translate(-50%, -50%) scale(1);
-          }
-        }
-
-        /* Ball styles */
-        .football {
+        /* Keeper styles - kopiert aus keeper/page.tsx */
+        .keeper {
           position: fixed;
-          bottom: 20vh;
+          bottom: clamp(48vh, 53vh, 58vh);
           left: 50%;
           transform: translateX(-50%);
-          font-size: 2.5rem;
           z-index: 10;
           filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.5));
           transition: all 0.8s ease-out;
         }
 
-        .football.animate-shot {
-          animation: ballShot 0.8s ease-out forwards;
+        .keeper-animate {
+          animation: keeperSave 0.8s ease-out forwards;
+        }
+
+        .keeper-gloves {
+          width: clamp(2.8rem, 7vw, 3.5rem);
+          height: clamp(2.8rem, 7vw, 3.5rem);
+          object-fit: contain;
+        }
+
+        @keyframes keeperSave {
+          0% {
+            transform: translateX(-50%) rotate(0deg);
+            bottom: clamp(48vh, 53vh, 58vh);
+            left: 50%;
+          }
+          100% {
+            transform: translateX(-50%) rotate(var(--keeper-rotation));
+            bottom: clamp(48vh, 53vh, 58vh);
+            left: var(--target-left);
+          }
+        }
+
+        /* Ball styles - kopiert aus shooter/page.tsx */
+        .ball {
+          position: fixed;
+          bottom: clamp(19vh, 24vh, 29vh);
+          left: 50%;
+          transform: translateX(-50%);
+          font-size: clamp(2rem, 6vw, 3rem);
+          z-index: 10;
+          filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.5));
+          transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .ball-animate {
+          animation: ballShot 0.6s ease-out forwards;
         }
 
         @keyframes ballShot {
           0% {
             transform: translateX(-50%) scale(1) rotate(0deg);
-            bottom: 20vh;
+            bottom: clamp(19vh, 24vh, 29vh);
             left: 50%;
           }
           100% {
             transform: translateX(-50%) scale(0.7) rotate(360deg);
-            bottom: 50vh;
+            bottom: clamp(48vh, 53vh, 58vh);
             left: var(--target-left);
           }
         }
 
-        @keyframes ballFlight {
-          0% {
-            transform: translate(-50%, -50%) scale(1) rotate(0deg);
-            opacity: 1;
+        /* Notebook adjustments - moderate positions */
+        @media (min-width: 769px) and (max-width: 1600px) {
+          .keeper {
+            bottom: clamp(48vh, 53vh, 58vh);
           }
-          30% {
-            transform: translate(-50%, -50%) scale(1.05) rotate(120deg);
-            opacity: 1;
+
+          .keeper-gloves {
+            width: clamp(2.8rem, 7vw, 3.5rem);
+            height: clamp(2.8rem, 7vw, 3.5rem);
           }
-          60% {
-            transform: translate(-50%, -50%) scale(0.85) rotate(240deg);
-            opacity: 1;
+
+          @keyframes keeperSave {
+            0% {
+              transform: translateX(-50%) rotate(0deg);
+              bottom: clamp(48vh, 53vh, 58vh);
+              left: 50%;
+            }
+            100% {
+              transform: translateX(-50%) rotate(var(--keeper-rotation));
+              bottom: clamp(48vh, 53vh, 58vh);
+              left: var(--target-left-notebook);
+            }
           }
-          100% {
-            transform: translate(-50%, -50%) scale(0.7) rotate(360deg);
-            opacity: 1;
+
+          .ball {
+            bottom: clamp(19vh, 24vh, 29vh);
+            font-size: clamp(2rem, 6vw, 3rem);
+          }
+
+          @keyframes ballShot {
+            0% {
+              transform: translateX(-50%) scale(1) rotate(0deg);
+              bottom: clamp(19vh, 24vh, 29vh);
+              left: 50%;
+            }
+            100% {
+              transform: translateX(-50%) scale(0.7) rotate(360deg);
+              bottom: clamp(48vh, 53vh, 58vh);
+              left: var(--target-left-notebook);
+            }
+          }
+        }
+
+        /* Mobile adjustments - kopiert aus keeper/shooter */
+        @media (max-width: 768px) {
+          .keeper {
+            bottom: clamp(40vh, 45vh, 50vh);
+          }
+
+          .keeper-gloves {
+            width: clamp(2.5rem, 6vw, 3rem);
+            height: clamp(2.5rem, 6vw, 3rem);
+          }
+
+          @keyframes keeperSave {
+            0% {
+              transform: translateX(-50%) rotate(0deg);
+              bottom: clamp(40vh, 45vh, 50vh);
+              left: 50%;
+            }
+            100% {
+              transform: translateX(-50%) rotate(var(--keeper-rotation));
+              bottom: clamp(40vh, 45vh, 50vh);
+              left: var(--target-left-mobile);
+            }
+          }
+
+          .ball {
+            bottom: clamp(18vh, 23vh, 28vh);
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+          }
+
+          @keyframes ballShot {
+            0% {
+              transform: translateX(-50%) scale(1) rotate(0deg);
+              bottom: clamp(18vh, 23vh, 28vh);
+              left: 50%;
+            }
+            100% {
+              transform: translateX(-50%) scale(0.6) rotate(360deg);
+              bottom: clamp(38vh, 43vh, 48vh);
+              left: var(--target-left-mobile);
+            }
           }
         }
 
         /* Fade in animations */
-        .keeper.fade-in {
-          animation: fadeInKeeper 0.4s ease-out;
+        .fade-in {
+          animation: fadeIn 0.4s ease-out;
         }
 
-        .football.fade-in {
-          animation: fadeInBall 0.4s ease-out;
-        }
-
-        @keyframes fadeInKeeper {
-          0% {
-            opacity: 0.7;
-            transform: translateX(-50%) scale(0.9);
-          }
-          100% {
-            opacity: 1;
-            transform: translateX(-50%) scale(1);
-          }
-        }
-
-        @keyframes fadeInBall {
+        @keyframes fadeIn {
           0% {
             opacity: 0.7;
             transform: translateX(-50%) scale(0.9);
@@ -336,11 +400,12 @@ export default function CombinedPenaltyAnimation({
 
         /* Goal Result Styles */
         .goal-result-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 100vw;
+          height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -372,6 +437,18 @@ export default function CombinedPenaltyAnimation({
           text-align: center;
           text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
+        
+        /* Mobile adjustments for goal/save cards */
+        @media (max-width: 768px) {
+          .goal-result-message {
+            padding: 1rem 1.5rem;
+            max-width: 80vw;
+          }
+          
+          .goal-text {
+            font-size: 2.5rem;
+          }
+        }
 
         @keyframes goalPop {
           0% {
@@ -395,7 +472,8 @@ export default function CombinedPenaltyAnimation({
             opacity: 1;
           }
         }
+
       `}</style>
-    </div>
+    </GameField>
   );
 }

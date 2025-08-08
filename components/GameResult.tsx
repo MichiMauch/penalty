@@ -127,6 +127,10 @@ export default function GameResult({
       {/* Authentic LED Scoreboard - Centered */}
       {showFinalResult && (
         <div className="led-scoreboard-wrapper">
+          {/* Cable attachment points */}
+          <div className="cable-attachment-left"></div>
+          <div className="cable-attachment-right"></div>
+          
           <div className="authentic-led-scoreboard">
           {/* Stadium Header */}
           <div className="led-header led-header-notable">

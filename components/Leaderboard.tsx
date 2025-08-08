@@ -139,8 +139,8 @@ export default function Leaderboard({ currentUserId, onChallengeUser, checkingUs
               <th className="text-left py-2 px-3 font-semibold">Platz</th>
               <th className="text-left py-2 px-3 font-semibold">Spieler</th>
               <th className="text-center py-2 px-3 font-semibold">SP</th>
-              <th className="text-center py-2 px-3 font-semibold">T</th>
-              <th className="text-center py-2 px-3 font-semibold">P</th>
+              <th className="text-center py-2 px-3 font-semibold">G</th>
+              <th className="text-center py-2 px-3 font-semibold">V</th>
               <th className="text-right py-2 px-3 font-semibold">Punkte</th>
             </tr>
           </thead>
@@ -196,8 +196,8 @@ export default function Leaderboard({ currentUserId, onChallengeUser, checkingUs
                     )}
                   </td>
                   <td className={`text-center py-2 px-3 ${isCurrentUser ? 'text-white' : ''}`} style={isCurrentUser ? { fontWeight: 900, fontSize: '14px' } : {}}>{player.stats.gamesPlayed}</td>
-                  <td className={`text-center py-2 px-3 ${isCurrentUser ? 'text-white' : ''}`} style={isCurrentUser ? { fontWeight: 900, fontSize: '14px' } : {}}>{player.stats.goalsScored}</td>
-                  <td className={`text-center py-2 px-3 ${isCurrentUser ? 'text-white' : ''}`} style={isCurrentUser ? { fontWeight: 900, fontSize: '14px' } : {}}>{player.stats.savesMade}</td>
+                  <td className={`text-center py-2 px-3 ${isCurrentUser ? 'text-white' : ''}`} style={isCurrentUser ? { fontWeight: 900, fontSize: '14px' } : {}}>{player.stats.gamesWon}</td>
+                  <td className={`text-center py-2 px-3 ${isCurrentUser ? 'text-white' : ''}`} style={isCurrentUser ? { fontWeight: 900, fontSize: '14px' } : {}}>{player.stats.gamesPlayed - player.stats.gamesWon}</td>
                   <td className={`text-right py-2 px-3 ${isCurrentUser ? 'text-white' : ''}`} style={isCurrentUser ? { fontWeight: 900, fontSize: '14px' } : { fontWeight: 600 }}>
                     {player.stats.totalPoints}
                   </td>

@@ -176,11 +176,29 @@ export default function GameField({ children, mode, className = '' }: GameFieldP
         /* Responsive adjustments */
         @media (max-width: 768px) {
           .game-field {
-            background-attachment: scroll;
+            background-size: 240% auto !important;
+            background-position: center 75% !important;
+          }
+          
+          .game-field-shooter {
+            background-size: 240% auto !important;
+            background-position: center 75% !important;
+          }
+          
+          .game-field-keeper {
+            background-size: 240% auto !important;
+            background-position: center 75% !important;
+          }
+          
+          .game-field-result {
+            background-size: 240% auto !important;
+            background-position: center 75% !important;
           }
           
           .game-content {
-            padding: 1vh 1vw;
+            padding: 0.5vh 0.5vw;
+            height: 100vh;
+            height: 100dvh;
           }
         }
       `}</style>

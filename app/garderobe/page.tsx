@@ -11,6 +11,7 @@ import UserStatsCard from '@/components/UserStatsCard';
 import Leaderboard from '@/components/Leaderboard';
 import ChallengeModal from '@/components/ChallengeModal';
 import { calculateLevel } from '@/lib/levels';
+import { GiCrossedSwords } from 'react-icons/gi';
 
 interface PendingChallenge {
   id: string;
@@ -285,12 +286,10 @@ export default function Garderobe() {
       <div className="garderobe-page">
         <div className="container section">
           
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8">
           
-          {/* Main Area */}
-          <div className="lg:col-span-2 space-y-8">
-            
-            {/* Player Stats - Now More Prominent */}
+          {/* Player Stats - Order 1 on mobile, row 1 col 1 on desktop */}
+          <div className="order-1">
             <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6">
               <UserStatsCard 
                 userId={user.id}
@@ -298,8 +297,46 @@ export default function Garderobe() {
                 avatar={user.avatar}
               />
             </div>
-            
-            {/* Challenge Info */}
+          </div>
+          
+          {/* Leaderboard - Order 2 on mobile, row 1 col 2 on desktop */}
+          <div className="order-2">
+            <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6 leaderboard-section">
+              <Leaderboard 
+                currentUserId={user.id} 
+                onChallengeUser={handleChallengeUser}
+                checkingUserId={checkingUserId}
+              />
+            </div>
+          </div>
+          
+          {/* Rules - Order 3 on mobile, row 2 col 1 on desktop */}
+          <div className="order-3">
+            <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6">
+              <h3 className="text-xl font-bold text-white mb-4">Spielregeln</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="text-center p-3 bg-green-900 bg-opacity-50 rounded">
+                  <span className="block text-2xl font-bold text-green-400">5</span>
+                  <span className="text-gray-300 text-sm">Penalty</span>
+                </div>
+                <div className="text-center p-3 bg-blue-900 bg-opacity-50 rounded">
+                  <span className="block text-2xl font-bold text-blue-400">3</span>
+                  <span className="text-gray-300 text-sm">Punkte/Sieg</span>
+                </div>
+                <div className="text-center p-3 bg-red-900 bg-opacity-50 rounded">
+                  <span className="block text-2xl font-bold text-red-400">0</span>
+                  <span className="text-gray-300 text-sm">Punkte/Niederlage</span>
+                </div>
+                <div className="text-center p-3 bg-yellow-900 bg-opacity-50 rounded">
+                  <span className="block text-2xl font-bold text-yellow-400">10</span>
+                  <span className="text-gray-300 text-sm">Punkte/Stufenwechsel</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Challenge - Order 4 on mobile, row 2 col 2 on desktop */}
+          <div className="order-4">
             <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6">
               <h2 className="text-2xl font-bold text-white mb-2">
                 PENALTY Challenge
@@ -322,7 +359,7 @@ export default function Garderobe() {
                       </>
                     ) : (
                       <>
-                        <span className="text-2xl">⚽</span>
+                        <GiCrossedSwords size={20} />
                         JETZT HERAUSFORDERN
                       </>
                     )}
@@ -333,36 +370,6 @@ export default function Garderobe() {
                   <p className="text-green-300 text-sm">
                     Verwende den &quot;HERAUSFORDERN&quot; Button in der Navigation oder klicke hier
                   </p>
-                </div>
-              </div>
-              
-            </div>
-          </div>
-          
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6 leaderboard-section">
-              <Leaderboard 
-                currentUserId={user.id} 
-                onChallengeUser={handleChallengeUser}
-                checkingUserId={checkingUserId}
-              />
-            </div>
-            
-            <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6">
-              <h3 className="text-xl font-bold text-white mb-4">Spielregeln</h3>
-              <div className="grid grid-cols-1 gap-3">
-                <div className="text-center p-3 bg-green-900 bg-opacity-50 rounded">
-                  <span className="block text-2xl font-bold text-green-400">5</span>
-                  <span className="text-gray-300 text-sm">Penalty</span>
-                </div>
-                <div className="text-center p-3 bg-blue-900 bg-opacity-50 rounded">
-                  <span className="block text-2xl font-bold text-blue-400">10</span>
-                  <span className="text-gray-300 text-sm">Punkte/Tor</span>
-                </div>
-                <div className="text-center p-3 bg-yellow-900 bg-opacity-50 rounded">
-                  <span className="block text-2xl font-bold text-yellow-400">15</span>
-                  <span className="text-gray-300 text-sm">Punkte/Parade</span>
                 </div>
               </div>
             </div>

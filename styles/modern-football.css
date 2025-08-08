@@ -209,17 +209,18 @@ body {
   position: relative;
 }
 
-/* Game Page Background - Clean Stadium without text */
-.game-page {
-  min-height: 100vh;
-  background: url('/football-field.jpg');
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  padding-top: 20px; /* No header */
-  position: relative;
+/* Desktop only: Add football field background and floodlights */
+@media (min-width: 769px) {
+  .game-page {
+    background: url('/football-field.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
 }
+
+/* Clean mobile styles - problem was background-attachment: scroll */
 
 .challenge-page::before {
   content: '';
@@ -3428,5 +3429,6 @@ header.modern-header.challenge-header {
     height: 15px;
   }
 }
+
 
 /* LED classes enabled for scoreboard */

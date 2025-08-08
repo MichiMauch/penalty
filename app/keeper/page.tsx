@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
 import GameField from '@/components/GameField';
 import GameControls from '@/components/GameControls';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import { ShotDirection } from '@/lib/types';
 
 function KeeperPageContent() {
@@ -15,6 +16,7 @@ function KeeperPageContent() {
   
   const [saves, setSaves] = useState<ShotDirection[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [match, setMatch] = useState<any>(null);
   const [opponent, setOpponent] = useState<any>(null);
   const [showPulse, setShowPulse] = useState(true);
@@ -70,6 +72,7 @@ function KeeperPageContent() {
   }, [searchParams]);
 
   const loadMatch = async (matchId: string) => {
+    setIsLoading(true);
     try {
       const response = await fetch(`/api/match?matchId=${matchId}`);
       const data = await response.json();
@@ -111,6 +114,8 @@ function KeeperPageContent() {
       }
     } catch (error) {
       console.error('Error loading match:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -262,6 +267,16 @@ function KeeperPageContent() {
 
   const canSubmit = saves.length === 5 && !isSubmitting && match;
 
+  // Show initial loading spinner
+  if (isLoading) {
+    return <LoadingSpinner text="Lade Abwehr..." />;
+  }
+
+  // Show submit loading spinner
+  if (isSubmitting) {
+    return <LoadingSpinner text="Sende Paraden..." />;
+  }
+
   return (
     <Layout showHeader={false}>
       <GameField mode="keeper">
@@ -288,8 +303,12 @@ function KeeperPageContent() {
             <div 
               className={`keeper ${isAnimating ? (currentSaveDirection === 'mitte' ? 'keeper-animate-center' : 'keeper-animate') : ''}`}
               style={{
-                '--target-left': currentSaveDirection === 'links' ? '38%' : 
-                                currentSaveDirection === 'rechts' ? '62%' : '50%',
+                '--target-left': currentSaveDirection === 'links' ? '30%' : 
+                                currentSaveDirection === 'rechts' ? '70%' : '50%',
+                '--target-left-notebook': currentSaveDirection === 'links' ? '35%' : 
+                                         currentSaveDirection === 'rechts' ? '65%' : '50%',
+                '--target-left-mobile': currentSaveDirection === 'links' ? '20%' : 
+                                        currentSaveDirection === 'rechts' ? '80%' : '50%',
                 '--keeper-rotation': currentSaveDirection === 'links' ? '-40deg' : 
                                    currentSaveDirection === 'rechts' ? '40deg' : '0deg'
               } as React.CSSProperties}
@@ -415,7 +434,7 @@ function KeeperPageContent() {
 
         .keeper {
           position: fixed;
-          bottom: 50vh;
+          bottom: clamp(48vh, 53vh, 58vh);
           left: 50%;
           transform: translateX(-50%);
           z-index: 10;
@@ -434,12 +453,12 @@ function KeeperPageContent() {
         @keyframes keeperSave {
           0% {
             transform: translateX(-50%) rotate(0deg);
-            bottom: 50vh;
+            bottom: clamp(48vh, 53vh, 58vh);
             left: 50%;
           }
           100% {
             transform: translateX(-50%) rotate(var(--keeper-rotation));
-            bottom: 50vh;
+            bottom: clamp(48vh, 53vh, 58vh);
             left: var(--target-left);
           }
         }
@@ -447,17 +466,17 @@ function KeeperPageContent() {
         @keyframes keeperSaveCenter {
           0% {
             transform: translateX(-50%) rotate(0deg);
-            bottom: 50vh;
+            bottom: clamp(48vh, 53vh, 58vh);
             left: 50%;
           }
           50% {
             transform: translateX(-50%) rotate(0deg);
-            bottom: 55vh;
+            bottom: clamp(53vh, 58vh, 63vh);
             left: 50%;
           }
           100% {
             transform: translateX(-50%) rotate(0deg);
-            bottom: 50vh;
+            bottom: clamp(48vh, 53vh, 58vh);
             left: 50%;
           }
         }
@@ -468,10 +487,78 @@ function KeeperPageContent() {
           object-fit: contain;
         }
 
+        /* Notebook adjustments - moderate positions */
+        @media (min-width: 769px) and (max-width: 1600px) {
+          .keeper {
+            bottom: clamp(48vh, 53vh, 58vh);
+          }
+
+          .keeper-gloves {
+            width: clamp(2.8rem, 7vw, 3.5rem);
+            height: clamp(2.8rem, 7vw, 3.5rem);
+          }
+
+          @keyframes keeperSave {
+            0% {
+              transform: translateX(-50%) rotate(0deg);
+              bottom: clamp(48vh, 53vh, 58vh);
+              left: 50%;
+            }
+            100% {
+              transform: translateX(-50%) rotate(var(--keeper-rotation));
+              bottom: clamp(48vh, 53vh, 58vh);
+              left: var(--target-left-notebook);
+            }
+          }
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+          .keeper {
+            bottom: clamp(40vh, 45vh, 50vh);
+          }
+
+          .keeper-gloves {
+            width: clamp(2.5rem, 6vw, 3rem);
+            height: clamp(2.5rem, 6vw, 3rem);
+          }
+
+          @keyframes keeperSave {
+            0% {
+              transform: translateX(-50%) rotate(0deg);
+              bottom: clamp(40vh, 45vh, 50vh);
+              left: 50%;
+            }
+            100% {
+              transform: translateX(-50%) rotate(var(--keeper-rotation));
+              bottom: clamp(40vh, 45vh, 50vh);
+              left: var(--target-left-mobile, var(--target-left));
+            }
+          }
+
+          @keyframes keeperSaveCenter {
+            0% {
+              transform: translateX(-50%) rotate(0deg);
+              bottom: clamp(40vh, 45vh, 50vh);
+              left: 50%;
+            }
+            50% {
+              transform: translateX(-50%) rotate(0deg);
+              bottom: clamp(45vh, 50vh, 55vh);
+              left: 50%;
+            }
+            100% {
+              transform: translateX(-50%) rotate(0deg);
+              bottom: clamp(40vh, 45vh, 50vh);
+              left: 50%;
+            }
+          }
+        }
+
         .saves-display {
           position: fixed;
           top: 30vh;
-          right: 25vw;
+          right: 20vw;
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
@@ -485,6 +572,24 @@ function KeeperPageContent() {
         .save-indicator {
           font-size: 1.5rem;
           opacity: 0.8;
+        }
+
+        /* Mobile positioning for saves display */
+        @media (max-width: 768px) {
+          .saves-display {
+            top: 25vh;
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%);
+            flex-direction: row;
+            padding: 0.5rem 1rem;
+            gap: 0.8rem;
+            background: rgba(0, 0, 0, 0.9);
+          }
+
+          .save-indicator {
+            font-size: 1.2rem;
+          }
         }
 
         /* Submit Modal Styles */

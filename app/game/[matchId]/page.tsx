@@ -133,11 +133,51 @@ export default function GamePage() {
 
   if (loading || isLoading) {
     return (
-      <Layout showHeader={false}>
-        <GameField mode="result">
-          <div className="loading">⚽ Lade Match...</div>
-        </GameField>
-      </Layout>
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh',
+          background: '#0a0a0a',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 999999,
+          margin: 0,
+          padding: 0
+        }}
+      >
+        <div 
+          style={{
+            color: 'white',
+            fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+            textAlign: 'center' as const,
+            background: 'rgba(0, 0, 0, 0.7)',
+            padding: '2rem 3rem',
+            borderRadius: '1rem',
+            border: '2px solid #10b981',
+            boxShadow: '0 0 30px rgba(16, 185, 129, 0.3)',
+            display: 'flex',
+            flexDirection: 'column' as const,
+            alignItems: 'center',
+            gap: '1.5rem'
+          }}
+        >
+          <div 
+            style={{
+              fontSize: '3rem',
+              animation: 'spin 1s linear infinite'
+            }}
+          >
+            ⚽
+          </div>
+          <div>Lade Match...</div>
+        </div>
+      </div>
     );
   }
 
@@ -198,14 +238,46 @@ export default function GamePage() {
       </GameField>
 
       <style jsx global>{`
-        .loading {
-          grid-area: field;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          color: white;
-          font-size: clamp(1.5rem, 4vw, 2rem);
-          text-align: center;
+        html {
+          overflow: hidden !important;
+          scrollbar-width: none !important;
+          -ms-overflow-style: none !important;
+        }
+        
+        html::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+        
+        body {
+          overflow: hidden !important;
+          scrollbar-width: none !important;
+          -ms-overflow-style: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        
+        body::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+        
+        * {
+          scrollbar-width: none !important;
+          -ms-overflow-style: none !important;
+        }
+        
+        *::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
 
         .error-container {

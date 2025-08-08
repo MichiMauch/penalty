@@ -277,23 +277,17 @@ export default function AnimatedGameReplay({
 
 
       {/* Combined Penalty Animation */}
-      <div className="mb-2 max-w-2xl mx-auto">
-        <div className="relative">
-          <CombinedPenaltyAnimation
-            shotDirection={currentPenaltyData?.shooterMove || 'mitte'}
-            saveDirection={currentPenaltyData?.keeperMove || 'mitte'}
-            isAnimating={(animationState.step === 'shoot' || animationState.step === 'save') && !!currentPenaltyData}
-            onAnimationComplete={() => {}}
-            playerRole={
-              (playerRole === 'player_a' && currentPenaltyData?.shooter === 'player_a') ||
-              (playerRole === 'player_b' && currentPenaltyData?.shooter === 'player_b')
-                ? 'shooter' : 'keeper'
-            }
-          />
-          
-        </div>
-        
-      </div>
+      <CombinedPenaltyAnimation
+        shotDirection={currentPenaltyData?.shooterMove || 'mitte'}
+        saveDirection={currentPenaltyData?.keeperMove || 'mitte'}
+        isAnimating={(animationState.step === 'shoot' || animationState.step === 'save') && !!currentPenaltyData}
+        onAnimationComplete={() => {}}
+        playerRole={
+          (playerRole === 'player_a' && currentPenaltyData?.shooter === 'player_a') ||
+          (playerRole === 'player_b' && currentPenaltyData?.shooter === 'player_b')
+            ? 'shooter' : 'keeper'
+        }
+      />
 
 
 

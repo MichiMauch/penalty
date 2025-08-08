@@ -94,7 +94,7 @@ export default function UserStatsCard({ userId, username, avatar }: UserStatsCar
             <p className="text-3xl font-bold text-white">
               {stats.totalPoints} Punkte 
               {stats.rank && stats.pointsToNextRank && (
-                <span className="text-sm text-white font-normal ml-3">Vorsprung zu #{stats.rank + 1}: {stats.pointsToNextRank} Punkte</span>
+                <span className="text-sm text-white font-normal ml-3 hidden md:inline">Vorsprung zu #{stats.rank + 1}: {stats.pointsToNextRank} Punkte</span>
               )}
             </p>
             <p className="text-lg text-white">
