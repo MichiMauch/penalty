@@ -515,7 +515,7 @@ function KeeperPageContent() {
         /* Mobile adjustments */
         @media (max-width: 768px) {
           .keeper {
-            bottom: clamp(40vh, 45vh, 50vh);
+            bottom: clamp(32vh, 37vh, 42vh);
           }
 
           .keeper-gloves {
@@ -526,12 +526,12 @@ function KeeperPageContent() {
           @keyframes keeperSave {
             0% {
               transform: translateX(-50%) rotate(0deg);
-              bottom: clamp(40vh, 45vh, 50vh);
+              bottom: clamp(32vh, 37vh, 42vh);
               left: 50%;
             }
             100% {
               transform: translateX(-50%) rotate(var(--keeper-rotation));
-              bottom: clamp(40vh, 45vh, 50vh);
+              bottom: clamp(32vh, 37vh, 42vh);
               left: var(--target-left-mobile, var(--target-left));
             }
           }
@@ -539,17 +539,17 @@ function KeeperPageContent() {
           @keyframes keeperSaveCenter {
             0% {
               transform: translateX(-50%) rotate(0deg);
-              bottom: clamp(40vh, 45vh, 50vh);
+              bottom: clamp(32vh, 37vh, 42vh);
               left: 50%;
             }
             50% {
               transform: translateX(-50%) rotate(0deg);
-              bottom: clamp(45vh, 50vh, 55vh);
+              bottom: clamp(37vh, 42vh, 47vh);
               left: 50%;
             }
             100% {
               transform: translateX(-50%) rotate(0deg);
-              bottom: clamp(40vh, 45vh, 50vh);
+              bottom: clamp(32vh, 37vh, 42vh);
               left: 50%;
             }
           }
@@ -577,7 +577,7 @@ function KeeperPageContent() {
         /* Mobile positioning for saves display */
         @media (max-width: 768px) {
           .saves-display {
-            top: 25vh;
+            top: 33vh;
             left: 50%;
             right: auto;
             transform: translateX(-50%);

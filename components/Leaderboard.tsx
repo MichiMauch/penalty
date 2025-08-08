@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { useRouter } from 'next/navigation';
 import { AvatarId } from '@/lib/types';
+import { FaSync } from 'react-icons/fa';
 
 interface LeaderboardEntry {
   rank: number;
@@ -31,9 +32,14 @@ interface LeaderboardProps {
   checkingUserId?: string | null;
 }
 
-export default function Leaderboard({ currentUserId, onChallengeUser, checkingUserId }: LeaderboardProps) {
+export interface LeaderboardRef {
+  fetchLeaderboard: () => void;
+}
+
+const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserId, onChallengeUser, checkingUserId }, ref) => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
   const router = useRouter();
 
@@ -41,7 +47,13 @@ export default function Leaderboard({ currentUserId, onChallengeUser, checkingUs
     fetchLeaderboard();
   }, []);
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    
     try {
       const response = await fetch('/api/stats/leaderboard');
       if (response.ok) {
@@ -60,7 +72,17 @@ export default function Leaderboard({ currentUserId, onChallengeUser, checkingUs
       console.error('Error fetching leaderboard:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  // Expose fetchLeaderboard to parent component
+  useImperativeHandle(ref, () => ({
+    fetchLeaderboard: () => fetchLeaderboard(true)
+  }));
+
+  const handleRefresh = () => {
+    fetchLeaderboard(true);
   };
 
   // Get emoji from avatar
@@ -116,7 +138,17 @@ export default function Leaderboard({ currentUserId, onChallengeUser, checkingUs
   if (loading) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-white mb-4">Rangliste</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-white">Rangliste</h2>
+          <button
+            onClick={handleRefresh}
+            disabled={true}
+            className="text-gray-500 cursor-not-allowed p-2"
+            title="Wird geladen..."
+          >
+            <FaSync className="animate-spin" />
+          </button>
+        </div>
         <div className="bg-gray-900 bg-opacity-40 rounded">
           <div className="h-80 flex items-center justify-center">
             <div className="text-white">Lade Rangliste...</div>
@@ -130,7 +162,21 @@ export default function Leaderboard({ currentUserId, onChallengeUser, checkingUs
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-white mb-4">Rangliste</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold text-white">Rangliste</h2>
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className={`p-2 rounded transition-colors ${
+            refreshing 
+              ? 'text-green-400 cursor-not-allowed' 
+              : 'text-gray-400 hover:text-green-400'
+          }`}
+          title="Rangliste aktualisieren"
+        >
+          <FaSync className={refreshing ? 'animate-spin' : ''} />
+        </button>
+      </div>
       
       <div className="bg-gray-900 bg-opacity-40 rounded overflow-hidden">
         <table className="w-full text-sm">
@@ -139,8 +185,8 @@ export default function Leaderboard({ currentUserId, onChallengeUser, checkingUs
               <th className="text-left py-2 px-3 font-semibold">Platz</th>
               <th className="text-left py-2 px-3 font-semibold">Spieler</th>
               <th className="text-center py-2 px-3 font-semibold">SP</th>
-              <th className="text-center py-2 px-3 font-semibold">G</th>
-              <th className="text-center py-2 px-3 font-semibold">V</th>
+              <th className="text-center py-2 px-3 font-semibold hidden md:table-cell">G</th>
+              <th className="text-center py-2 px-3 font-semibold hidden md:table-cell">V</th>
               <th className="text-right py-2 px-3 font-semibold">Punkte</th>
             </tr>
           </thead>
@@ -196,8 +242,8 @@ export default function Leaderboard({ currentUserId, onChallengeUser, checkingUs
                     )}
                   </td>
                   <td className={`text-center py-2 px-3 ${isCurrentUser ? 'text-white' : ''}`} style={isCurrentUser ? { fontWeight: 900, fontSize: '14px' } : {}}>{player.stats.gamesPlayed}</td>
-                  <td className={`text-center py-2 px-3 ${isCurrentUser ? 'text-white' : ''}`} style={isCurrentUser ? { fontWeight: 900, fontSize: '14px' } : {}}>{player.stats.gamesWon}</td>
-                  <td className={`text-center py-2 px-3 ${isCurrentUser ? 'text-white' : ''}`} style={isCurrentUser ? { fontWeight: 900, fontSize: '14px' } : {}}>{player.stats.gamesPlayed - player.stats.gamesWon}</td>
+                  <td className={`text-center py-2 px-3 hidden md:table-cell ${isCurrentUser ? 'text-white' : ''}`} style={isCurrentUser ? { fontWeight: 900, fontSize: '14px' } : {}}>{player.stats.gamesWon}</td>
+                  <td className={`text-center py-2 px-3 hidden md:table-cell ${isCurrentUser ? 'text-white' : ''}`} style={isCurrentUser ? { fontWeight: 900, fontSize: '14px' } : {}}>{player.stats.gamesPlayed - player.stats.gamesWon}</td>
                   <td className={`text-right py-2 px-3 ${isCurrentUser ? 'text-white' : ''}`} style={isCurrentUser ? { fontWeight: 900, fontSize: '14px' } : { fontWeight: 600 }}>
                     {player.stats.totalPoints}
                   </td>
@@ -216,4 +262,8 @@ export default function Leaderboard({ currentUserId, onChallengeUser, checkingUs
       )}
     </div>
   );
-}
+});
+
+Leaderboard.displayName = 'Leaderboard';
+
+export default Leaderboard;

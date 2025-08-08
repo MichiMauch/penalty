@@ -6,25 +6,32 @@ import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
 import PlayerCard from '@/components/PlayerCard';
 import TribuneFlashes from '@/components/TribuneFlashes';
-import { FaUser, FaSignInAlt, FaUserPlus, FaChevronDown, FaPlay, FaBullseye } from 'react-icons/fa';
+import { FaUser, FaSignInAlt, FaUserPlus, FaChevronDown, FaPlay, FaBullseye, FaChartBar, FaBell, FaRedoAlt } from 'react-icons/fa';
 import { IoFootball, IoTrophy } from 'react-icons/io5';
-import { MdSportsSoccer, MdHome } from 'react-icons/md';
+import { MdSportsSoccer, MdHome, MdMovie } from 'react-icons/md';
 import { GiGoalKeeper } from 'react-icons/gi';
 import { AvatarId } from '@/lib/types';
 import { calculateLevel } from '@/lib/levels';
 
-interface ActivePlayer {
+interface LeaderboardEntry {
+  rank: number;
   id: string;
   username: string;
   avatar: AvatarId;
+  email?: string;
   stats: {
     totalPoints: number;
-    totalGames: number;
-    wins: number;
+    gamesPlayed: number;
+    gamesWon: number;
     winRate: number;
-    lastGame: string | null;
+    goalsScored: number;
+    savesMade: number;
   };
-  joinedAt: string;
+  level: {
+    id: number;
+    name: string;
+    icon: string;
+  };
 }
 
 interface AppStats {
@@ -39,7 +46,7 @@ interface AppStats {
 export default function LandingPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [activePlayers, setActivePlayers] = useState<ActivePlayer[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
   const [appStats, setAppStats] = useState<AppStats | null>(null);
 
@@ -50,21 +57,21 @@ export default function LandingPage() {
     }
   }, [user, loading, router]);
 
-  // Fetch active players and stats
+  // Fetch leaderboard and stats
   useEffect(() => {
-    fetchActivePlayers();
+    fetchLeaderboard();
     fetchAppStats();
   }, []);
 
-  const fetchActivePlayers = async () => {
+  const fetchLeaderboard = async () => {
     try {
-      const response = await fetch('/api/players/active');
+      const response = await fetch('/api/stats/leaderboard');
       if (response.ok) {
         const data = await response.json();
-        setActivePlayers(data.players);
+        setLeaderboard(data.leaderboard);
       }
     } catch (error) {
-      console.error('Error fetching active players:', error);
+      console.error('Error fetching leaderboard:', error);
     } finally {
       setIsLoadingPlayers(false);
     }
@@ -110,11 +117,11 @@ export default function LandingPage() {
         {/* Hero Section with Stadium Background */}
         <section className="hero-stadium">
           <TribuneFlashes />
-          <h1 className="hero-title">PENALTY SHOOTOUT</h1>
           <div className="hero-content">
             <p className="hero-subtitle">
               Das ultimative Elfmeter-Duell! Zeig deine Nerven aus Stahl und werde zur Penalty-Legende!
             </p>
+            <h1 className="hero-title">PENALTY SHOOTOUT</h1>
           </div>
           
 
@@ -161,7 +168,7 @@ export default function LandingPage() {
                   <FaUser size={32} className="text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">1. Anmelden</h3>
-                <p className="text-gray-400">Kostenlosen Account erstellen und Avatar wählen</p>
+                <p className="text-gray-200">Kostenlosen Account erstellen und Avatar wählen</p>
               </div>
               
               <div className="text-center">
@@ -169,7 +176,7 @@ export default function LandingPage() {
                   <IoFootball size={32} className="text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">2. Herausfordern</h3>
-                <p className="text-gray-400">Freunde zum Penalty-Duell einladen</p>
+                <p className="text-gray-200">Freunde zum Penalty-Duell einladen</p>
               </div>
               
               <div className="text-center">
@@ -177,88 +184,46 @@ export default function LandingPage() {
                   <IoTrophy size={32} className="text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">3. Gewinnen</h3>
-                <p className="text-gray-400">Punkte sammeln und aufsteigen</p>
+                <p className="text-gray-200">Punkte sammeln und aufsteigen</p>
               </div>
             </div>
 
-            {/* Point System */}
+            {/* Game Rules */}
             <section className="section-header">
-              <h2 className="section-title">Das Punktesystem</h2>
-              <p className="section-subtitle">Jeder Sieg zählt - kämpfe dich an die Spitze!</p>
+              <h2 className="section-title">Spielregeln</h2>
+              <p className="section-subtitle">Einfach, fair und spannend!</p>
             </section>
             
-            <div className="feature-grid mb-8">
-              <div className="app-card text-center">
-                <div className="text-5xl mb-3">🏆</div>
-                <h3 className="text-2xl font-bold text-primary mb-2">Sieg</h3>
-                <p className="text-4xl font-bold text-green-400 mb-2">3 Punkte</p>
-                <p className="text-sm text-gray-400">Wie im echten Fußball!</p>
-              </div>
-
-              <div className="app-card text-center">
-                <div className="text-5xl mb-3">⭐</div>
-                <h3 className="text-2xl font-bold text-primary mb-2">Perfektes Spiel</h3>
-                <p className="text-4xl font-bold text-yellow-400 mb-2">+5 Bonus</p>
-                <p className="text-sm text-gray-400">5/5 Tore oder Paraden</p>
-              </div>
-
-              <div className="app-card text-center">
-                <div className="text-5xl mb-3">🚀</div>
-                <h3 className="text-2xl font-bold text-primary mb-2">Level-Aufstieg</h3>
-                <p className="text-4xl font-bold text-purple-400 mb-2">+10 Bonus</p>
-                <p className="text-sm text-gray-400">Belohnung für Fortschritte</p>
-              </div>
-            </div>
-
-            {/* Level System */}
-            <section className="section-header">
-              <h2 className="section-title">Dein Weg zur Legende</h2>
-              <p className="section-subtitle">Sammle Punkte und steige im Rang auf!</p>
-            </section>
-            
-            <div className="app-card mb-8 bg-gradient-to-r from-gray-800 to-gray-900">
-              <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
-                <div className="text-center px-4 py-2">
-                  <div className="text-4xl mb-2">🤡</div>
-                  <div className="text-sm font-bold text-white">Stolperer</div>
-                  <div className="text-xs text-gray-400">0-9 Punkte</div>
-                </div>
-                
-                <div className="text-2xl text-gray-600">→</div>
-                
-                <div className="text-center px-4 py-2">
-                  <div className="text-4xl mb-2">⚽</div>
-                  <div className="text-sm font-bold text-white">Spieler</div>
-                  <div className="text-xs text-gray-400">10-29 Punkte</div>
-                </div>
-                
-                <div className="text-2xl text-gray-600">→</div>
-                
-                <div className="text-center px-4 py-2">
-                  <div className="text-4xl mb-2">🎯</div>
-                  <div className="text-sm font-bold text-white">Profi</div>
-                  <div className="text-xs text-gray-400">30-59 Punkte</div>
-                </div>
-                
-                <div className="text-2xl text-gray-600">→</div>
-                
-                <div className="text-center px-4 py-2 relative">
-                  <div className="absolute -top-2 -right-2 bg-yellow-500 text-black text-xs px-2 py-1 rounded-full font-bold">NEU!</div>
-                  <div className="text-4xl mb-2">🌟</div>
-                  <div className="text-sm font-bold text-white">GOAT</div>
-                  <div className="text-xs text-gray-400">1000+ Punkte</div>
-                </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div className="app-card text-center p-4 bg-green-900 bg-opacity-50">
+                <div className="text-3xl font-bold text-green-400">5</div>
+                <div className="text-white text-sm">Elfmeter</div>
+                <div className="text-gray-200 text-xs mt-1">pro Spiel</div>
               </div>
               
-              <div className="text-center">
-                <p className="text-white font-semibold mb-2">10 Levels warten auf dich!</p>
-                <p className="text-sm text-gray-400">Jeder Level-Aufstieg bringt dir +10 Bonuspunkte!</p>
+              <div className="app-card text-center p-4 bg-blue-900 bg-opacity-50">
+                <div className="text-3xl font-bold text-blue-400">3</div>
+                <div className="text-white text-sm">Punkte</div>
+                <div className="text-gray-200 text-xs mt-1">für jeden Sieg</div>
+              </div>
+              
+              <div className="app-card text-center p-4 bg-red-900 bg-opacity-50">
+                <div className="text-3xl font-bold text-red-400">0</div>
+                <div className="text-white text-sm">Punkte</div>
+                <div className="text-gray-200 text-xs mt-1">bei Niederlage</div>
+              </div>
+              
+              <div className="app-card text-center p-4 bg-yellow-900 bg-opacity-50">
+                <div className="text-3xl font-bold text-yellow-400">+10</div>
+                <div className="text-white text-sm">Bonus</div>
+                <div className="text-gray-200 text-xs mt-1">Level-Aufstieg</div>
               </div>
             </div>
+
 
             {/* Live Stats */}
             {appStats && (
-              <div className="app-card mb-8 bg-gradient-to-r from-green-900 to-green-800 border-green-600">
+              <div className="mb-8 border-2 border-green-600 rounded-lg p-6" style={{backgroundColor: 'rgba(22, 101, 52, 0.9)', background: 'linear-gradient(90deg, rgba(22, 101, 52, 0.9), rgba(20, 83, 45, 0.9)'}}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                   <div>
                     <div className="text-3xl font-bold text-white">{appStats.totalMatches}</div>
@@ -285,28 +250,41 @@ export default function LandingPage() {
             </section>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="app-card p-6 hover:transform hover:scale-105 transition-transform">
-                <div className="text-4xl mb-4 text-center">📊</div>
-                <h3 className="text-xl font-bold text-white mb-2 text-center">Live-Rangliste</h3>
-                <p className="text-gray-400 text-center">Sieh sofort wo du stehst und kämpfe dich nach oben!</p>
+              <div className="p-8 hover:transform hover:scale-105 hover:shadow-2xl transition-all duration-300 border-2 border-green-600 rounded-lg" style={{backgroundColor: 'rgba(22, 101, 52, 0.9)', background: 'linear-gradient(135deg, rgba(22, 101, 52, 0.9), rgba(20, 83, 45, 0.9)'}}>
+                <div className="text-6xl mb-4 text-center animate-pulse text-green-400 flex justify-center">
+                  <FaChartBar />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3 text-center">Live-Rangliste</h3>
+                <p className="text-green-200 text-center text-lg">Sieh sofort wo du stehst und kämpfe dich nach oben!</p>
               </div>
 
-              <div className="app-card p-6 hover:transform hover:scale-105 transition-transform">
-                <div className="text-4xl mb-4 text-center">🔄</div>
-                <h3 className="text-xl font-bold text-white mb-2 text-center">Revanche-Button</h3>
-                <p className="text-gray-400 text-center">Verloren? Fordere sofort die Revanche heraus!</p>
+              <div className="p-8 hover:transform hover:scale-105 hover:shadow-2xl transition-all duration-300 border-2 border-blue-600 rounded-lg" style={{backgroundColor: 'rgba(30, 58, 138, 0.9)', background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.9), rgba(29, 78, 216, 0.9)'}}>
+                <div className="text-6xl mb-4 text-center animate-bounce text-blue-400 flex justify-center">
+                  <FaRedoAlt />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3 text-center">Revanche-Button</h3>
+                <p className="text-blue-200 text-center text-lg">Verloren? Mit einem Klick startest du die Revanche.</p>
               </div>
 
-              <div className="app-card p-6 hover:transform hover:scale-105 transition-transform">
-                <div className="text-4xl mb-4 text-center">🔔</div>
-                <h3 className="text-xl font-bold text-white mb-2 text-center">Push-Benachrichtigungen</h3>
-                <p className="text-gray-400 text-center">Verpasse kein Match - wir halten dich auf dem Laufenden!</p>
+              <div className="p-8 hover:transform hover:scale-105 hover:shadow-2xl transition-all duration-300 border-2 border-yellow-600 rounded-lg" style={{backgroundColor: 'rgba(146, 64, 14, 0.9)', background: 'linear-gradient(135deg, rgba(146, 64, 14, 0.9), rgba(180, 83, 9, 0.9)'}}>
+                <div className="text-6xl mb-4 text-center text-yellow-400 relative flex justify-center">
+                  <span className="animate-ping absolute inline-flex h-16 w-16 rounded-full bg-yellow-400 opacity-75 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"></span>
+                  <span className="relative inline-flex">
+                    <FaBell />
+                  </span>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3 text-center">Push-Benachrichtigungen</h3>
+                <p className="text-yellow-200 text-center text-lg">Verpasse kein Match - wir halten dich auf dem Laufenden!</p>
               </div>
 
-              <div className="app-card p-6 hover:transform hover:scale-105 transition-transform">
-                <div className="text-4xl mb-4 text-center">🎬</div>
-                <h3 className="text-xl font-bold text-white mb-2 text-center">Spannende Animationen</h3>
-                <p className="text-gray-400 text-center">Erlebe jedes Tor und jede Parade hautnah mit!</p>
+              <div className="p-8 hover:transform hover:scale-105 hover:shadow-2xl transition-all duration-300 border-2 border-purple-600 rounded-lg" style={{backgroundColor: 'rgba(88, 28, 135, 0.9)', background: 'linear-gradient(135deg, rgba(88, 28, 135, 0.9), rgba(107, 33, 168, 0.9)'}}>
+                <div className="text-6xl mb-4 text-center text-purple-400 flex justify-center">
+                  <span className="inline-block animate-spin">
+                    <MdMovie />
+                  </span>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3 text-center">Spannende Animationen</h3>
+                <p className="text-purple-200 text-center text-lg">Erlebe jedes Tor und jede Parade hautnah mit!</p>
               </div>
             </div>
 
@@ -319,48 +297,52 @@ export default function LandingPage() {
             {isLoadingPlayers ? (
               <div className="text-center py-8">
                 <div className="text-4xl mb-2">⚽</div>
-                <p className="text-gray-400">Lade Spieler...</p>
+                <p className="text-gray-200">Lade Spieler...</p>
               </div>
-            ) : activePlayers.length > 0 ? (
-              <div className="app-card mb-8">
+            ) : leaderboard.length > 0 ? (
+              <div className="mb-8 border-2 border-green-600 rounded-lg overflow-hidden" style={{backgroundColor: 'rgba(22, 101, 52, 0.9)', background: 'linear-gradient(135deg, rgba(22, 101, 52, 0.9), rgba(20, 83, 45, 0.9)'}}>
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-700">
-                        <th className="text-left py-3 px-4 text-gray-400 font-semibold">Rang</th>
-                        <th className="text-left py-3 px-4 text-gray-400 font-semibold">Spieler</th>
-                        <th className="text-center py-3 px-4 text-gray-400 font-semibold">Level</th>
-                        <th className="text-center py-3 px-4 text-gray-400 font-semibold">Punkte</th>
-                        <th className="text-center py-3 px-4 text-gray-400 font-semibold">Siege</th>
-                        <th className="text-center py-3 px-4 text-gray-400 font-semibold">Gewinnrate</th>
+                      <tr className="bg-green-900 bg-opacity-50 text-green-400">
+                        <th className="text-left py-3 px-4 font-semibold">
+                          <span className="hidden md:inline">Platz</span>
+                          <span className="inline md:hidden">#</span>
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold">
+                          <span className="hidden md:inline">Spieler</span>
+                          <span className="inline md:hidden">Name</span>
+                        </th>
+                        <th className="text-center py-3 px-4 font-semibold">SP</th>
+                        <th className="text-center py-3 px-4 font-semibold hidden md:table-cell">G</th>
+                        <th className="text-center py-3 px-4 font-semibold hidden md:table-cell">V</th>
+                        <th className="text-right py-3 px-4 font-semibold">
+                          <span className="hidden md:inline">Punkte</span>
+                          <span className="inline md:hidden">Pkt</span>
+                        </th>
                       </tr>
                     </thead>
-                    <tbody>
-                      {activePlayers.slice(0, 10).map((player, index) => {
-                        const level = calculateLevel(player.stats.totalPoints);
+                    <tbody className="text-white">
+                      {leaderboard.slice(0, 10).map((player, index) => {
+                        const isEvenRow = index % 2 === 0;
                         return (
-                          <tr key={player.id} className="border-b border-gray-800 hover:bg-gray-800 transition-colors">
+                          <tr key={player.id} className={`${isEvenRow ? 'bg-gray-800 bg-opacity-20' : ''} hover:bg-green-900 hover:bg-opacity-20 transition-colors`}>
                             <td className="py-3 px-4">
-                              <span className="text-2xl">
-                                {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                              <span className="text-lg">
+                                {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : player.rank}
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              <div className="font-semibold text-white">{player.username}</div>
+                              <div className="font-semibold text-white">
+                                {player.username.length > 12 
+                                  ? player.username.substring(0, 10) + '.' 
+                                  : player.username}
+                              </div>
                             </td>
-                            <td className="py-3 px-4 text-center">
-                              <span className="text-lg">{level.icon}</span>
-                              <span className="ml-2 text-sm text-gray-400">{level.name}</span>
-                            </td>
-                            <td className="py-3 px-4 text-center">
-                              <span className="font-bold text-green-400">{player.stats.totalPoints}</span>
-                            </td>
-                            <td className="py-3 px-4 text-center text-white">
-                              {player.stats.wins}
-                            </td>
-                            <td className="py-3 px-4 text-center">
-                              <span className="text-yellow-400">{player.stats.winRate}%</span>
-                            </td>
+                            <td className="text-center py-3 px-4">{player.stats.gamesPlayed}</td>
+                            <td className="text-center py-3 px-4 hidden md:table-cell">{player.stats.gamesWon}</td>
+                            <td className="text-center py-3 px-4 hidden md:table-cell">{player.stats.gamesPlayed - player.stats.gamesWon}</td>
+                            <td className="text-right py-3 px-4 font-semibold text-green-400">{player.stats.totalPoints}</td>
                           </tr>
                         );
                       })}
@@ -369,9 +351,10 @@ export default function LandingPage() {
                 </div>
               </div>
             ) : (
-              <div className="app-card mb-8 text-center py-8">
+              <div className="mb-8 text-center py-8 border-2 border-green-600 rounded-lg" style={{backgroundColor: 'rgba(22, 101, 52, 0.9)', background: 'linear-gradient(135deg, rgba(22, 101, 52, 0.9), rgba(20, 83, 45, 0.9)'}}>
                 <div className="text-4xl mb-2">🏆</div>
-                <p className="text-gray-400">Noch keine Spieler - sei der Erste!</p>
+                <p className="text-gray-200">Noch keine Einträge</p>
+                <p className="text-sm mt-2 text-gray-300">Spiele dein erstes Match!</p>
               </div>
             )}
 
@@ -396,13 +379,15 @@ export default function LandingPage() {
 
             {/* Call to Action */}
             <div className="text-center mt-12 mb-8">
-              <button 
-                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-8 rounded-lg text-xl shadow-lg transform transition hover:scale-105"
-                onClick={() => router.push('/register')}
-              >
-                JETZT SPIELEN 🚀
-              </button>
-              <p className="text-sm text-gray-400 mt-4">Kostenlos registrieren und loslegen!</p>
+              <div className="flex justify-center">
+                <button 
+                  className="stadium-btn stadium-btn-primary"
+                  onClick={() => router.push('/register')}
+                >
+                  JETZT SPIELEN 🚀
+                </button>
+              </div>
+              <p className="text-sm text-gray-200 mt-4">Kostenlos registrieren und loslegen!</p>
             </div>
             
           </div>

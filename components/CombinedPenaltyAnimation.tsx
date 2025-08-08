@@ -342,7 +342,7 @@ export default function CombinedPenaltyAnimation({
         /* Mobile adjustments - kopiert aus keeper/shooter */
         @media (max-width: 768px) {
           .keeper {
-            bottom: clamp(40vh, 45vh, 50vh);
+            bottom: clamp(35vh, 40vh, 45vh);
           }
 
           .keeper-gloves {
@@ -353,30 +353,30 @@ export default function CombinedPenaltyAnimation({
           @keyframes keeperSave {
             0% {
               transform: translateX(-50%) rotate(0deg);
-              bottom: clamp(40vh, 45vh, 50vh);
+              bottom: clamp(35vh, 40vh, 45vh);
               left: 50%;
             }
             100% {
               transform: translateX(-50%) rotate(var(--keeper-rotation));
-              bottom: clamp(40vh, 45vh, 50vh);
+              bottom: clamp(35vh, 40vh, 45vh);
               left: var(--target-left-mobile);
             }
           }
 
           .ball {
-            bottom: clamp(18vh, 23vh, 28vh);
+            bottom: clamp(16vh, 21vh, 26vh);
             font-size: clamp(1.8rem, 5vw, 2.5rem);
           }
 
           @keyframes ballShot {
             0% {
               transform: translateX(-50%) scale(1) rotate(0deg);
-              bottom: clamp(18vh, 23vh, 28vh);
+              bottom: clamp(16vh, 21vh, 26vh);
               left: 50%;
             }
             100% {
               transform: translateX(-50%) scale(0.6) rotate(360deg);
-              bottom: clamp(38vh, 43vh, 48vh);
+              bottom: clamp(33vh, 38vh, 43vh);
               left: var(--target-left-mobile);
             }
           }

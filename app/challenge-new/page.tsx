@@ -92,6 +92,15 @@ function ChallengeNewPageContent() {
           setSelectedUser(loadedUser);
           setSearchQuery(loadedUser.username);
           setIsLoadingUser(false);
+          
+          // Auto-redirect to shooter page immediately when user is pre-selected
+          const params = new URLSearchParams({
+            opponent: loadedUser.id,
+            name: loadedUser.username,
+            email: loadedUser.email,
+            points: (loadedUser.totalPoints || 0).toString()
+          });
+          router.push(`/shooter?${params.toString()}`);
           return;
         }
       }
@@ -122,6 +131,16 @@ function ChallengeNewPageContent() {
           setSelectedUser(foundUser);
           setSearchQuery(foundUser.username);
           setIsLoadingUser(false);
+          
+          // Auto-redirect to shooter page immediately when user is pre-selected
+          const params = new URLSearchParams({
+            opponent: foundUser.id,
+            name: foundUser.username,
+            email: foundUser.email,
+            points: (foundUser.totalPoints || 0).toString()
+          });
+          router.push(`/shooter?${params.toString()}`);
+          return;
         } else {
           setIsLoadingUser(false);
         }
@@ -194,7 +213,7 @@ function ChallengeNewPageContent() {
 
   const handleStartChallenge = () => {
     if (selectedUser) {
-      // Navigate to shooter page with opponent info
+      // Navigate directly to shooter page with opponent info
       const params = new URLSearchParams({
         opponent: selectedUser.id,
         name: selectedUser.username,
@@ -326,14 +345,9 @@ function ChallengeNewPageContent() {
           )}
         </div>
 
-        {/* Back Button */}
+        {/* Controls - Empty for cleaner flow */}
         <div className="challenge-controls">
-          <button
-            onClick={() => router.push('/garderobe')}
-            className="back-btn"
-          >
-            Zurück zur Garderobe
-          </button>
+          {/* No back button - user should complete the challenge flow */}
         </div>
       </GameField>
 

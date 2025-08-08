@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import UserAvatar from './UserAvatar';
 import ChallengeModal from './ChallengeModal';
-import { FaCheck, FaTimes, FaExternalLinkAlt, FaEye } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaExternalLinkAlt, FaEye, FaChevronDown, FaChevronUp, FaCheckCircle } from 'react-icons/fa';
 import { GiCrossedSwords } from 'react-icons/gi';
 
 interface Match {
@@ -17,16 +17,22 @@ interface Match {
   challengerAvatar: string;
   createdAt: string;
   winner?: string;
+  scoreA?: number;
+  scoreB?: number;
 }
 
 export default function Header() {
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMatchesOpen, setIsMatchesOpen] = useState(false);
+  const [isChallengesOpen, setIsChallengesOpen] = useState(false);
+  const [isActiveMatchesOpen, setIsActiveMatchesOpen] = useState(false);
+  const [isFinishedMatchesOpen, setIsFinishedMatchesOpen] = useState(false);
   const [isChallengeModalOpen, setIsChallengeModalOpen] = useState(false);
   const [matches, setMatches] = useState<Match[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [matchesError, setMatchesError] = useState('');
+  const [acceptingChallenge, setAcceptingChallenge] = useState<string | null>(null);
   const [viewedMatches, setViewedMatches] = useState<Set<string>>(() => {
     // Load viewed matches from localStorage on init
     if (typeof window !== 'undefined') {
@@ -74,8 +80,17 @@ export default function Header() {
       }
     };
 
+    const handleOpenChallengeModal = () => {
+      setIsChallengeModalOpen(true);
+    };
+
     window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    window.addEventListener('openChallengeModal', handleOpenChallengeModal);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('openChallengeModal', handleOpenChallengeModal);
+    };
   }, [user, isMatchesOpen]);
 
   // Save viewed matches to localStorage
@@ -112,8 +127,9 @@ export default function Header() {
     const newViewedMatches = new Set([...viewedMatches, matchId]);
     setViewedMatches(newViewedMatches);
     saveViewedMatches(newViewedMatches);
-    // Refresh matches to remove the viewed one from the list
-    fetchMatches();
+    
+    // Immediately remove the match from the current list for instant UI feedback
+    setMatches(prevMatches => prevMatches.filter(match => match.id !== matchId));
   };
 
   // Get avatar emoji
@@ -139,13 +155,50 @@ export default function Header() {
       case 'cancelable':
         return 'Wartend';
       case 'finished_recent':
-        return 'Beendet';
+        return getMatchResult(match);
       default:
         return 'Unbekannt';
     }
   };
 
-  const newMatchesCount = matches.filter(m => m.type === 'invitation' || m.type === 'finished_recent').length;
+  // Get match result with score for finished matches
+  const getMatchResult = (match: Match): string => {
+    if (!match.scoreA && match.scoreA !== 0) return "Beendet"; // fallback
+    
+    if (!user?.email) return "Beendet";
+    
+    // Determine if current user won/lost based on role and winner
+    const userIsPlayerA = match.role === 'challenger'; // user challenged = player_a
+    const userScore = userIsPlayerA ? match.scoreA : match.scoreB;
+    const opponentScore = userIsPlayerA ? match.scoreB : match.scoreA;
+    
+    if (userScore === undefined || opponentScore === undefined) return "Beendet";
+    
+    if (userScore > opponentScore) return `Gewonnen: ${userScore}:${opponentScore}`;
+    if (userScore < opponentScore) return `Verloren: ${userScore}:${opponentScore}`;
+    return `Unentschieden: ${userScore}:${opponentScore}`;
+  };
+
+  // Get result color class for styling
+  const getMatchResultColor = (match: Match): string => {
+    if (!match.scoreA && match.scoreA !== 0 || !user?.email) return "text-gray-400";
+    
+    const userIsPlayerA = match.role === 'challenger';
+    const userScore = userIsPlayerA ? match.scoreA : match.scoreB;
+    const opponentScore = userIsPlayerA ? match.scoreB : match.scoreA;
+    
+    if (userScore === undefined || opponentScore === undefined) return "text-gray-400";
+    
+    if (userScore > opponentScore) return "text-green-400";
+    if (userScore < opponentScore) return "text-red-400";
+    return "text-gray-400";
+  };
+
+  // Individual badge counts for each category
+  const invitationsCount = matches.filter(m => m.type === 'invitation').length;
+  const activeMatchesCount = matches.filter(m => m.type === 'active' || m.type === 'waiting_for_opponent' || m.type === 'cancelable').length;
+  const finishedMatchesCount = matches.filter(m => m.type === 'finished_recent').length;
+  const newMatchesCount = invitationsCount + finishedMatchesCount; // For desktop dropdown
 
   // Close dropdown when clicking outside - TEMPORARILY DISABLED FOR DEBUGGING
   useEffect(() => {
@@ -184,6 +237,14 @@ export default function Header() {
       router.push('/garderobe');
     }
     setIsMenuOpen(false);
+  };
+
+  const handleAcceptChallenge = (matchId: string) => {
+    setAcceptingChallenge(matchId);
+    setIsMatchesOpen(false);
+    setIsMenuOpen(false);
+    // Direct redirect to keeper page
+    router.push(`/keeper?match=${matchId}`);
   };
 
   return (
@@ -283,11 +344,16 @@ export default function Header() {
                                     </div>
                                     <div className="flex gap-2">
                                       <button 
-                                        onClick={() => router.push(`/challenge?match=${match.id}`)}
-                                        className="text-green-400 hover:text-green-300 p-1"
+                                        onClick={() => handleAcceptChallenge(match.id)}
+                                        disabled={acceptingChallenge === match.id}
+                                        className="text-green-400 hover:text-green-300 p-1 disabled:text-gray-500"
                                         title="Herausforderung annehmen"
                                       >
-                                        <FaCheck size={14} />
+                                        {acceptingChallenge === match.id ? (
+                                          <div className="animate-spin rounded-full h-3.5 w-3.5 border border-green-400 border-t-transparent"></div>
+                                        ) : (
+                                          <FaCheck size={14} />
+                                        )}
                                       </button>
                                       <button className="text-red-400 hover:text-red-300 p-1" title="Ablehnen">
                                         <FaTimes size={14} />
@@ -341,19 +407,28 @@ export default function Header() {
                                       <span className="text-2xl">{getAvatarEmoji(match.challengerAvatar)}</span>
                                       <div>
                                         <p className="text-white text-sm font-medium">Gegen {match.challengerUsername}</p>
-                                        <p className="text-gray-400 text-xs">{getMatchStatus(match)}</p>
+                                        <p className={`text-xs ${getMatchResultColor(match)}`}>{getMatchStatus(match)}</p>
                                       </div>
                                     </div>
-                                    <button 
-                                      onClick={() => {
-                                        markMatchAsViewed(match.id);
-                                        router.push(`/game/${match.id}`);
-                                      }}
-                                      className="text-gray-400 hover:text-gray-300 p-1"
-                                      title="Ergebnis ansehen"
-                                    >
-                                      <FaEye size={14} />
-                                    </button>
+                                    <div className="flex gap-2">
+                                      <button 
+                                        onClick={() => {
+                                          markMatchAsViewed(match.id);
+                                          router.push(`/game/${match.id}`);
+                                        }}
+                                        className="text-gray-400 hover:text-gray-300 p-1"
+                                        title="Ergebnis ansehen"
+                                      >
+                                        <FaEye size={14} />
+                                      </button>
+                                      <button 
+                                        onClick={() => markMatchAsViewed(match.id)}
+                                        className="text-green-400 hover:text-green-300 p-1"
+                                        title="Als erledigt markieren"
+                                      >
+                                        <FaCheckCircle size={14} />
+                                      </button>
+                                    </div>
                                   </div>
                                 ))
                               )}
@@ -429,142 +504,212 @@ export default function Header() {
                 Rangliste
               </button>
               
+              {/* Herausforderungen */}
               <button 
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
-                  console.log('Mobile matches button clicked, current state:', isMatchesOpen);
-                  setIsMatchesOpen(!isMatchesOpen);
+                  setIsChallengesOpen(!isChallengesOpen);
                 }}
                 className="nav-link block w-full text-left text-white flex items-center justify-between"
+                disabled={invitationsCount === 0}
               >
-                <span>Matches</span>
-                {newMatchesCount > 0 && (
-                  <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 font-bold">
-                    {newMatchesCount}
-                  </span>
+                <div className="flex items-center gap-2">
+                  <span className={invitationsCount === 0 ? 'text-gray-500' : ''}>Herausforderungen</span>
+                  {invitationsCount > 0 && (
+                    <span className="bg-green-500 text-white text-xs rounded-full px-2 py-0.5 font-bold">
+                      {invitationsCount}
+                    </span>
+                  )}
+                </div>
+                {invitationsCount > 0 && (
+                  <div className="text-gray-400">
+                    {isChallengesOpen ? <FaChevronUp /> : <FaChevronDown />}
+                  </div>
                 )}
               </button>
               
-              {/* Mobile Matches Dropdown */}
-              {isMatchesOpen && (
-                <div className="bg-gray-800 bg-opacity-95 backdrop-blur-md rounded-lg border border-green-600 mx-3 p-4">
-                  <h3 className="text-white font-bold text-lg mb-3">Deine Matches</h3>
-                  
-                  {isLoadingMatches ? (
-                    <div className="text-center py-6">
-                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-green-400 border-t-transparent mx-auto mb-2"></div>
-                      <p className="text-gray-400 text-sm">Lade Matches...</p>
-                    </div>
-                  ) : matchesError ? (
-                    <div className="text-center py-6">
-                      <p className="text-red-400 text-sm">{matchesError}</p>
-                      <button 
-                        onClick={fetchMatches}
-                        className="mt-2 text-green-400 hover:text-green-300 text-sm"
+              {/* Herausforderungen Dropdown */}
+              {isChallengesOpen && invitationsCount > 0 && (
+                <div className="bg-gray-800 bg-opacity-95 backdrop-blur-md rounded-lg border border-green-600 mx-3 p-4 mb-3">
+                  <h4 className="text-green-400 text-sm font-semibold mb-2">Neue Herausforderungen</h4>
+                  {matches.filter(m => m.type === 'invitation').map(match => (
+                    <div key={match.id} className="flex items-center justify-between p-2 hover:bg-green-900 hover:bg-opacity-30 rounded transition-colors mb-1">
+                      <div 
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          handleAcceptChallenge(match.id);
+                        }}
+                        className="flex items-center gap-3 flex-1 cursor-pointer"
                       >
-                        Erneut versuchen
-                      </button>
+                        <span className="text-2xl">{getAvatarEmoji(match.challengerAvatar)}</span>
+                        <div>
+                          <p className="text-white text-sm font-medium">{match.challengerUsername}</p>
+                          <p className="text-gray-400 text-xs">{getMatchStatus(match)}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            handleAcceptChallenge(match.id);
+                          }}
+                          disabled={acceptingChallenge === match.id}
+                          className="text-green-400 hover:text-green-300 p-1 disabled:text-gray-500"
+                          title="Herausforderung annehmen"
+                        >
+                          {acceptingChallenge === match.id ? (
+                            <div className="animate-spin rounded-full h-3.5 w-3.5 border border-green-400 border-t-transparent"></div>
+                          ) : (
+                            <FaCheck size={14} />
+                          )}
+                        </button>
+                        <button 
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            // TODO: Implement decline functionality
+                          }}
+                          className="text-red-400 hover:text-red-300 p-1" 
+                          title="Ablehnen"
+                        >
+                          <FaTimes size={14} />
+                        </button>
+                      </div>
                     </div>
-                  ) : (
-                    <>
-                      {/* Neue Herausforderungen */}
-                      <div className="mb-4">
-                        <h4 className="text-green-400 text-sm font-semibold mb-2">Neue Herausforderungen</h4>
-                        {matches.filter(m => m.type === 'invitation').length === 0 ? (
-                          <p className="text-gray-400 text-xs py-2">Keine neuen Herausforderungen</p>
-                        ) : (
-                          matches.filter(m => m.type === 'invitation').map(match => (
-                            <div key={match.id} className="flex items-center justify-between p-2 hover:bg-green-900 hover:bg-opacity-30 rounded transition-colors mb-1">
-                              <div 
-                                onClick={(event) => {
-                                  event.preventDefault();
-                                  event.stopPropagation();
-                                  console.log('Challenge row clicked for match:', match.id);
-                                  setIsMenuOpen(false);
-                                  setIsMatchesOpen(false);
-                                  router.push(`/challenge?match=${match.id}`);
-                                }}
-                                className="flex items-center gap-3 flex-1 cursor-pointer"
-                              >
-                                <span className="text-2xl">{getAvatarEmoji(match.challengerAvatar)}</span>
-                                <div>
-                                  <p className="text-white text-sm font-medium">{match.challengerUsername}</p>
-                                  <p className="text-gray-400 text-xs">{getMatchStatus(match)}</p>
-                                </div>
-                              </div>
-                              <div className="flex gap-2">
-                                <button 
-                                  onClick={(event) => {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    console.log('Accept button clicked for match:', match.id);
-                                    setIsMenuOpen(false);
-                                    setIsMatchesOpen(false);
-                                    router.push(`/challenge?match=${match.id}`);
-                                  }}
-                                  className="text-green-400 hover:text-green-300 p-1"
-                                  title="Herausforderung annehmen"
-                                >
-                                  <FaCheck size={14} />
-                                </button>
-                                <button 
-                                  onClick={(event) => {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    console.log('Decline button clicked for match:', match.id);
-                                    // TODO: Implement decline functionality
-                                  }}
-                                  className="text-red-400 hover:text-red-300 p-1" 
-                                  title="Ablehnen"
-                                >
-                                  <FaTimes size={14} />
-                                </button>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                      
-                      {/* Aktive Matches */}
-                      <div className="mb-4">
-                        <h4 className="text-yellow-400 text-sm font-semibold mb-2">Aktive Matches</h4>
-                        {matches.filter(m => m.type === 'active' || m.type === 'waiting_for_opponent' || m.type === 'cancelable').length === 0 ? (
-                          <p className="text-gray-400 text-xs py-2">Keine aktiven Matches</p>
-                        ) : (
-                          matches.filter(m => m.type === 'active' || m.type === 'waiting_for_opponent' || m.type === 'cancelable').map(match => (
-                            <div key={match.id} className="flex items-center justify-between p-2 hover:bg-green-900 hover:bg-opacity-30 rounded transition-colors mb-1">
-                              <div className="flex items-center gap-3">
-                                <span className="text-2xl">{getAvatarEmoji(match.challengerAvatar)}</span>
-                                <div>
-                                  <p className="text-white text-sm font-medium">{match.challengerUsername}</p>
-                                  <p className="text-gray-400 text-xs">{getMatchStatus(match)}</p>
-                                </div>
-                              </div>
-                              {match.type === 'cancelable' ? (
-                                <span className="text-gray-500 text-xs px-2">Warte auf Antwort</span>
-                              ) : (
-                                <button 
-                                  onClick={(event) => {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    console.log('Match button clicked:', match.id, match.type);
-                                    setIsMenuOpen(false);
-                                    setIsMatchesOpen(false);
-                                    router.push(`/match/${match.id}`);
-                                  }}
-                                  className="text-blue-400 hover:text-blue-300 p-1"
-                                  title="Match öffnen"
-                                >
-                                  <FaExternalLinkAlt size={14} />
-                                </button>
-                              )}
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </>
+                  ))}
+                </div>
+              )}
+              
+              {/* Aktive Matches */}
+              <button 
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setIsActiveMatchesOpen(!isActiveMatchesOpen);
+                }}
+                className="nav-link block w-full text-left text-white flex items-center justify-between"
+                disabled={activeMatchesCount === 0}
+              >
+                <div className="flex items-center gap-2">
+                  <span className={activeMatchesCount === 0 ? 'text-gray-500' : ''}>Aktive Matches</span>
+                  {activeMatchesCount > 0 && (
+                    <span className="bg-yellow-500 text-white text-xs rounded-full px-2 py-0.5 font-bold">
+                      {activeMatchesCount}
+                    </span>
                   )}
+                </div>
+                {activeMatchesCount > 0 && (
+                  <div className="text-gray-400">
+                    {isActiveMatchesOpen ? <FaChevronUp /> : <FaChevronDown />}
+                  </div>
+                )}
+              </button>
+              
+              {/* Aktive Matches Dropdown */}
+              {isActiveMatchesOpen && activeMatchesCount > 0 && (
+                <div className="bg-gray-800 bg-opacity-95 backdrop-blur-md rounded-lg border border-yellow-600 mx-3 p-4 mb-3">
+                  <h4 className="text-yellow-400 text-sm font-semibold mb-2">Aktive Matches</h4>
+                  {matches.filter(m => m.type === 'active' || m.type === 'waiting_for_opponent' || m.type === 'cancelable').map(match => (
+                    <div key={match.id} className="flex items-center justify-between p-2 hover:bg-green-900 hover:bg-opacity-30 rounded transition-colors mb-1">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{getAvatarEmoji(match.challengerAvatar)}</span>
+                        <div>
+                          <p className="text-white text-sm font-medium">{match.challengerUsername}</p>
+                          <p className="text-gray-400 text-xs">{getMatchStatus(match)}</p>
+                        </div>
+                      </div>
+                      {match.type === 'cancelable' ? (
+                        <span className="text-gray-500 text-xs px-2">Warte auf Antwort</span>
+                      ) : (
+                        <button 
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            setIsMenuOpen(false);
+                            setIsActiveMatchesOpen(false);
+                            router.push(`/match/${match.id}`);
+                          }}
+                          className="text-blue-400 hover:text-blue-300 p-1"
+                          title="Match öffnen"
+                        >
+                          <FaExternalLinkAlt size={14} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Beendete Matches */}
+              <button 
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setIsFinishedMatchesOpen(!isFinishedMatchesOpen);
+                }}
+                className="nav-link block w-full text-left text-white flex items-center justify-between"
+                disabled={finishedMatchesCount === 0}
+              >
+                <div className="flex items-center gap-2">
+                  <span className={finishedMatchesCount === 0 ? 'text-gray-500' : ''}>Beendete Matches</span>
+                  {finishedMatchesCount > 0 && (
+                    <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-0.5 font-bold">
+                      {finishedMatchesCount}
+                    </span>
+                  )}
+                </div>
+                {finishedMatchesCount > 0 && (
+                  <div className="text-gray-400">
+                    {isFinishedMatchesOpen ? <FaChevronUp /> : <FaChevronDown />}
+                  </div>
+                )}
+              </button>
+              
+              {/* Beendete Matches Dropdown */}
+              {isFinishedMatchesOpen && finishedMatchesCount > 0 && (
+                <div className="bg-gray-800 bg-opacity-95 backdrop-blur-md rounded-lg border border-blue-600 mx-3 p-4 mb-3">
+                  <h4 className="text-gray-400 text-sm font-semibold mb-2">Beendete Matches</h4>
+                  {matches.filter(m => m.type === 'finished_recent').map(match => (
+                    <div key={match.id} className="flex items-center justify-between p-2 hover:bg-green-900 hover:bg-opacity-30 rounded transition-colors mb-1">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{getAvatarEmoji(match.challengerAvatar)}</span>
+                        <div>
+                          <p className="text-white text-sm font-medium">Gegen {match.challengerUsername}</p>
+                          <p className={`text-xs ${getMatchResultColor(match)}`}>{getMatchStatus(match)}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            setIsMenuOpen(false);
+                            setIsFinishedMatchesOpen(false);
+                            markMatchAsViewed(match.id);
+                            router.push(`/game/${match.id}`);
+                          }}
+                          className="text-gray-400 hover:text-gray-300 p-1"
+                          title="Ergebnis ansehen"
+                        >
+                          <FaEye size={14} />
+                        </button>
+                        <button 
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            markMatchAsViewed(match.id);
+                          }}
+                          className="text-green-400 hover:text-green-300 p-1"
+                          title="Als erledigt markieren"
+                        >
+                          <FaCheckCircle size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
               

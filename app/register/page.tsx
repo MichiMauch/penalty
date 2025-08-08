@@ -12,10 +12,15 @@ export default function RegisterPage() {
   const { user, loading, register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [justRegistered, setJustRegistered] = useState(false);
 
   // Redirect logged-in users to garderobe
   if (!loading && user) {
-    router.push('/garderobe');
+    if (justRegistered) {
+      router.push('/garderobe?welcome=true');
+    } else {
+      router.push('/garderobe');
+    }
     return null;
   }
 
@@ -36,6 +41,7 @@ export default function RegisterPage() {
     
     try {
       await register(data);
+      setJustRegistered(true);
       // Redirect will happen automatically via AuthContext
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registrierung fehlgeschlagen');

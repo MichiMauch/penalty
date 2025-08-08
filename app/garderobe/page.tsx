@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { nanoid } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthPage from '@/components/AuthPage';
 import UserAvatar from '@/components/UserAvatar';
 import Layout from '@/components/Layout';
 import UserStatsCard from '@/components/UserStatsCard';
-import Leaderboard from '@/components/Leaderboard';
-import ChallengeModal from '@/components/ChallengeModal';
+import Leaderboard, { LeaderboardRef } from '@/components/Leaderboard';
+// ChallengeModal import removed - using direct navigation now
 import { calculateLevel } from '@/lib/levels';
 import { GiCrossedSwords } from 'react-icons/gi';
 
@@ -24,14 +24,13 @@ interface PendingChallenge {
   winner?: string;
 }
 
-export default function Garderobe() {
+function GarderobeContent() {
   const [error, setError] = useState('');
   const [pendingChallenges, setPendingChallenges] = useState<PendingChallenge[]>([]);
   const [isLoadingChallenges, setIsLoadingChallenges] = useState(true);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(true);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [userStats, setUserStats] = useState<any>(null);
-  const [showChallengeModal, setShowChallengeModal] = useState(false);
-  const [selectedUserToChallenge, setSelectedUserToChallenge] = useState<{id: string; username: string; email: string; avatar: string} | null>(null);
+  // Challenge modal states removed - using direct navigation now
   const [isCheckingChallenge, setIsCheckingChallenge] = useState(false);
   const [checkingUserId, setCheckingUserId] = useState<string | null>(null);
   const [viewedMatches, setViewedMatches] = useState<Set<string>>(() => {
@@ -43,7 +42,20 @@ export default function Garderobe() {
     return new Set();
   });
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading, logout } = useAuth();
+  const leaderboardRef = useRef<LeaderboardRef>(null);
+
+  // Check for registration success and show welcome modal only then
+  useEffect(() => {
+    const welcomeParam = searchParams.get('welcome');
+    if (welcomeParam === 'true') {
+      setShowWelcomeModal(true);
+      // Clean up the URL parameter
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [searchParams]);
 
   // Fetch pending challenges and user stats when user is loaded
   useEffect(() => {
@@ -70,6 +82,31 @@ export default function Garderobe() {
 
     const handleFocus = () => {
       fetchPendingChallenges();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [user]);
+
+  // Auto-refresh leaderboard on URL parameter
+  useEffect(() => {
+    const refreshParam = searchParams.get('refreshLeaderboard');
+    if (refreshParam === 'true' && leaderboardRef.current) {
+      leaderboardRef.current.fetchLeaderboard();
+      // Clean up URL parameter
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [searchParams]);
+
+  // Refresh leaderboard when window comes back into focus
+  useEffect(() => {
+    if (!user) return;
+
+    const handleFocus = () => {
+      if (leaderboardRef.current) {
+        leaderboardRef.current.fetchLeaderboard();
+      }
     };
 
     window.addEventListener('focus', handleFocus);
@@ -236,11 +273,19 @@ export default function Garderobe() {
       }
     }
     
-    // Clear loading states and open modal
+    // Clear loading states and navigate directly to shooter
     setIsCheckingChallenge(false);
     setCheckingUserId(null);
-    setSelectedUserToChallenge(challengeUser);
-    setShowChallengeModal(true);
+    
+    // Navigate directly to shooter page with opponent info
+    const params = new URLSearchParams({
+      opponent: challengeUser.id,
+      name: challengeUser.username,
+      email: challengeUser.email,
+      points: '0' // We don't have totalPoints in the challengeUser object
+    });
+    
+    router.push(`/shooter?${params.toString()}`);
   };
 
   
@@ -303,6 +348,7 @@ export default function Garderobe() {
           <div className="order-2">
             <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6 leaderboard-section">
               <Leaderboard 
+                ref={leaderboardRef}
                 currentUserId={user.id} 
                 onChallengeUser={handleChallengeUser}
                 checkingUserId={checkingUserId}
@@ -348,7 +394,11 @@ export default function Garderobe() {
               <div className="space-y-6">
                 <div className="text-center">
                   <button
-                    onClick={() => setShowChallengeModal(true)}
+                    onClick={() => {
+                      // Trigger header challenge modal by creating a custom event
+                      const event = new CustomEvent('openChallengeModal');
+                      window.dispatchEvent(event);
+                    }}
                     disabled={isCheckingChallenge}
                     className="inline-flex items-center gap-3 px-8 py-4 bg-green-600 text-white text-xl font-bold rounded-lg hover:bg-green-500 transition-all duration-200 transform hover:scale-105 border border-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none"
                   >
@@ -378,16 +428,21 @@ export default function Garderobe() {
         </div>
       </div>
 
-      {/* Challenge Modal */}
-      <ChallengeModal 
-        isOpen={showChallengeModal}
-        onClose={() => {
-          setShowChallengeModal(false);
-          setSelectedUserToChallenge(null);
-        }}
-        preSelectedUser={selectedUserToChallenge}
-        redirectToChallengePage={true}
-      />
+      {/* Challenge Modal removed - direct navigation implemented */}
     </Layout>
+  );
+}
+
+export default function Garderobe() {
+  return (
+    <Suspense fallback={
+      <Layout showHeader={true}>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-white text-xl">⚽ Lade PENALTY...</div>
+        </div>
+      </Layout>
+    }>
+      <GarderobeContent />
+    </Suspense>
   );
 }

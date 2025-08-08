@@ -78,10 +78,45 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
     }
   };
 
-  const selectUser = (selectedUser: User) => {
+  const selectUser = async (selectedUser: User) => {
+    // Set loading state
+    setIsLoading(true);
+    setError('');
     setSelectedUser(selectedUser);
     setSearchQuery(selectedUser.username);
     setSearchResults([]);
+
+    // Check for existing challenge before proceeding
+    try {
+      const checkResponse = await fetch(`/api/matches/check-existing?playerA=${encodeURIComponent(user?.email || '')}&playerB=${encodeURIComponent(selectedUser.email)}`);
+      
+      if (checkResponse.ok) {
+        const { hasPendingChallenge } = await checkResponse.json();
+        if (hasPendingChallenge) {
+          setError('Es existiert bereits eine offene Herausforderung zwischen euch. Bitte warte, bis diese abgeschlossen ist.');
+          setIsLoading(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Error checking existing challenge:', err);
+      setError('Fehler beim Prüfen der Herausforderung. Bitte versuche es erneut.');
+      setIsLoading(false);
+      return;
+    }
+
+    // Navigate directly to shooter page with opponent info
+    const params = new URLSearchParams({
+      opponent: selectedUser.id,
+      name: selectedUser.username,
+      email: selectedUser.email,
+      points: (selectedUser.totalPoints || 0).toString()
+    });
+    
+    onClose();
+    resetModal();
+    setIsLoading(false);
+    router.push(`/shooter?${params.toString()}`);
   };
 
   const sendChallenge = async () => {
@@ -111,10 +146,17 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
         console.error('Error checking existing challenge:', err);
       }
       
-      // Just redirect to challenge page with selected user
+      // Navigate directly to shooter page with opponent info
+      const params = new URLSearchParams({
+        opponent: selectedUser.id,
+        name: selectedUser.username,
+        email: selectedUser.email,
+        points: (selectedUser.totalPoints || 0).toString()
+      });
+      
       onClose();
       resetModal();
-      router.push(`/challenge-new?user=${selectedUser.id}`);
+      router.push(`/shooter?${params.toString()}`);
       return;
     }
 

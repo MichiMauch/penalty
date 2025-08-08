@@ -192,7 +192,7 @@ function ShooterPageContent() {
         if (responseData.status === 'finished') {
           router.push(`/game/${existingMatchId}?animate=true`);
         } else {
-          router.push('/garderobe?success=moves-submitted');
+          router.push('/garderobe?success=moves-submitted&refreshLeaderboard=true');
         }
       } else {
         // Create new match (original flow)
@@ -239,7 +239,7 @@ function ShooterPageContent() {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Redirect to success page or back to garderobe
-        router.push('/garderobe?success=challenge-sent');
+        router.push('/garderobe?success=challenge-sent&refreshLeaderboard=true');
       }
       
     } catch (error) {
@@ -458,19 +458,19 @@ function ShooterPageContent() {
         /* Mobile adjustments */
         @media (max-width: 768px) {
           .ball {
-            bottom: clamp(18vh, 23vh, 28vh);
+            bottom: clamp(16vh, 21vh, 26vh);
             font-size: clamp(1.8rem, 5vw, 2.5rem);
           }
 
           @keyframes ballShot {
             0% {
               transform: translateX(-50%) scale(1) rotate(0deg);
-              bottom: clamp(18vh, 23vh, 28vh);
+              bottom: clamp(16vh, 21vh, 26vh);
               left: 50%;
             }
             100% {
               transform: translateX(-50%) scale(0.6) rotate(360deg);
-              bottom: clamp(45vh, 50vh, 55vh);
+              bottom: clamp(35vh, 40vh, 45vh);
               left: var(--target-left-mobile, var(--target-left));
             }
           }
@@ -498,7 +498,7 @@ function ShooterPageContent() {
         /* Mobile positioning for shots display */
         @media (max-width: 768px) {
           .shots-display {
-            top: 25vh;
+            top: 35vh;
             left: 50%;
             right: auto;
             transform: translateX(-50%);

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, initDB } from '@/lib/db';
 import { getUserSession } from '@/lib/auth';
+import { calculateGameResult } from '@/lib/gameLogic';
+import { PlayerMoves } from '@/lib/types';
 
 export async function GET(request: NextRequest) {
   console.log('Pending matches API called');
@@ -202,16 +204,36 @@ export async function GET(request: NextRequest) {
       role: 'challenger' as const
     }));
     
-    const finishedRecentMatches = recentlyFinished.rows.map((match: any) => ({
-      id: match.id,
-      challengerEmail: match.player_b_email,
-      challengerUsername: match.player_b_username, // This is the opponent (player_b)
-      challengerAvatar: match.player_b_avatar,
-      createdAt: match.created_at,
-      type: 'finished_recent' as const,
-      role: 'challenger' as const,
-      winner: match.winner
-    }));
+    const finishedRecentMatches = recentlyFinished.rows.map((match: any) => {
+      let scoreA = 0;
+      let scoreB = 0;
+      
+      // Calculate scores if both moves are available
+      if (match.player_a_moves && match.player_b_moves) {
+        try {
+          const movesA = JSON.parse(match.player_a_moves) as PlayerMoves;
+          const movesB = JSON.parse(match.player_b_moves) as PlayerMoves;
+          const result = calculateGameResult(movesA, movesB);
+          scoreA = result.scoreA;
+          scoreB = result.scoreB;
+        } catch (error) {
+          console.error('Error calculating scores for match', match.id, error);
+        }
+      }
+      
+      return {
+        id: match.id,
+        challengerEmail: match.player_b_email,
+        challengerUsername: match.player_b_username, // This is the opponent (player_b)
+        challengerAvatar: match.player_b_avatar,
+        createdAt: match.created_at,
+        type: 'finished_recent' as const,
+        role: 'challenger' as const,
+        winner: match.winner,
+        scoreA,
+        scoreB
+      };
+    });
     
     const cancelableChallenges = cancelableMatches.rows.map((match: any) => ({
       id: match.id,

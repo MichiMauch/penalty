@@ -102,7 +102,7 @@ function MatchPageContent() {
           <div className="error-container">
             <div className="error-message">{error}</div>
             <button
-              onClick={() => router.push('/garderobe')}
+              onClick={() => router.push('/garderobe?refreshLeaderboard=true')}
               className="back-button"
             >
               Zurück zur Garderobe

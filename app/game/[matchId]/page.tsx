@@ -196,7 +196,7 @@ export default function GamePage() {
           <div className="error-container">
             <div className="error-message">{error}</div>
             <button
-              onClick={() => router.push('/garderobe')}
+              onClick={() => router.push('/garderobe?refreshLeaderboard=true')}
               className="error-button"
             >
               Zurück zur Garderobe
