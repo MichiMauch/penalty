@@ -34,7 +34,7 @@ export async function getSession(sessionId: string): Promise<UserSession | null>
   
   const result = await db.execute({
     sql: `
-      SELECT s.id, s.expires_at, u.id as user_id, u.email, u.username, u.avatar, u.created_at, u.updated_at, u.is_admin, u.is_blocked
+      SELECT s.id, s.expires_at, u.id as user_id, u.email, u.username, u.avatar, u.created_at, u.updated_at, u.is_admin, u.is_blocked, u.preferred_language
       FROM sessions s
       JOIN users u ON s.user_id = u.id
       WHERE s.id = ? AND s.expires_at > datetime('now')
@@ -55,7 +55,8 @@ export async function getSession(sessionId: string): Promise<UserSession | null>
       created_at: row.created_at as string,
       updated_at: row.updated_at as string,
       is_admin: Boolean(row.is_admin),
-      is_blocked: Boolean(row.is_blocked)
+      is_blocked: Boolean(row.is_blocked),
+      preferred_language: (row.preferred_language as 'de' | 'en') || 'de'
     },
     expires_at: row.expires_at as string
   };

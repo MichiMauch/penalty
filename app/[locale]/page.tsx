@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
 import PlayerCard from '@/components/PlayerCard';
@@ -46,6 +47,7 @@ interface AppStats {
 export default function LandingPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const t = useTranslations();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
   const [appStats, setAppStats] = useState<AppStats | null>(null);
@@ -105,7 +107,7 @@ export default function LandingPage() {
     return (
       <Layout showHeader={false}>
         <div className="min-h-screen flex items-center justify-center">
-          <div className="text-white text-xl">⚽ Lade PENALTY...</div>
+          <div className="text-white text-xl">⚽ {t('common.loading')} {t('common.penalty')}...</div>
         </div>
       </Layout>
     );
@@ -119,9 +121,9 @@ export default function LandingPage() {
           <TribuneFlashes />
           <div className="hero-content">
             <p className="hero-subtitle">
-              Das ultimative Elfmeter-Duell! Zeig deine Nerven aus Stahl und werde zur Penalty-Legende!
+              {t('landing.hero.subtitle')}
             </p>
-            <h1 className="hero-title">PENALTY SHOOTOUT</h1>
+            <h1 className="hero-title">{t('landing.hero.title')}</h1>
           </div>
           
 
@@ -133,14 +135,14 @@ export default function LandingPage() {
                 onClick={() => router.push('/login')}
               >
                 <FaSignInAlt />
-                <span>Anmelden</span>
+                <span>{t('navigation.login')}</span>
               </button>
               <button 
                 className="stadium-btn stadium-btn-primary"
                 onClick={() => router.push('/register')}
               >
                 <FaUserPlus />
-                <span>Registrieren</span>
+                <span>{t('navigation.register')}</span>
               </button>
             </div>
             
@@ -158,8 +160,8 @@ export default function LandingPage() {
             
             {/* How it Works */}
             <section className="section-header">
-              <h2 className="section-title">So funktioniert&apos;s</h2>
-              <p className="section-subtitle">In drei einfachen Schritten zum Sieg</p>
+              <h2 className="section-title">{t('landing.howItWorks.title')}</h2>
+              <p className="section-subtitle">{t('landing.howItWorks.subtitle')}</p>
             </section>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
@@ -167,38 +169,38 @@ export default function LandingPage() {
                 <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
                   <FaUser size={32} className="text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">1. Anmelden</h3>
-                <p className="text-gray-200">Kostenlosen Account erstellen und Avatar wählen</p>
+                <h3 className="text-xl font-bold text-white mb-2">{t('landing.howItWorks.step1.title')}</h3>
+                <p className="text-gray-200">{t('landing.howItWorks.step1.description')}</p>
               </div>
               
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
                   <IoFootball size={32} className="text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">2. Herausfordern</h3>
-                <p className="text-gray-200">Freunde zum Penalty-Duell einladen</p>
+                <h3 className="text-xl font-bold text-white mb-2">{t('landing.howItWorks.step2.title')}</h3>
+                <p className="text-gray-200">{t('landing.howItWorks.step2.description')}</p>
               </div>
               
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg">
                   <IoTrophy size={32} className="text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">3. Gewinnen</h3>
-                <p className="text-gray-200">Punkte sammeln und aufsteigen</p>
+                <h3 className="text-xl font-bold text-white mb-2">{t('landing.howItWorks.step3.title')}</h3>
+                <p className="text-gray-200">{t('landing.howItWorks.step3.description')}</p>
               </div>
             </div>
 
             {/* Game Rules */}
             <section className="section-header">
-              <h2 className="section-title">Spielregeln</h2>
-              <p className="section-subtitle">Einfach, fair und spannend!</p>
+              <h2 className="section-title">{t('landing.gameRules.title')}</h2>
+              <p className="section-subtitle">{t('landing.gameRules.subtitle')}</p>
             </section>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               <div className="app-card text-center p-4 bg-green-900 bg-opacity-50">
                 <div className="text-3xl font-bold text-green-400">5</div>
-                <div className="text-white text-sm">Elfmeter</div>
-                <div className="text-gray-200 text-xs mt-1">pro Spiel</div>
+                <div className="text-white text-sm">{t('landing.gameRules.penalties')}</div>
+                <div className="text-gray-200 text-xs mt-1">{t('landing.gameRules.perGame')}</div>
               </div>
               
               <div className="app-card text-center p-4 bg-blue-900 bg-opacity-50">

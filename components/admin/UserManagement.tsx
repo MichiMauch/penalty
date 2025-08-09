@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { FaSearch, FaUserShield, FaUser, FaSpinner, FaBan, FaTrash, FaCheckCircle } from 'react-icons/fa';
 
 interface User {
@@ -32,6 +33,7 @@ export default function UserManagement() {
   const [error, setError] = useState('');
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const t = useTranslations();
 
   const limit = 20;
 
@@ -54,7 +56,7 @@ export default function UserManagement() {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Fehler beim Laden der User');
+        throw new Error(errorData.error || t('errors.generic'));
       }
 
       const data: UsersResponse = await response.json();
@@ -62,7 +64,7 @@ export default function UserManagement() {
       setTotal(data.total);
     } catch (error) {
       console.error('Error fetching users:', error);
-      setError(error instanceof Error ? error.message : 'Fehler beim Laden der User');
+      setError(error instanceof Error ? error.message : t('errors.generic'));
     } finally {
       setLoading(false);
     }
@@ -72,8 +74,8 @@ export default function UserManagement() {
     if (updatingUserId) return; // Prevent multiple requests
 
     const confirmMessage = currentStatus 
-      ? 'Admin-Rechte entfernen?' 
-      : 'Admin-Rechte gewähren?';
+      ? t('admin.users.confirmations.removeAdmin') 
+      : t('admin.users.confirmations.grantAdmin');
     
     if (!window.confirm(confirmMessage)) return;
 
@@ -92,7 +94,7 @@ export default function UserManagement() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Fehler beim Update');
+        throw new Error(errorData.error || t('errors.updateError'));
       }
 
       const result = await response.json();
@@ -107,7 +109,7 @@ export default function UserManagement() {
 
     } catch (error) {
       console.error('Error updating admin status:', error);
-      alert(error instanceof Error ? error.message : 'Fehler beim Update');
+      alert(error instanceof Error ? error.message : t('errors.updateError'));
     } finally {
       setUpdatingUserId(null);
     }
@@ -117,8 +119,8 @@ export default function UserManagement() {
     if (updatingUserId) return; // Prevent multiple requests
 
     const confirmMessage = currentStatus 
-      ? 'User entsperren?' 
-      : 'User sperren?';
+      ? t('admin.users.confirmations.unblockUser') 
+      : t('admin.users.confirmations.blockUser');
     
     if (!window.confirm(confirmMessage)) return;
 
@@ -137,7 +139,7 @@ export default function UserManagement() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Fehler beim Update');
+        throw new Error(errorData.error || t('errors.updateError'));
       }
 
       const result = await response.json();
@@ -152,7 +154,7 @@ export default function UserManagement() {
 
     } catch (error) {
       console.error('Error updating block status:', error);
-      alert(error instanceof Error ? error.message : 'Fehler beim Update');
+      alert(error instanceof Error ? error.message : t('errors.updateError'));
     } finally {
       setUpdatingUserId(null);
     }
@@ -161,7 +163,7 @@ export default function UserManagement() {
   const deleteUser = async (userId: string, username: string) => {
     if (deletingUserId) return; // Prevent multiple requests
 
-    const confirmMessage = `User "${username}" wirklich löschen?\n\nDies kann nicht rückgängig gemacht werden!`;
+    const confirmMessage = t('admin.users.confirmations.deleteUser', {username}).replace('\\n\\n', '\n\n');
     
     if (!window.confirm(confirmMessage)) return;
 
@@ -174,7 +176,7 @@ export default function UserManagement() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Fehler beim Löschen');
+        throw new Error(errorData.error || t('errors.deleteError'));
       }
 
       const result = await response.json();
@@ -186,7 +188,7 @@ export default function UserManagement() {
 
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert(error instanceof Error ? error.message : 'Fehler beim Löschen');
+      alert(error instanceof Error ? error.message : t('errors.deleteError'));
     } finally {
       setDeletingUserId(null);
     }
@@ -223,14 +225,14 @@ export default function UserManagement() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-2xl font-bold text-white">User-Verwaltung</h2>
+        <h2 className="text-2xl font-bold text-white">{t('admin.users.title')}</h2>
         
         {/* Search */}
         <div className="relative w-full sm:w-64">
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Email oder Username suchen..."
+            placeholder={t('admin.users.search')}
             value={search}
             onChange={handleSearchChange}
             className="w-full bg-gray-800 border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
@@ -240,7 +242,7 @@ export default function UserManagement() {
 
       {/* Stats */}
       <div className="text-gray-300 text-sm">
-        {loading ? 'Lade...' : `${total} User gefunden`}
+        {loading ? t('admin.users.loading') : `${total} ${t('admin.users.found')}`}
       </div>
 
       {/* Error */}
@@ -256,12 +258,12 @@ export default function UserManagement() {
           <table className="w-full">
             <thead className="bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left text-white font-medium">User</th>
-                <th className="px-4 py-3 text-left text-white font-medium">Email</th>
-                <th className="px-4 py-3 text-left text-white font-medium">Punkte</th>
-                <th className="px-4 py-3 text-left text-white font-medium">Spiele</th>
-                <th className="px-4 py-3 text-left text-white font-medium">Status</th>
-                <th className="px-4 py-3 text-center text-white font-medium">Aktionen</th>
+                <th className="px-4 py-3 text-left text-white font-medium">{t('admin.users.table.user')}</th>
+                <th className="px-4 py-3 text-left text-white font-medium">{t('admin.users.table.email')}</th>
+                <th className="px-4 py-3 text-left text-white font-medium">{t('admin.users.table.points')}</th>
+                <th className="px-4 py-3 text-left text-white font-medium">{t('admin.users.table.games')}</th>
+                <th className="px-4 py-3 text-left text-white font-medium">{t('admin.users.table.status')}</th>
+                <th className="px-4 py-3 text-center text-white font-medium">{t('admin.users.table.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-600">
@@ -269,13 +271,13 @@ export default function UserManagement() {
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
                     <FaSpinner className="animate-spin mx-auto mb-2" />
-                    Lade User...
+                    {t('admin.users.loadingUsers')}
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
-                    Keine User gefunden
+                    {t('admin.users.noUsersFound')}
                   </td>
                 </tr>
               ) : (
@@ -287,7 +289,7 @@ export default function UserManagement() {
                         <div>
                           <div className={`font-medium ${user.is_blocked ? 'text-red-300' : 'text-white'}`}>
                             {user.username}
-                            {user.is_blocked && <span className="ml-2 text-xs text-red-400">(GESPERRT)</span>}
+                            {user.is_blocked && <span className="ml-2 text-xs text-red-400">({t('admin.users.status.blocked')})</span>}
                           </div>
                           <div className="text-xs text-gray-400">ID: {user.id.slice(0, 8)}</div>
                         </div>
@@ -311,10 +313,10 @@ export default function UserManagement() {
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
                         <div className={`text-sm font-medium ${user.is_admin ? 'text-blue-400' : 'text-gray-400'}`}>
-                          {user.is_admin ? '🛡️ Admin' : '👤 User'}
+                          {user.is_admin ? `🛡️ ${t('admin.users.status.admin')}` : `👤 ${t('admin.users.status.user')}`}
                         </div>
                         <div className={`text-xs ${user.is_blocked ? 'text-red-400' : 'text-green-400'}`}>
-                          {user.is_blocked ? '🔒 Gesperrt' : '✅ Aktiv'}
+                          {user.is_blocked ? `🔒 ${t('admin.users.status.blocked')}` : `✅ ${t('admin.users.status.active')}`}
                         </div>
                         <div className="text-xs text-gray-500">
                           {formatDate(user.created_at)}
@@ -332,7 +334,7 @@ export default function UserManagement() {
                               ? 'bg-blue-600 hover:bg-blue-500 text-white'
                               : 'bg-gray-600 hover:bg-gray-500 text-gray-300'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          title={user.is_admin ? 'Admin-Rechte entfernen' : 'Admin-Rechte gewähren'}
+                          title={user.is_admin ? t('admin.users.actions.removeAdmin') : t('admin.users.actions.grantAdmin')}
                         >
                           {updatingUserId === user.id ? (
                             <FaSpinner className="animate-spin" />
@@ -352,7 +354,7 @@ export default function UserManagement() {
                               ? 'bg-green-600 hover:bg-green-500 text-white'
                               : 'bg-orange-600 hover:bg-orange-500 text-white'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          title={user.is_blocked ? 'User entsperren' : 'User sperren'}
+                          title={user.is_blocked ? t('admin.users.actions.unblockUser') : t('admin.users.actions.blockUser')}
                         >
                           {updatingUserId === user.id ? (
                             <FaSpinner className="animate-spin" />
@@ -368,7 +370,7 @@ export default function UserManagement() {
                           onClick={() => deleteUser(user.id, user.username)}
                           disabled={deletingUserId === user.id || updatingUserId === user.id}
                           className="p-2 rounded-lg bg-red-600 hover:bg-red-500 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="User löschen"
+                          title={t('admin.users.actions.deleteUser')}
                         >
                           {deletingUserId === user.id ? (
                             <FaSpinner className="animate-spin" />
@@ -394,11 +396,11 @@ export default function UserManagement() {
             disabled={page <= 1}
             className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
           >
-            Vorherige
+            {t('admin.users.pagination.previous')}
           </button>
           
           <span className="text-gray-300 mx-4">
-            Seite {page} von {totalPages}
+            {t('admin.users.pagination.page', {page: page.toString(), total: totalPages.toString()})}
           </span>
           
           <button
@@ -406,7 +408,7 @@ export default function UserManagement() {
             disabled={page >= totalPages}
             className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
           >
-            Nächste
+            {t('admin.users.pagination.next')}
           </button>
         </div>
       )}

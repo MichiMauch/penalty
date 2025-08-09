@@ -1,0 +1,276 @@
+{
+  "common": {
+    "penalty": "PENALTY",
+    "penaltyShootout": "PENALTY SHOOTOUT",
+    "loading": "Laden...",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "yes": "Ja",
+    "no": "Nein",
+    "ok": "OK",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "retry": "Erneut versuchen",
+    "error": "Fehler",
+    "success": "Erfolg"
+  },
+  "navigation": {
+    "leaderboard": "Rangliste",
+    "challenge": "HERAUSFORDERN",
+    "matches": "Matches",
+    "profile": "Profil",
+    "logout": "Abmelden",
+    "admin": "Admin",
+    "login": "Anmelden",
+    "register": "Registrieren"
+  },
+  "auth": {
+    "login": {
+      "title": "Anmelden",
+      "email": "E-Mail-Adresse",
+      "password": "Passwort",
+      "loginButton": "Anmelden",
+      "loggingIn": "Anmelden...",
+      "forgotPassword": "Passwort vergessen?",
+      "noAccount": "Noch kein Account?",
+      "registerNow": "Jetzt registrieren"
+    },
+    "register": {
+      "title": "Registrieren",
+      "email": "E-Mail-Adresse",
+      "username": "Benutzername",
+      "password": "Passwort",
+      "confirmPassword": "Passwort bestätigen",
+      "registerButton": "Registrieren",
+      "registering": "Registrieren...",
+      "hasAccount": "Bereits einen Account?",
+      "loginNow": "Jetzt anmelden",
+      "chooseAvatar": "Avatar wählen"
+    },
+    "forgotPassword": {
+      "title": "Passwort vergessen",
+      "email": "E-Mail-Adresse",
+      "sendButton": "Reset-Link senden",
+      "sending": "Senden...",
+      "description": "Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen deines Passworts.",
+      "success": "Reset-Link wurde gesendet!",
+      "backToLogin": "Zurück zur Anmeldung"
+    },
+    "resetPassword": {
+      "title": "Neues Passwort setzen",
+      "newPassword": "Neues Passwort",
+      "confirmPassword": "Passwort bestätigen",
+      "resetButton": "Passwort ändern",
+      "resetting": "Ändern...",
+      "success": "Passwort erfolgreich geändert!"
+    }
+  },
+  "landing": {
+    "hero": {
+      "subtitle": "Das ultimative Elfmeter-Duell! Zeig deine Nerven aus Stahl und werde zur Penalty-Legende!",
+      "title": "PENALTY SHOOTOUT"
+    },
+    "howItWorks": {
+      "title": "So funktioniert's",
+      "subtitle": "In drei einfachen Schritten zum Sieg",
+      "step1": {
+        "title": "1. Anmelden",
+        "description": "Kostenlosen Account erstellen und Avatar wählen"
+      },
+      "step2": {
+        "title": "2. Herausfordern",
+        "description": "Freunde zum Penalty-Duell einladen"
+      },
+      "step3": {
+        "title": "3. Gewinnen",
+        "description": "Punkte sammeln und aufsteigen"
+      }
+    },
+    "gameRules": {
+      "title": "Spielregeln",
+      "subtitle": "Einfach, fair und spannend!",
+      "penalties": "Elfmeter",
+      "perGame": "pro Spiel",
+      "points": "Punkte",
+      "forWin": "für jeden Sieg",
+      "forLoss": "bei Niederlage",
+      "bonus": "Bonus",
+      "levelUp": "Level-Aufstieg"
+    },
+    "liveStats": {
+      "matchesPlayed": "Matches gespielt",
+      "activePlayers": "Aktive Spieler",
+      "currentChampion": "Aktueller Champion"
+    },
+    "features": {
+      "title": "Das erwartet dich",
+      "subtitle": "Moderne Features für das ultimative Penalty-Erlebnis",
+      "liveLeaderboard": {
+        "title": "Live-Rangliste",
+        "description": "Sieh sofort wo du stehst und kämpfe dich nach oben!"
+      },
+      "revengeButton": {
+        "title": "Revanche-Button",
+        "description": "Verloren? Mit einem Klick startest du die Revanche."
+      },
+      "pushNotifications": {
+        "title": "Push-Benachrichtigungen",
+        "description": "Verpasse kein Match - wir halten dich auf dem Laufenden!"
+      },
+      "animations": {
+        "title": "Spannende Animationen",
+        "description": "Erlebe jedes Tor und jede Parade hautnah mit!"
+      }
+    },
+    "topPlayers": {
+      "title": "Top Spieler",
+      "subtitle": "Die besten Penalty-Schützen der Liga",
+      "loadingPlayers": "Lade Spieler...",
+      "noEntries": "Noch keine Einträge",
+      "playFirstMatch": "Spiele dein erstes Match!",
+      "rank": "Platz",
+      "player": "Spieler",
+      "name": "Name",
+      "games": "SP",
+      "wins": "G",
+      "losses": "V",
+      "points": "Punkte"
+    },
+    "video": {
+      "title": "So spannend kann ein Match sein!",
+      "subtitle": "Erlebe die Dramatik eines Penalty-Duells"
+    },
+    "cta": {
+      "playNow": "JETZT SPIELEN 🚀",
+      "freeRegistration": "Kostenlos registrieren und loslegen!"
+    }
+  },
+  "matches": {
+    "status": {
+      "newChallenge": "Neue Herausforderung",
+      "waitingForYou": "Wartet auf dich",
+      "waitingForOpponent": "Du wartest auf Gegner",
+      "waiting": "Wartend",
+      "won": "Gewonnen",
+      "lost": "Verloren",
+      "draw": "Unentschieden",
+      "finished": "Beendet"
+    },
+    "actions": {
+      "accept": "Herausforderung annehmen",
+      "decline": "Ablehnen",
+      "openMatch": "Match öffnen",
+      "viewResult": "Ergebnis ansehen",
+      "markDone": "Als erledigt markieren"
+    },
+    "sections": {
+      "newChallenges": "Neue Herausforderungen",
+      "activeMatches": "Aktive Matches",
+      "finishedMatches": "Beendete Matches"
+    },
+    "empty": {
+      "noChallenges": "Keine neuen Herausforderungen",
+      "noActiveMatches": "Keine aktiven Matches",
+      "noFinishedMatches": "Keine beendeten Matches"
+    },
+    "loading": "Lade Matches...",
+    "loadError": "Fehler beim Laden der Matches",
+    "networkError": "Netzwerkfehler",
+    "waitingForAnswer": "Warte auf Antwort"
+  },
+  "game": {
+    "challenge": {
+      "title": "Herausfordern",
+      "selectOpponent": "Gegner auswählen",
+      "searchPlayers": "Spieler suchen...",
+      "sendChallenge": "Herausforderung senden",
+      "challengeSent": "Herausforderung gesendet!"
+    },
+    "shoot": {
+      "title": "Schießen",
+      "selectDirection": "Schussrichtung wählen",
+      "shoot": "SCHIEßEN!",
+      "shooting": "Schießt...",
+      "goal": "TOR!",
+      "miss": "DANEBEN!"
+    },
+    "keep": {
+      "title": "Halten",
+      "selectDirection": "Sprungrichtung wählen",
+      "dive": "SPRINGEN!",
+      "diving": "Springt...",
+      "saved": "GEHALTEN!",
+      "goal": "TOR!"
+    },
+    "result": {
+      "won": "GEWONNEN!",
+      "lost": "VERLOREN!",
+      "draw": "UNENTSCHIEDEN!",
+      "finalScore": "Endergebnis",
+      "playAgain": "Nochmal spielen",
+      "revenge": "REVANCHE",
+      "backToHome": "Zurück zur Startseite"
+    },
+    "status": {
+      "processing": "Das Spiel wird verarbeitet...",
+      "waiting": "Status: waiting"
+    }
+  },
+  "admin": {
+    "title": "Admin-Panel",
+    "users": {
+      "title": "User-Verwaltung",
+      "search": "Email oder Username suchen...",
+      "loading": "Lade...",
+      "found": "User gefunden",
+      "noUsersFound": "Keine User gefunden",
+      "loadingUsers": "Lade User...",
+      "actions": {
+        "grantAdmin": "Admin-Rechte gewähren",
+        "removeAdmin": "Admin-Rechte entfernen",
+        "blockUser": "User sperren",
+        "unblockUser": "User entsperren",
+        "deleteUser": "User löschen"
+      },
+      "confirmations": {
+        "grantAdmin": "Admin-Rechte gewähren?",
+        "removeAdmin": "Admin-Rechte entfernen?",
+        "blockUser": "User sperren?",
+        "unblockUser": "User entsperren?",
+        "deleteUser": "User \"{username}\" wirklich löschen?\\n\\nDies kann nicht rückgängig gemacht werden!"
+      },
+      "status": {
+        "admin": "Admin",
+        "user": "User",
+        "blocked": "Gesperrt",
+        "active": "Aktiv"
+      },
+      "table": {
+        "user": "User",
+        "email": "Email",
+        "points": "Punkte",
+        "games": "Spiele",
+        "status": "Status",
+        "actions": "Aktionen"
+      },
+      "pagination": {
+        "previous": "Vorherige",
+        "next": "Nächste",
+        "page": "Seite {page} von {total}"
+      }
+    }
+  },
+  "errors": {
+    "generic": "Ein Fehler ist aufgetreten",
+    "network": "Netzwerkfehler",
+    "unauthorized": "Nicht autorisiert",
+    "forbidden": "Zugriff verweigert",
+    "notFound": "Nicht gefunden",
+    "serverError": "Server-Fehler",
+    "validationError": "Validierungsfehler",
+    "challengeError": "Fehler beim Senden der Herausforderung",
+    "updateError": "Fehler beim Update",
+    "deleteError": "Fehler beim Löschen"
+  }
+}

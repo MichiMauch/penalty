@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { LoginCredentials } from '@/lib/types';
 import { FaSignInAlt } from 'react-icons/fa';
 
@@ -15,6 +16,7 @@ interface LoginFormProps {
 export default function LoginForm({ onSubmit, onSwitchToRegister, isLoading, error, defaultEmail }: LoginFormProps) {
   const [email, setEmail] = useState(defaultEmail || '');
   const [password, setPassword] = useState('');
+  const t = useTranslations();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,8 +26,8 @@ export default function LoginForm({ onSubmit, onSwitchToRegister, isLoading, err
   return (
     <div className="bg-black bg-opacity-80 backdrop-blur-lg rounded-lg border-2 border-green-500 border-opacity-60 shadow-xl p-8 max-w-md w-full">
       <div className="text-center mb-6">
-        <h2 className="text-xl font-semibold text-white mb-3">Anmelden</h2>
-        <h1 className="hero-title text-4xl md:text-6xl" style={{position: 'static', transform: 'none', top: 'auto', left: 'auto'}}>PENALTY</h1>
+        <h2 className="text-xl font-semibold text-white mb-3">{t('auth.login.title')}</h2>
+        <h1 className="hero-title text-4xl md:text-6xl" style={{position: 'static', transform: 'none', top: 'auto', left: 'auto'}}>{t('common.penalty')}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -37,11 +39,11 @@ export default function LoginForm({ onSubmit, onSwitchToRegister, isLoading, err
             onChange={(e) => setEmail(e.target.value)}
             required
             className="floating-input"
-            placeholder="E-Mail-Adresse"
+            placeholder={t('auth.login.email')}
             disabled={isLoading}
           />
           <label htmlFor="email" className="floating-label">
-            E-Mail-Adresse
+            {t('auth.login.email')}
           </label>
         </div>
 
@@ -92,23 +94,24 @@ export default function LoginForm({ onSubmit, onSwitchToRegister, isLoading, err
 
       {/* Forgot Password Link */}
       <div className="mt-4 text-center">
-        <a
-          href="/forgot-password"
-          className="text-yellow-400 hover:text-yellow-300 text-sm underline"
+        <button
+          type="button"
+          onClick={() => window.location.href = '/forgot-password'}
+          className="text-yellow-400 hover:text-yellow-300 text-sm underline bg-transparent border-none cursor-pointer"
         >
-          Passwort vergessen?
-        </a>
+          {t('auth.login.forgotPassword')}
+        </button>
       </div>
 
       <div className="mt-6 text-center">
         <p className="text-gray-300">
-          Noch kein Account?{' '}
+          {t('auth.login.noAccount')}{' '}
           <button
             onClick={onSwitchToRegister}
             className="text-green-400 hover:text-green-300 font-semibold"
             disabled={isLoading}
           >
-            Jetzt registrieren
+            {t('auth.login.registerNow')}
           </button>
         </p>
       </div>

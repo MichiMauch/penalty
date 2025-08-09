@@ -1,0 +1,276 @@
+{
+  "common": {
+    "penalty": "PENALTY",
+    "penaltyShootout": "PENALTY SHOOTOUT",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "retry": "Try again",
+    "error": "Error",
+    "success": "Success"
+  },
+  "navigation": {
+    "leaderboard": "Leaderboard",
+    "challenge": "CHALLENGE",
+    "matches": "Matches",
+    "profile": "Profile",
+    "logout": "Logout",
+    "admin": "Admin",
+    "login": "Login",
+    "register": "Register"
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "email": "Email Address",
+      "password": "Password",
+      "loginButton": "Login",
+      "loggingIn": "Logging in...",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "registerNow": "Register now"
+    },
+    "register": {
+      "title": "Register",
+      "email": "Email Address",
+      "username": "Username",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "registerButton": "Register",
+      "registering": "Registering...",
+      "hasAccount": "Already have an account?",
+      "loginNow": "Login now",
+      "chooseAvatar": "Choose Avatar"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "email": "Email Address",
+      "sendButton": "Send Reset Link",
+      "sending": "Sending...",
+      "description": "Enter your email address and we'll send you a link to reset your password.",
+      "success": "Reset link sent!",
+      "backToLogin": "Back to Login"
+    },
+    "resetPassword": {
+      "title": "Set New Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password",
+      "resetButton": "Change Password",
+      "resetting": "Changing...",
+      "success": "Password successfully changed!"
+    }
+  },
+  "landing": {
+    "hero": {
+      "subtitle": "The ultimate penalty shootout duel! Show your nerves of steel and become a penalty legend!",
+      "title": "PENALTY SHOOTOUT"
+    },
+    "howItWorks": {
+      "title": "How it Works",
+      "subtitle": "Three simple steps to victory",
+      "step1": {
+        "title": "1. Sign Up",
+        "description": "Create a free account and choose your avatar"
+      },
+      "step2": {
+        "title": "2. Challenge",
+        "description": "Invite friends to a penalty duel"
+      },
+      "step3": {
+        "title": "3. Win",
+        "description": "Collect points and climb the ranks"
+      }
+    },
+    "gameRules": {
+      "title": "Game Rules",
+      "subtitle": "Simple, fair and exciting!",
+      "penalties": "Penalties",
+      "perGame": "per game",
+      "points": "Points",
+      "forWin": "for each win",
+      "forLoss": "for loss",
+      "bonus": "Bonus",
+      "levelUp": "Level up"
+    },
+    "liveStats": {
+      "matchesPlayed": "Matches played",
+      "activePlayers": "Active players",
+      "currentChampion": "Current champion"
+    },
+    "features": {
+      "title": "What awaits you",
+      "subtitle": "Modern features for the ultimate penalty experience",
+      "liveLeaderboard": {
+        "title": "Live Leaderboard",
+        "description": "See instantly where you stand and fight your way to the top!"
+      },
+      "revengeButton": {
+        "title": "Revenge Button",
+        "description": "Lost? Start your revenge with one click."
+      },
+      "pushNotifications": {
+        "title": "Push Notifications",
+        "description": "Never miss a match - we'll keep you updated!"
+      },
+      "animations": {
+        "title": "Exciting Animations",
+        "description": "Experience every goal and save up close!"
+      }
+    },
+    "topPlayers": {
+      "title": "Top Players",
+      "subtitle": "The best penalty shooters in the league",
+      "loadingPlayers": "Loading players...",
+      "noEntries": "No entries yet",
+      "playFirstMatch": "Play your first match!",
+      "rank": "Rank",
+      "player": "Player",
+      "name": "Name",
+      "games": "GP",
+      "wins": "W",
+      "losses": "L",
+      "points": "Points"
+    },
+    "video": {
+      "title": "See how exciting a match can be!",
+      "subtitle": "Experience the drama of a penalty duel"
+    },
+    "cta": {
+      "playNow": "PLAY NOW 🚀",
+      "freeRegistration": "Register for free and get started!"
+    }
+  },
+  "matches": {
+    "status": {
+      "newChallenge": "New Challenge",
+      "waitingForYou": "Waiting for you",
+      "waitingForOpponent": "You're waiting for opponent",
+      "waiting": "Waiting",
+      "won": "Won",
+      "lost": "Lost",
+      "draw": "Draw",
+      "finished": "Finished"
+    },
+    "actions": {
+      "accept": "Accept Challenge",
+      "decline": "Decline",
+      "openMatch": "Open Match",
+      "viewResult": "View Result",
+      "markDone": "Mark as done"
+    },
+    "sections": {
+      "newChallenges": "New Challenges",
+      "activeMatches": "Active Matches",
+      "finishedMatches": "Finished Matches"
+    },
+    "empty": {
+      "noChallenges": "No new challenges",
+      "noActiveMatches": "No active matches",
+      "noFinishedMatches": "No finished matches"
+    },
+    "loading": "Loading matches...",
+    "loadError": "Error loading matches",
+    "networkError": "Network error",
+    "waitingForAnswer": "Waiting for answer"
+  },
+  "game": {
+    "challenge": {
+      "title": "Challenge",
+      "selectOpponent": "Select opponent",
+      "searchPlayers": "Search players...",
+      "sendChallenge": "Send Challenge",
+      "challengeSent": "Challenge sent!"
+    },
+    "shoot": {
+      "title": "Shoot",
+      "selectDirection": "Choose shot direction",
+      "shoot": "SHOOT!",
+      "shooting": "Shooting...",
+      "goal": "GOAL!",
+      "miss": "MISSED!"
+    },
+    "keep": {
+      "title": "Keep",
+      "selectDirection": "Choose dive direction",
+      "dive": "DIVE!",
+      "diving": "Diving...",
+      "saved": "SAVED!",
+      "goal": "GOAL!"
+    },
+    "result": {
+      "won": "WON!",
+      "lost": "LOST!",
+      "draw": "DRAW!",
+      "finalScore": "Final Score",
+      "playAgain": "Play Again",
+      "revenge": "REVENGE",
+      "backToHome": "Back to Home"
+    },
+    "status": {
+      "processing": "The game is being processed...",
+      "waiting": "Status: waiting"
+    }
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "users": {
+      "title": "User Management",
+      "search": "Search email or username...",
+      "loading": "Loading...",
+      "found": "users found",
+      "noUsersFound": "No users found",
+      "loadingUsers": "Loading users...",
+      "actions": {
+        "grantAdmin": "Grant admin rights",
+        "removeAdmin": "Remove admin rights",
+        "blockUser": "Block user",
+        "unblockUser": "Unblock user",
+        "deleteUser": "Delete user"
+      },
+      "confirmations": {
+        "grantAdmin": "Grant admin rights?",
+        "removeAdmin": "Remove admin rights?",
+        "blockUser": "Block user?",
+        "unblockUser": "Unblock user?",
+        "deleteUser": "Really delete user \"{username}\"?\\n\\nThis cannot be undone!"
+      },
+      "status": {
+        "admin": "Admin",
+        "user": "User",
+        "blocked": "Blocked",
+        "active": "Active"
+      },
+      "table": {
+        "user": "User",
+        "email": "Email",
+        "points": "Points",
+        "games": "Games",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "page": "Page {page} of {total}"
+      }
+    }
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "network": "Network error",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Access denied",
+    "notFound": "Not found",
+    "serverError": "Server error",
+    "validationError": "Validation error",
+    "challengeError": "Error sending challenge",
+    "updateError": "Error updating",
+    "deleteError": "Error deleting"
+  }
+}

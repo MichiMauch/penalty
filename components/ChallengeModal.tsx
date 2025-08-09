@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { nanoid } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { FaSearch, FaTimes } from 'react-icons/fa';
@@ -25,6 +26,7 @@ interface ChallengeModalProps {
 export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redirectToChallengePage = false }: ChallengeModalProps) {
   const { user } = useAuth();
   const router = useRouter();
+  const t = useTranslations();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(preSelectedUser || null);

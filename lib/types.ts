@@ -15,6 +15,7 @@ export interface User {
   updated_at: string;
   is_admin?: boolean;
   is_blocked?: boolean;
+  preferred_language?: 'de' | 'en';
 }
 
 export interface UserSession {

@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import UserAvatar from './UserAvatar';
 import ChallengeModal from './ChallengeModal';
+import LanguageSwitcher from './LanguageSwitcher';
 import { FaCheck, FaTimes, FaExternalLinkAlt, FaEye, FaChevronDown, FaChevronUp, FaCheckCircle } from 'react-icons/fa';
 import { GiCrossedSwords } from 'react-icons/gi';
 
@@ -23,6 +25,7 @@ interface Match {
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const t = useTranslations();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMatchesOpen, setIsMatchesOpen] = useState(false);
   const [isChallengesOpen, setIsChallengesOpen] = useState(false);
@@ -147,13 +150,13 @@ export default function Header() {
   const getMatchStatus = (match: Match): string => {
     switch (match.type) {
       case 'invitation':
-        return 'Neue Herausforderung';
+        return t('matches.status.newChallenge');
       case 'active':
-        return 'Wartet auf dich';
+        return t('matches.status.waitingForYou');
       case 'waiting_for_opponent':
-        return 'Du wartest auf Gegner';
+        return t('matches.status.waitingForOpponent');
       case 'cancelable':
-        return 'Wartend';
+        return t('matches.status.waiting');
       case 'finished_recent':
         return getMatchResult(match);
       default:
@@ -163,20 +166,20 @@ export default function Header() {
 
   // Get match result with score for finished matches
   const getMatchResult = (match: Match): string => {
-    if (!match.scoreA && match.scoreA !== 0) return "Beendet"; // fallback
+    if (!match.scoreA && match.scoreA !== 0) return t('matches.status.finished'); // fallback
     
-    if (!user?.email) return "Beendet";
+    if (!user?.email) return t('matches.status.finished');
     
     // Determine if current user won/lost based on role and winner
     const userIsPlayerA = match.role === 'challenger'; // user challenged = player_a
     const userScore = userIsPlayerA ? match.scoreA : match.scoreB;
     const opponentScore = userIsPlayerA ? match.scoreB : match.scoreA;
     
-    if (userScore === undefined || opponentScore === undefined) return "Beendet";
+    if (userScore === undefined || opponentScore === undefined) return t('matches.status.finished');
     
-    if (userScore > opponentScore) return `Gewonnen: ${userScore}:${opponentScore}`;
-    if (userScore < opponentScore) return `Verloren: ${userScore}:${opponentScore}`;
-    return `Unentschieden: ${userScore}:${opponentScore}`;
+    if (userScore > opponentScore) return `${t('matches.status.won')}: ${userScore}:${opponentScore}`;
+    if (userScore < opponentScore) return `${t('matches.status.lost')}: ${userScore}:${opponentScore}`;
+    return `${t('matches.status.draw')}: ${userScore}:${opponentScore}`;
   };
 
   // Get result color class for styling
@@ -279,7 +282,7 @@ export default function Header() {
                   onClick={handleLeaderboard}
                   className="nav-link text-white"
                 >
-                  Rangliste
+                  {t('navigation.leaderboard')}
                 </button>
                 
                 {/* Challenge Button */}
@@ -288,7 +291,7 @@ export default function Header() {
                   className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all duration-200 transform hover:scale-105"
                 >
                   <GiCrossedSwords size={16} />
-                  HERAUSFORDERN
+                  {t('navigation.challenge')}
                 </button>
                 
                 {/* Matches Dropdown */}
@@ -297,7 +300,7 @@ export default function Header() {
                     onClick={() => setIsMatchesOpen(!isMatchesOpen)}
                     className="nav-link text-white flex items-center gap-2"
                   >
-                    Matches
+                    {t('navigation.matches')}
                     {newMatchesCount > 0 && (
                       <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 font-bold">
                         {newMatchesCount}
@@ -308,12 +311,12 @@ export default function Header() {
                   {isMatchesOpen && (
                     <div className="absolute top-full right-0 mt-2 w-80 bg-gray-900 bg-opacity-95 backdrop-blur-md rounded-lg border border-green-600 shadow-2xl z-50">
                       <div className="p-4">
-                        <h3 className="text-white font-bold text-lg mb-3">Deine Matches</h3>
+                        <h3 className="text-white font-bold text-lg mb-3">{t('navigation.matches')}</h3>
                         
                         {isLoadingMatches ? (
                           <div className="text-center py-6">
                             <div className="animate-spin rounded-full h-8 w-8 border-2 border-green-400 border-t-transparent mx-auto mb-2"></div>
-                            <p className="text-gray-400 text-sm">Lade Matches...</p>
+                            <p className="text-gray-400 text-sm">{t('matches.loading')}</p>
                           </div>
                         ) : matchesError ? (
                           <div className="text-center py-6">
@@ -322,16 +325,16 @@ export default function Header() {
                               onClick={fetchMatches}
                               className="mt-2 text-green-400 hover:text-green-300 text-sm"
                             >
-                              Erneut versuchen
+                              {t('common.retry')}
                             </button>
                           </div>
                         ) : (
                           <>
                             {/* Neue Herausforderungen */}
                             <div className="mb-4">
-                              <h4 className="text-green-400 text-sm font-semibold mb-2">Neue Herausforderungen</h4>
+                              <h4 className="text-green-400 text-sm font-semibold mb-2">{t('matches.sections.newChallenges')}</h4>
                               {matches.filter(m => m.type === 'invitation').length === 0 ? (
-                                <p className="text-gray-400 text-xs py-2">Keine neuen Herausforderungen</p>
+                                <p className="text-gray-400 text-xs py-2">{t('matches.empty.noChallenges')}</p>
                               ) : (
                                 matches.filter(m => m.type === 'invitation').map(match => (
                                   <div key={match.id} className="flex items-center justify-between p-2 hover:bg-green-900 hover:bg-opacity-30 rounded transition-colors mb-1">
@@ -441,6 +444,9 @@ export default function Header() {
                 </div>
                 
                 <span className="text-white text-sm">|</span>
+                
+                {/* Language Switcher */}
+                <LanguageSwitcher />
                 
                 {/* Admin Navigation */}
                 {user.is_admin && (

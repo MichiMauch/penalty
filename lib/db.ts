@@ -102,6 +102,13 @@ export async function initDB() {
     // Column already exists, ignore error
   }
 
+  // Add preferred language column to users table
+  try {
+    await db.execute(`ALTER TABLE users ADD COLUMN preferred_language TEXT DEFAULT 'de'`);
+  } catch (error) {
+    // Column already exists, ignore error
+  }
+
   // Set Roberto Böckli as admin if he exists
   try {
     await db.execute(`
