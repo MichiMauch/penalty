@@ -133,6 +133,19 @@ export async function initDB() {
     // Column already exists, ignore error
   }
 
+  // Add invitation-related columns for new user invitations
+  try {
+    await db.execute(`ALTER TABLE matches ADD COLUMN invited_email TEXT`);
+  } catch (error) {
+    // Column already exists, ignore error
+  }
+
+  try {
+    await db.execute(`ALTER TABLE matches ADD COLUMN invitation_token TEXT`);
+  } catch (error) {
+    // Column already exists, ignore error
+  }
+
   // Create user statistics table
   await db.execute(`
     CREATE TABLE IF NOT EXISTS user_stats (

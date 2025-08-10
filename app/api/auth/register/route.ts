@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createUser, getUserByEmail, createSession } from '@/lib/auth';
-import { initDB } from '@/lib/db';
+import { initDB, db } from '@/lib/db';
 import { RegisterData } from '@/lib/types';
 import { getAvatar } from '@/lib/avatars';
 
@@ -8,8 +8,8 @@ export async function POST(request: NextRequest) {
   try {
     await initDB();
     
-    const body: RegisterData = await request.json();
-    const { email, password, username, avatar } = body;
+    const body = await request.json();
+    const { email, password, username, avatar, invitationToken, matchId } = body;
     
     // Validation
     if (!email || !password || !username || !avatar) {
@@ -61,6 +61,34 @@ export async function POST(request: NextRequest) {
     
     // Create user
     const user = await createUser(email, password, username, avatar);
+    
+    // Handle invitation token if present
+    if (invitationToken && matchId && db) {
+      try {
+        // Verify invitation exists and update match with new user
+        const matchResult = await db.execute({
+          sql: 'SELECT * FROM matches WHERE id = ? AND invitation_token = ? AND status = "invitation_pending"',
+          args: [matchId, invitationToken]
+        });
+        
+        if (matchResult.rows.length > 0) {
+          // Update match with the new user as player_b
+          await db.execute({
+            sql: `UPDATE matches SET 
+                    player_b = ?, 
+                    player_b_email = ?, 
+                    player_b_username = ?, 
+                    player_b_avatar = ?, 
+                    status = "waiting" 
+                  WHERE id = ? AND invitation_token = ?`,
+            args: [user.id, email, username, avatar, matchId, invitationToken]
+          });
+        }
+      } catch (inviteError) {
+        console.error('Error handling invitation during registration:', inviteError);
+        // Don't fail registration if invitation update fails
+      }
+    }
     
     // Create session
     const sessionId = await createSession(user.id);

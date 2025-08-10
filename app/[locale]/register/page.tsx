@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
@@ -11,14 +11,23 @@ import { RegisterData } from '@/lib/types';
 export default function RegisterPage() {
   const router = useRouter();
   const locale = useLocale();
+  const searchParams = useSearchParams();
   const { user, loading, register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justRegistered, setJustRegistered] = useState(false);
+  
+  // Check for invitation parameters
+  const invitationToken = searchParams.get('invitation');
+  const matchId = searchParams.get('match');
+  const invitedEmail = searchParams.get('email');
 
-  // Redirect logged-in users to garderobe
+  // Redirect logged-in users to garderobe or keeper mode for invitations
   if (!loading && user) {
-    if (justRegistered) {
+    if (justRegistered && invitationToken && matchId) {
+      // Redirect invited user to keeper mode after registration
+      router.push(`/${locale}/keeper?match=${matchId}&invitation=${invitationToken}`);
+    } else if (justRegistered) {
       router.push(`/${locale}/garderobe?welcome=true`);
     } else {
       router.push(`/${locale}/garderobe`);
@@ -42,9 +51,14 @@ export default function RegisterPage() {
     setError(null);
     
     try {
-      await register(data);
+      // Include invitation token if present
+      const registerData = invitationToken && matchId 
+        ? { ...data, invitationToken, matchId }
+        : data;
+        
+      await register(registerData);
       setJustRegistered(true);
-      // Redirect will happen automatically via AuthContext
+      // Redirect will happen automatically via the user check above
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registrierung fehlgeschlagen');
     } finally {
@@ -65,6 +79,8 @@ export default function RegisterPage() {
             onSwitchToLogin={handleSwitchToLogin}
             isLoading={isLoading}
             error={error}
+            defaultEmail={invitedEmail || undefined}
+            isInvitation={!!invitationToken}
           />
         </div>
       </div>

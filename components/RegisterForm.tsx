@@ -12,9 +12,10 @@ interface RegisterFormProps {
   isLoading: boolean;
   error: string | null;
   defaultEmail?: string;
+  isInvitation?: boolean;
 }
 
-export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, error, defaultEmail }: RegisterFormProps) {
+export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, error, defaultEmail, isInvitation = false }: RegisterFormProps) {
   const t = useTranslations();
   const [email, setEmail] = useState(defaultEmail || '');
   const [password, setPassword] = useState('');
@@ -56,6 +57,11 @@ export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, err
   return (
     <div className="bg-black bg-opacity-80 backdrop-blur-lg rounded-lg border-2 border-green-500 border-opacity-60 shadow-xl p-8 max-w-lg w-full">
       <div className="text-center mb-6">
+        {isInvitation && (
+          <div className="mb-4 p-3 bg-green-900 bg-opacity-50 border border-green-600 rounded-lg">
+            <p className="text-green-200 text-sm">🏆 You've been invited to a penalty duel! Complete registration to start playing.</p>
+          </div>
+        )}
         <h2 className="text-xl font-semibold text-white mb-3">{t('auth.register.title')}</h2>
         <h1 className="hero-title text-4xl md:text-6xl" style={{position: 'static', transform: 'none', top: 'auto', left: 'auto'}}>PENALTY</h1>
       </div>
@@ -86,7 +92,7 @@ export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, err
             required
             className="floating-input"
             placeholder="E-Mail-Adresse"
-            disabled={isLoading}
+            disabled={isLoading || (isInvitation && !!defaultEmail)}
           />
           <label htmlFor="email" className="floating-label">
             E-Mail-Adresse

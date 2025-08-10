@@ -407,5 +407,28 @@
       "hint": "Verwende den \"HERAUSFORDERN\" Button in der Navigation oder klicke hier"
     },
     "loading": "⚽ Lade PENALTY..."
+  },
+  "invite": {
+    "card": {
+      "title": "Freunde einladen",
+      "description": "Lade neue Spieler zu spannenden Penalty-Duellen ein",
+      "emailLabel": "E-Mail-Adresse",
+      "emailPlaceholder": "freund@example.com",
+      "inviteButton": "JETZT EINLADEN",
+      "sending": "EINLADUNG WIRD GESENDET...",
+      "redirecting": "WEITERLEITUNG...",
+      "infoText": "Die Person erhält eine E-Mail-Einladung und kann sich direkt registrieren"
+    },
+    "errors": {
+      "emailRequired": "Bitte geben Sie eine E-Mail-Adresse ein",
+      "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "cannotInviteSelf": "Sie können sich nicht selbst herausfordern",
+      "userAlreadyExists": "Diese E-Mail-Adresse ist bereits registriert. Verwenden Sie die normale Herausforderung.",
+      "invitationFailed": "Fehler beim Senden der Einladung",
+      "networkError": "Netzwerkfehler. Bitte versuchen Sie es erneut."
+    },
+    "success": {
+      "invitationSent": "Einladung an {email} gesendet! Sie werden zum Shooter weitergeleitet..."
+    }
   }
 }

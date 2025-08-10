@@ -407,5 +407,28 @@
       "hint": "Use the \"CHALLENGE\" button in the navigation or click here"
     },
     "loading": "⚽ Loading PENALTY..."
+  },
+  "invite": {
+    "card": {
+      "title": "Invite Friends",
+      "description": "Invite new players to exciting penalty duels",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "friend@example.com",
+      "inviteButton": "INVITE NOW",
+      "sending": "SENDING INVITATION...",
+      "redirecting": "REDIRECTING...",
+      "infoText": "The person will receive an email invitation and can register directly"
+    },
+    "errors": {
+      "emailRequired": "Please enter an email address",
+      "invalidEmail": "Please enter a valid email address",
+      "cannotInviteSelf": "You cannot challenge yourself",
+      "userAlreadyExists": "This email address is already registered. Use the normal challenge.",
+      "invitationFailed": "Error sending invitation",
+      "networkError": "Network error. Please try again."
+    },
+    "success": {
+      "invitationSent": "Invitation sent to {email}! Redirecting to shooter..."
+    }
   }
 }

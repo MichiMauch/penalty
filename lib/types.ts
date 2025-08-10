@@ -34,6 +34,8 @@ export interface RegisterData {
   password: string;
   username: string;
   avatar: AvatarId;
+  invitationToken?: string;
+  matchId?: string;
 }
 
 export interface Avatar {

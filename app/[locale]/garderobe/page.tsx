@@ -10,6 +10,7 @@ import UserAvatar from '@/components/UserAvatar';
 import Layout from '@/components/Layout';
 import UserStatsCard from '@/components/UserStatsCard';
 import Leaderboard, { LeaderboardRef } from '@/components/Leaderboard';
+import InviteNewPlayerCard from '@/components/InviteNewPlayerCard';
 // ChallengeModal import removed - using direct navigation now
 import { calculateLevel } from '@/lib/levels';
 import { GiCrossedSwords } from 'react-icons/gi';
@@ -383,48 +384,9 @@ function GarderobeContent() {
             </div>
           </div>
           
-          {/* Challenge - Order 4 on mobile, row 2 col 2 on desktop */}
+          {/* Invite New Players - Order 4 on mobile, row 2 col 2 on desktop */}
           <div className="order-4">
-            <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6">
-              <h2 className="text-2xl font-bold text-white mb-2">
-                {t('garderobe.challenge.title')}
-              </h2>
-              <p className="text-gray-300 mb-6">
-                {t('garderobe.challenge.description')}
-              </p>
-            
-              <div className="space-y-6">
-                <div className="text-center">
-                  <button
-                    onClick={() => {
-                      // Trigger header challenge modal by creating a custom event
-                      const event = new CustomEvent('openChallengeModal');
-                      window.dispatchEvent(event);
-                    }}
-                    disabled={isCheckingChallenge}
-                    className="inline-flex items-center gap-3 px-8 py-4 bg-green-600 text-white text-xl font-bold rounded-lg hover:bg-green-500 transition-all duration-200 transform hover:scale-105 border border-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none"
-                  >
-                    {isCheckingChallenge ? (
-                      <>
-                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
-                        {t('garderobe.challenge.checking')}
-                      </>
-                    ) : (
-                      <>
-                        <GiCrossedSwords size={20} />
-                        {t('garderobe.challenge.buttonText')}
-                      </>
-                    )}
-                  </button>
-                </div>
-                
-                <div className="text-center">
-                  <p className="text-green-300 text-sm">
-                    {t('garderobe.challenge.hint')}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <InviteNewPlayerCard />
           </div>
         </div>
         </div>

@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
     console.log('Fetching pending matches for user:', session.user.email);
     
     // Find matches where the user is invited as player_b but hasn't joined yet OR submitted moves
+    // This includes both regular challenges and invitation-pending matches
     const pendingAsPlayerB = await db.execute({
       sql: `
         SELECT 
@@ -40,6 +41,7 @@ export async function GET(request: NextRequest) {
           player_a_username, 
           player_a_avatar,
           player_b_email,
+          invited_email,
           player_b,
           player_b_moves,
           player_a_moves,
@@ -47,12 +49,12 @@ export async function GET(request: NextRequest) {
           created_at,
           'invited' as match_type
         FROM matches 
-        WHERE player_b_email = ? 
+        WHERE (player_b_email = ? OR invited_email = ?)
           AND (player_b IS NULL OR player_b_moves IS NULL)
-          AND status = 'waiting'
+          AND status IN ('waiting', 'invitation_pending')
         ORDER BY created_at DESC
       `,
-      args: [session.user.email]
+      args: [session.user.email, session.user.email]
     });
     
     // Find matches where the user is player_a and player_b has joined but hasn't submitted moves
