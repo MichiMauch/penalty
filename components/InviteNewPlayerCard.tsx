@@ -87,7 +87,7 @@ export default function InviteNewPlayerCard({ className = '' }: InviteNewPlayerC
       const { matchId, invitationToken } = await inviteResponse.json();
       
       // Success - redirect to shooter
-      setSuccess(t('invite.success.invitationSent', { email }));
+      setSuccess(t('invite.success.invitationPrepared', { email }));
       
       // Short delay to show success message, then redirect to shooter
       setTimeout(() => {

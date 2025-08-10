@@ -411,13 +411,13 @@
   "invite": {
     "card": {
       "title": "Invite Friends",
-      "description": "Invite new players to exciting penalty duels",
+      "description": "Invite new players - they'll receive the invitation after your shots",
       "emailLabel": "Email Address",
       "emailPlaceholder": "friend@example.com",
       "inviteButton": "INVITE NOW",
       "sending": "SENDING INVITATION...",
       "redirecting": "REDIRECTING...",
-      "infoText": "The person will receive an email invitation and can register directly"
+      "infoText": "After your penalty shots, the person will receive an email invitation to register"
     },
     "errors": {
       "emailRequired": "Please enter an email address",
@@ -428,7 +428,7 @@
       "networkError": "Network error. Please try again."
     },
     "success": {
-      "invitationSent": "Invitation sent to {email}! Redirecting to shooter..."
+      "invitationPrepared": "Invitation for {email} prepared! Take your shots now - the invitation will be sent automatically afterwards."
     }
   }
 }

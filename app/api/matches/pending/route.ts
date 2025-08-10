@@ -123,6 +123,7 @@ export async function GET(request: NextRequest) {
     });
     
     // Find matches where the user is player_a and no one has joined yet (can be cancelled)
+    // This includes both regular waiting matches and invitation_pending matches
     const cancelableMatches = await db.execute({
       sql: `
         SELECT 
@@ -131,6 +132,7 @@ export async function GET(request: NextRequest) {
           m.player_a_username,
           m.player_a_avatar,
           m.player_b_email,
+          m.invited_email,
           m.player_b,
           m.player_b_moves,
           m.player_a_moves,
@@ -140,10 +142,10 @@ export async function GET(request: NextRequest) {
           u.avatar as invited_avatar,
           'cancelable' as match_type
         FROM matches m
-        LEFT JOIN users u ON u.email = m.player_b_email
+        LEFT JOIN users u ON u.email = COALESCE(m.player_b_email, m.invited_email)
         WHERE m.player_a_email = ? 
           AND (m.player_b IS NULL OR (m.player_b IS NOT NULL AND m.player_b_moves IS NULL))
-          AND m.status = 'waiting'
+          AND m.status IN ('waiting', 'invitation_pending')
         ORDER BY m.created_at DESC
       `,
       args: [session.user.email]
@@ -239,8 +241,8 @@ export async function GET(request: NextRequest) {
     
     const cancelableChallenges = cancelableMatches.rows.map((match: any) => ({
       id: match.id,
-      challengerEmail: match.player_b_email || 'Unbekannt',
-      challengerUsername: match.invited_username || 'Wartend',
+      challengerEmail: match.player_b_email || match.invited_email || 'Unbekannt',
+      challengerUsername: match.invited_username || (match.invited_email ? `Eingeladen: ${match.invited_email}` : 'Wartend'),
       challengerAvatar: match.invited_avatar || 'soccer',
       createdAt: match.created_at,
       type: 'cancelable' as const,

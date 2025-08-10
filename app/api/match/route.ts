@@ -3,7 +3,7 @@ import { db, initDB } from '@/lib/db';
 import { nanoid } from '@/lib/utils';
 import { calculateGameResult } from '@/lib/gameLogic';
 import { PlayerMoves } from '@/lib/types';
-import { sendChallengeEmail, sendMatchCompletedEmail } from '@/lib/email';
+import { sendChallengeEmail, sendMatchCompletedEmail, sendInvitationEmail } from '@/lib/email';
 import { calculateAndUpdateStats } from '@/lib/stats';
 import { sendChallengeNotification } from '@/lib/pushNotifications';
 import { getUserByEmail } from '@/lib/auth';
@@ -434,6 +434,38 @@ export async function POST(request: NextRequest) {
         
         console.log('Returning finished status to client');
         return NextResponse.json({ status: 'finished', result });
+      }
+      
+      // Check if this is an invitation_pending match and Player A just submitted moves
+      const isInvitationMatch = updatedMatch.status === 'invitation_pending';
+      const justSubmittedPlayerAInvitation = isPlayerA && updatedMatch.player_a_moves && !updatedMatch.player_b_moves;
+      
+      if (isInvitationMatch && justSubmittedPlayerAInvitation && updatedMatch.invited_email && updatedMatch.invitation_token) {
+        console.log('Invitation match - sending invitation email after player A submitted shots');
+        
+        // Update match status from invitation_pending to waiting
+        await db.execute({
+          sql: 'UPDATE matches SET status = ? WHERE id = ?',
+          args: ['waiting', matchId]
+        });
+        console.log('Match status updated from invitation_pending to waiting');
+        
+        // Send invitation email
+        if (process.env.RESEND_API_KEY) {
+          try {
+            await sendInvitationEmail({
+              to: updatedMatch.invited_email as string,
+              challengerEmail: updatedMatch.player_a_email as string,
+              challengerUsername: updatedMatch.player_a_username as string || updatedMatch.player_a_email as string || 'Ein Spieler',
+              matchId,
+              invitationToken: updatedMatch.invitation_token as string
+            });
+            console.log('Invitation email sent to:', updatedMatch.invited_email);
+          } catch (error) {
+            console.error('Failed to send invitation email:', error);
+            // Don't fail the request if email fails, just log it
+          }
+        }
       }
       
       // Check if this is a revenge match (both players exist) and send notification

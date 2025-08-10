@@ -604,3 +604,233 @@ Penalty - Das Elfmeterschießen-Spiel ⚽
     return { success: false, error };
   }
 }
+
+interface SendInvitationEmailParams {
+  to: string;
+  challengerEmail: string;
+  challengerUsername: string;
+  matchId: string;
+  invitationToken: string;
+}
+
+export async function sendInvitationEmail({
+  to,
+  challengerEmail,
+  challengerUsername,
+  matchId,
+  invitationToken
+}: SendInvitationEmailParams) {
+  if (!resend) {
+    console.warn('Resend not configured - invitation email will not be sent');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://penalty.mauch.ai';
+  const registrationUrl = `${appUrl}/register?invitation=${invitationToken}&match=${matchId}&email=${encodeURIComponent(to)}`;
+  
+  try {
+    const { data, error } = await resend.emails.send({
+      from: 'Penalty <michi@kokomo.house>',
+      to: [to],
+      subject: `${challengerUsername} hat dich zu einem PENALTY-Duell eingeladen! ⚽`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>PENALTY Einladung</title>
+            <style>
+              body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+                background: radial-gradient(ellipse at top, #065f46, #064e3b, #0a0a0a);
+                min-height: 100vh;
+              }
+              .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: rgba(22, 101, 52, 0.95);
+                border-radius: 16px;
+                overflow: hidden;
+                border: 2px solid #10b981;
+                box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+              }
+              .header {
+                background: linear-gradient(135deg, #059669, #10b981);
+                color: white;
+                padding: 40px 20px;
+                text-align: center;
+                border-bottom: 2px solid #10b981;
+              }
+              .header h1 {
+                margin: 0;
+                font-size: 36px;
+                font-weight: bold;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+                letter-spacing: 2px;
+              }
+              .content {
+                padding: 40px 20px;
+                text-align: center;
+                color: white;
+              }
+              .invitation-box {
+                background: rgba(0, 0, 0, 0.7);
+                border: 2px solid #10b981;
+                border-radius: 16px;
+                padding: 30px;
+                margin: 20px 0;
+                backdrop-filter: blur(10px);
+              }
+              .invitation-box h2 {
+                color: #10b981;
+                margin: 0 0 15px 0;
+                font-size: 26px;
+                font-weight: bold;
+              }
+              .invitation-text {
+                color: white;
+                font-size: 18px;
+                margin: 15px 0;
+              }
+              .button {
+                display: inline-block;
+                background: linear-gradient(135deg, #10b981, #059669);
+                color: white;
+                text-decoration: none;
+                padding: 20px 50px;
+                border-radius: 12px;
+                font-size: 22px;
+                font-weight: bold;
+                margin: 30px 0;
+                border: 2px solid #10b981;
+                box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+              }
+              .button:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+                background: linear-gradient(135deg, #059669, #047857);
+              }
+              .info-box {
+                background: rgba(0, 0, 0, 0.6);
+                border: 2px solid #f59e0b;
+                border-radius: 12px;
+                padding: 20px;
+                margin: 20px 0;
+                color: #fbbf24;
+                font-size: 14px;
+              }
+              .info-box h3 {
+                color: #f59e0b;
+                margin-top: 0;
+                font-size: 16px;
+              }
+              .footer {
+                background: rgba(0, 0, 0, 0.8);
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #9ca3af;
+                border-top: 1px solid #10b981;
+              }
+              .link-fallback {
+                word-break: break-all;
+                color: #10b981;
+                text-decoration: underline;
+                font-size: 14px;
+              }
+              @media only screen and (max-width: 600px) {
+                .header h1 {
+                  font-size: 28px;
+                }
+                .button {
+                  padding: 14px 36px;
+                  font-size: 18px;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>🏆 PENALTY</h1>
+              </div>
+              
+              <div class="content">
+                <div class="invitation-box">
+                  <h2>🎯 Du wurdest eingeladen!</h2>
+                  <p class="invitation-text">
+                    <strong>${challengerUsername}</strong> hat dich zu einem spannenden Penalty-Duell herausgefordert!
+                  </p>
+                  <p class="invitation-text">
+                    Registriere dich kostenlos und zeige deine Torwart-Fähigkeiten im ultimativen Elfmeterschießen!
+                  </p>
+                </div>
+                
+                <a href="${registrationUrl}" class="button">
+                  🧤 Jetzt Registrieren & Spielen
+                </a>
+                
+                <div class="info-box">
+                  <h3>Wie funktioniert es?</h3>
+                  <ol style="text-align: left; margin: 10px 0;">
+                    <li>Klicke auf den Button oben</li>
+                    <li>Erstelle dein kostenloses Konto</li>
+                    <li>Wähle deinen Avatar</li>
+                    <li>Springe direkt ins Keeper-Duell!</li>
+                    <li>Wehre die 5 Elfmeter ab und gewinne! 🏆</li>
+                  </ol>
+                </div>
+                
+                <p style="font-size: 14px; color: #9ca3af; margin-top: 30px;">
+                  Falls der Button nicht funktioniert, kopiere diesen Link:<br>
+                  <a href="${registrationUrl}" class="link-fallback">${registrationUrl}</a>
+                </p>
+              </div>
+              
+              <div class="footer">
+                <p>
+                  ${challengerUsername} (${challengerEmail}) wartet auf dich!<br>
+                  Penalty - Das Elfmeterschießen-Spiel ⚽
+                </p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+      text: `
+PENALTY Einladung - ${challengerUsername} fordert dich heraus!
+
+${challengerUsername} hat dich zu einem spannenden Penalty-Duell herausgefordert!
+
+Registriere dich kostenlos und zeige deine Torwart-Fähigkeiten:
+${registrationUrl}
+
+Wie es funktioniert:
+1. Klicke auf den Link oben
+2. Erstelle dein kostenloses Konto  
+3. Wähle deinen Avatar
+4. Springe direkt ins Keeper-Duell!
+5. Wehre die 5 Elfmeter ab und gewinne!
+
+${challengerUsername} (${challengerEmail}) wartet auf dich!
+Penalty - Das Elfmeterschießen-Spiel ⚽
+      `
+    });
+
+    if (error) {
+      console.error('Failed to send invitation email:', error);
+      return { success: false, error };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Invitation email service error:', error);
+    return { success: false, error };
+  }
+}

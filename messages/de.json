@@ -411,13 +411,13 @@
   "invite": {
     "card": {
       "title": "Freunde einladen",
-      "description": "Lade neue Spieler zu spannenden Penalty-Duellen ein",
+      "description": "Lade neue Spieler ein - sie erhalten die Einladung nach deinen Schüssen",
       "emailLabel": "E-Mail-Adresse",
       "emailPlaceholder": "freund@example.com",
       "inviteButton": "JETZT EINLADEN",
       "sending": "EINLADUNG WIRD GESENDET...",
       "redirecting": "WEITERLEITUNG...",
-      "infoText": "Die Person erhält eine E-Mail-Einladung und kann sich direkt registrieren"
+      "infoText": "Nach deinen Elfmeter-Schüssen erhält die Person eine E-Mail-Einladung zur Registrierung"
     },
     "errors": {
       "emailRequired": "Bitte geben Sie eine E-Mail-Adresse ein",
@@ -428,7 +428,7 @@
       "networkError": "Netzwerkfehler. Bitte versuchen Sie es erneut."
     },
     "success": {
-      "invitationSent": "Einladung an {email} gesendet! Sie werden zum Shooter weitergeleitet..."
+      "invitationPrepared": "Einladung für {email} vorbereitet! Schießen Sie jetzt Ihre Elfmeter - die Einladung wird danach automatisch versendet."
     }
   }
 }
