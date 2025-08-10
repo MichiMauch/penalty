@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
 import PlayerCard from '@/components/PlayerCard';
 import TribuneFlashes from '@/components/TribuneFlashes';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { FaUser, FaSignInAlt, FaUserPlus, FaChevronDown, FaPlay, FaBullseye, FaChartBar, FaBell, FaRedoAlt } from 'react-icons/fa';
 import { IoFootball, IoTrophy } from 'react-icons/io5';
 import { MdSportsSoccer, MdHome, MdMovie } from 'react-icons/md';
@@ -47,6 +48,7 @@ interface AppStats {
 export default function LandingPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
@@ -55,9 +57,9 @@ export default function LandingPage() {
   // Redirect logged-in users to garderobe
   useEffect(() => {
     if (!loading && user) {
-      router.push('/garderobe');
+      router.push(`/${locale}/garderobe`);
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, locale]);
 
   // Fetch leaderboard and stats
   useEffect(() => {
@@ -99,7 +101,7 @@ export default function LandingPage() {
   };
 
   const handleStartPlaying = () => {
-    router.push('/garderobe');
+    router.push(`/${locale}/garderobe`);
   };
 
   // Show loading while checking auth
@@ -116,6 +118,11 @@ export default function LandingPage() {
   return (
     <Layout showHeader={false}>
       <div className="modern-app-layout">
+        {/* Language Switcher - Fixed Position */}
+        <div className="fixed top-4 right-4 z-50">
+          <LanguageSwitcher variant="flags" />
+        </div>
+        
         {/* Hero Section with Stadium Background */}
         <section className="hero-stadium">
           <TribuneFlashes />
@@ -132,14 +139,14 @@ export default function LandingPage() {
             <div className="auth-buttons">
               <button 
                 className="stadium-btn stadium-btn-primary"
-                onClick={() => router.push('/login')}
+                onClick={() => router.push(`/${locale}/login`)}
               >
                 <FaSignInAlt />
                 <span>{t('navigation.login')}</span>
               </button>
               <button 
                 className="stadium-btn stadium-btn-primary"
-                onClick={() => router.push('/register')}
+                onClick={() => router.push(`/${locale}/register`)}
               >
                 <FaUserPlus />
                 <span>{t('navigation.register')}</span>
@@ -205,20 +212,20 @@ export default function LandingPage() {
               
               <div className="app-card text-center p-4 bg-blue-900 bg-opacity-50">
                 <div className="text-3xl font-bold text-blue-400">3</div>
-                <div className="text-white text-sm">Punkte</div>
-                <div className="text-gray-200 text-xs mt-1">für jeden Sieg</div>
+                <div className="text-white text-sm">{t('landing.gameRules.points')}</div>
+                <div className="text-gray-200 text-xs mt-1">{t('landing.gameRules.forWin')}</div>
               </div>
               
               <div className="app-card text-center p-4 bg-red-900 bg-opacity-50">
                 <div className="text-3xl font-bold text-red-400">0</div>
-                <div className="text-white text-sm">Punkte</div>
-                <div className="text-gray-200 text-xs mt-1">bei Niederlage</div>
+                <div className="text-white text-sm">{t('landing.gameRules.points')}</div>
+                <div className="text-gray-200 text-xs mt-1">{t('landing.gameRules.forLoss')}</div>
               </div>
               
               <div className="app-card text-center p-4 bg-yellow-900 bg-opacity-50">
                 <div className="text-3xl font-bold text-yellow-400">+10</div>
-                <div className="text-white text-sm">Bonus</div>
-                <div className="text-gray-200 text-xs mt-1">Level-Aufstieg</div>
+                <div className="text-white text-sm">{t('landing.gameRules.bonus')}</div>
+                <div className="text-gray-200 text-xs mt-1">{t('landing.gameRules.levelUp')}</div>
               </div>
             </div>
 
@@ -229,16 +236,16 @@ export default function LandingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                   <div>
                     <div className="text-3xl font-bold text-white">{appStats.totalMatches}</div>
-                    <div className="text-sm text-green-200">Matches gespielt</div>
+                    <div className="text-sm text-green-200">{t('landing.liveStats.matchesPlayed')}</div>
                   </div>
                   <div>
                     <div className="text-3xl font-bold text-white">{appStats.totalUsers}</div>
-                    <div className="text-sm text-green-200">Aktive Spieler</div>
+                    <div className="text-sm text-green-200">{t('landing.liveStats.activePlayers')}</div>
                   </div>
                   {appStats.currentChampion && (
                     <div>
                       <div className="text-3xl font-bold text-yellow-400">👑 {appStats.currentChampion.username}</div>
-                      <div className="text-sm text-green-200">Aktueller Champion ({appStats.currentChampion.points} Punkte)</div>
+                      <div className="text-sm text-green-200">{t('landing.liveStats.currentChampion')} ({appStats.currentChampion.points} {t('landing.topPlayers.points')})</div>
                     </div>
                   )}
                 </div>
@@ -247,8 +254,8 @@ export default function LandingPage() {
 
             {/* Features Section */}
             <section className="section-header">
-              <h2 className="section-title">Das erwartet dich</h2>
-              <p className="section-subtitle">Moderne Features für das ultimative Penalty-Erlebnis</p>
+              <h2 className="section-title">{t('landing.features.title')}</h2>
+              <p className="section-subtitle">{t('landing.features.subtitle')}</p>
             </section>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -256,16 +263,16 @@ export default function LandingPage() {
                 <div className="text-6xl mb-4 text-center animate-pulse text-green-400 flex justify-center">
                   <FaChartBar />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3 text-center">Live-Rangliste</h3>
-                <p className="text-green-200 text-center text-lg">Sieh sofort wo du stehst und kämpfe dich nach oben!</p>
+                <h3 className="text-2xl font-bold text-white mb-3 text-center">{t('landing.features.liveLeaderboard.title')}</h3>
+                <p className="text-green-200 text-center text-lg">{t('landing.features.liveLeaderboard.description')}</p>
               </div>
 
               <div className="p-8 hover:transform hover:scale-105 hover:shadow-2xl transition-all duration-300 border-2 border-blue-600 rounded-lg" style={{backgroundColor: 'rgba(30, 58, 138, 0.9)', background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.9), rgba(29, 78, 216, 0.9)'}}>
                 <div className="text-6xl mb-4 text-center animate-bounce text-blue-400 flex justify-center">
                   <FaRedoAlt />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3 text-center">Revanche-Button</h3>
-                <p className="text-blue-200 text-center text-lg">Verloren? Mit einem Klick startest du die Revanche.</p>
+                <h3 className="text-2xl font-bold text-white mb-3 text-center">{t('landing.features.revengeButton.title')}</h3>
+                <p className="text-blue-200 text-center text-lg">{t('landing.features.revengeButton.description')}</p>
               </div>
 
               <div className="p-8 hover:transform hover:scale-105 hover:shadow-2xl transition-all duration-300 border-2 border-yellow-600 rounded-lg" style={{backgroundColor: 'rgba(146, 64, 14, 0.9)', background: 'linear-gradient(135deg, rgba(146, 64, 14, 0.9), rgba(180, 83, 9, 0.9)'}}>
@@ -275,8 +282,8 @@ export default function LandingPage() {
                     <FaBell />
                   </span>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3 text-center">Push-Benachrichtigungen</h3>
-                <p className="text-yellow-200 text-center text-lg">Verpasse kein Match - wir halten dich auf dem Laufenden!</p>
+                <h3 className="text-2xl font-bold text-white mb-3 text-center">{t('landing.features.pushNotifications.title')}</h3>
+                <p className="text-yellow-200 text-center text-lg">{t('landing.features.pushNotifications.description')}</p>
               </div>
 
               <div className="p-8 hover:transform hover:scale-105 hover:shadow-2xl transition-all duration-300 border-2 border-purple-600 rounded-lg" style={{backgroundColor: 'rgba(88, 28, 135, 0.9)', background: 'linear-gradient(135deg, rgba(88, 28, 135, 0.9), rgba(107, 33, 168, 0.9)'}}>
@@ -285,21 +292,21 @@ export default function LandingPage() {
                     <MdMovie />
                   </span>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3 text-center">Spannende Animationen</h3>
-                <p className="text-purple-200 text-center text-lg">Erlebe jedes Tor und jede Parade hautnah mit!</p>
+                <h3 className="text-2xl font-bold text-white mb-3 text-center">{t('landing.features.animations.title')}</h3>
+                <p className="text-purple-200 text-center text-lg">{t('landing.features.animations.description')}</p>
               </div>
             </div>
 
             {/* Top Players Section */}
             <section className="section-header">
-              <h2 className="section-title">Top Spieler</h2>
-              <p className="section-subtitle">Die besten Penalty-Schützen der Liga</p>
+              <h2 className="section-title">{t('landing.topPlayers.title')}</h2>
+              <p className="section-subtitle">{t('landing.topPlayers.subtitle')}</p>
             </section>
             
             {isLoadingPlayers ? (
               <div className="text-center py-8">
                 <div className="text-4xl mb-2">⚽</div>
-                <p className="text-gray-200">Lade Spieler...</p>
+                <p className="text-gray-200">{t('landing.topPlayers.loadingPlayers')}</p>
               </div>
             ) : leaderboard.length > 0 ? (
               <div className="mb-8 border-2 border-green-600 rounded-lg overflow-hidden" style={{backgroundColor: 'rgba(22, 101, 52, 0.9)', background: 'linear-gradient(135deg, rgba(22, 101, 52, 0.9), rgba(20, 83, 45, 0.9)'}}>
@@ -308,19 +315,19 @@ export default function LandingPage() {
                     <thead>
                       <tr className="bg-green-900 bg-opacity-50 text-green-400">
                         <th className="text-left py-3 px-4 font-semibold">
-                          <span className="hidden md:inline">Platz</span>
+                          <span className="hidden md:inline">{t('landing.topPlayers.rank')}</span>
                           <span className="inline md:hidden">#</span>
                         </th>
                         <th className="text-left py-3 px-4 font-semibold">
-                          <span className="hidden md:inline">Spieler</span>
-                          <span className="inline md:hidden">Name</span>
+                          <span className="hidden md:inline">{t('landing.topPlayers.player')}</span>
+                          <span className="inline md:hidden">{t('landing.topPlayers.name')}</span>
                         </th>
-                        <th className="text-center py-3 px-4 font-semibold">SP</th>
-                        <th className="text-center py-3 px-4 font-semibold hidden md:table-cell">G</th>
-                        <th className="text-center py-3 px-4 font-semibold hidden md:table-cell">V</th>
+                        <th className="text-center py-3 px-4 font-semibold">{t('landing.topPlayers.games')}</th>
+                        <th className="text-center py-3 px-4 font-semibold hidden md:table-cell">{t('landing.topPlayers.wins')}</th>
+                        <th className="text-center py-3 px-4 font-semibold hidden md:table-cell">{t('landing.topPlayers.losses')}</th>
                         <th className="text-right py-3 px-4 font-semibold">
-                          <span className="hidden md:inline">Punkte</span>
-                          <span className="inline md:hidden">Pkt</span>
+                          <span className="hidden md:inline">{t('landing.topPlayers.points')}</span>
+                          <span className="inline md:hidden">{t('landing.topPlayers.pointsAbbr')}</span>
                         </th>
                       </tr>
                     </thead>
@@ -355,15 +362,15 @@ export default function LandingPage() {
             ) : (
               <div className="mb-8 text-center py-8 border-2 border-green-600 rounded-lg" style={{backgroundColor: 'rgba(22, 101, 52, 0.9)', background: 'linear-gradient(135deg, rgba(22, 101, 52, 0.9), rgba(20, 83, 45, 0.9)'}}>
                 <div className="text-4xl mb-2">🏆</div>
-                <p className="text-gray-200">Noch keine Einträge</p>
-                <p className="text-sm mt-2 text-gray-300">Spiele dein erstes Match!</p>
+                <p className="text-gray-200">{t('landing.topPlayers.noEntries')}</p>
+                <p className="text-sm mt-2 text-gray-300">{t('landing.topPlayers.playFirstMatch')}</p>
               </div>
             )}
 
             {/* YouTube Video Section */}
             <section className="section-header">
-              <h2 className="section-title">So spannend kann ein Match sein!</h2>
-              <p className="section-subtitle">Erlebe die Dramatik eines Penalty-Duells</p>
+              <h2 className="section-title">{t('landing.video.title')}</h2>
+              <p className="section-subtitle">{t('landing.video.subtitle')}</p>
             </section>
             
             <div className="app-card mb-8 p-0 overflow-hidden">
@@ -384,12 +391,12 @@ export default function LandingPage() {
               <div className="flex justify-center">
                 <button 
                   className="stadium-btn stadium-btn-primary"
-                  onClick={() => router.push('/register')}
+                  onClick={() => router.push(`/${locale}/register`)}
                 >
-                  JETZT SPIELEN 🚀
+                  {t('landing.cta.playNow')}
                 </button>
               </div>
-              <p className="text-sm text-gray-200 mt-4">Kostenlos registrieren und loslegen!</p>
+              <p className="text-sm text-gray-200 mt-4">{t('landing.cta.freeRegistration')}</p>
             </div>
             
           </div>

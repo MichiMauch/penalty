@@ -276,40 +276,12 @@ export async function POST(request: NextRequest) {
       const playerBId = nanoid(); // Neue Player ID für Player B (Verteidiger)
       
       // Bei Revenge Matches sind beide Spieler bereits bekannt und akzeptiert
-      // Deshalb setzen wir Status auf 'active' statt 'waiting'
+      // Status wird auf 'waiting' gesetzt damit der Match in der pending matches API erscheint
+      // Notification will be sent later when moves are submitted
       await db.execute({
         sql: 'INSERT INTO matches (id, player_a, player_a_email, player_a_username, player_a_avatar, player_b, player_b_email, player_b_username, player_b_avatar, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        args: [matchId, playerAId, playerAEmail, playerAUsername, playerAAvatar, playerBId, playerBEmail, playerBUsername, playerBAvatar, 'active']
+        args: [matchId, playerAId, playerAEmail, playerAUsername, playerAAvatar, playerBId, playerBEmail, playerBUsername, playerBAvatar, 'waiting']
       });
-      
-      // Sende E-Mail-Benachrichtigung (nicht Einladung) an Player B
-      if (process.env.RESEND_API_KEY) {
-        const emailResult = await sendChallengeEmail({
-          to: playerBEmail,
-          challengerEmail: playerAEmail,
-          challengerUsername: playerAUsername,
-          matchId
-        });
-        
-        if (!emailResult.success) {
-          console.error('Failed to send revenge notification email:', emailResult.error);
-        }
-      }
-      
-      // Send push notification to the challenged user  
-      try {
-        const challengedUser = await getUserByEmail(playerBEmail);
-        if (challengedUser) {
-          await sendChallengeNotification(
-            challengedUser.id,
-            playerAUsername || playerAEmail || 'Ein Spieler',
-            matchId
-          );
-          console.log('Revenge push notification sent to:', playerBEmail);
-        }
-      } catch (error) {
-        console.error('Error sending revenge push notification:', error);
-      }
       
       return NextResponse.json({ 
         matchId, 
@@ -462,6 +434,44 @@ export async function POST(request: NextRequest) {
         
         console.log('Returning finished status to client');
         return NextResponse.json({ status: 'finished', result });
+      }
+      
+      // Check if this is a revenge match (both players exist) and send notification
+      const isRevengeMatch = updatedMatch.player_a && updatedMatch.player_b;
+      const justSubmittedPlayerA = isPlayerA && updatedMatch.player_a_moves && !updatedMatch.player_b_moves;
+      
+      if (isRevengeMatch && justSubmittedPlayerA) {
+        console.log('Revenge match - sending notification to player B after player A submitted moves');
+        
+        // Send email notification to Player B
+        if (process.env.RESEND_API_KEY) {
+          try {
+            await sendChallengeEmail({
+              to: updatedMatch.player_b_email as string,
+              challengerEmail: updatedMatch.player_a_email as string,
+              challengerUsername: updatedMatch.player_a_username as string || updatedMatch.player_a_email as string || 'Ein Spieler',
+              matchId
+            });
+            console.log('Revenge notification email sent to:', updatedMatch.player_b_email);
+          } catch (error) {
+            console.error('Failed to send revenge notification email:', error);
+          }
+        }
+        
+        // Send push notification to Player B
+        try {
+          const challengedUser = await getUserByEmail(updatedMatch.player_b_email as string);
+          if (challengedUser) {
+            await sendChallengeNotification(
+              challengedUser.id,
+              updatedMatch.player_a_username as string || updatedMatch.player_a_email as string || 'Ein Spieler',
+              matchId
+            );
+            console.log('Revenge push notification sent to:', updatedMatch.player_b_email);
+          }
+        } catch (error) {
+          console.error('Error sending revenge push notification:', error);
+        }
       }
       
       console.log('Not all moves submitted yet, returning waiting status');

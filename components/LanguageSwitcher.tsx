@@ -4,7 +4,7 @@ import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Locale } from '@/i18n';
+import { Locale, locales } from '@/i18n';
 import { FaGlobe, FaChevronDown } from 'react-icons/fa';
 
 interface LanguageSwitcherProps {
@@ -22,7 +22,7 @@ export default function LanguageSwitcher({ className = '', variant = 'dropdown' 
 
   const languages = [
     { code: 'de' as const, name: 'Deutsch', flag: '🇩🇪' },
-    { code: 'en' as const, name: 'English', flag: '🇺🇸' }
+    { code: 'en' as const, name: 'English', flag: '🇬🇧' }
   ];
 
   const currentLanguage = languages.find(lang => lang.code === locale) || languages[0];
@@ -45,15 +45,13 @@ export default function LanguageSwitcher({ className = '', variant = 'dropdown' 
     }
     
     startTransition(() => {
-      // Replace the locale in the pathname
+      // Get current path without locale
       const segments = pathname.split('/');
-      if (segments[1] === locale) {
-        segments[1] = newLocale;
-      } else {
-        segments.splice(1, 0, newLocale);
-      }
-      const newPath = segments.join('/');
-      router.replace(newPath);
+      const pathWithoutLocale = segments.slice(2).join('/'); // Remove empty string and current locale
+      const newPath = `/${newLocale}${pathWithoutLocale ? '/' + pathWithoutLocale : ''}`;
+      
+      // Force reload to ensure proper locale switching
+      window.location.href = newPath;
     });
   };
 
@@ -67,7 +65,7 @@ export default function LanguageSwitcher({ className = '', variant = 'dropdown' 
             className={`p-2 rounded-lg transition-all duration-200 text-2xl hover:bg-gray-800 ${
               lang.code === locale ? 'bg-gray-700 ring-2 ring-green-400' : ''
             } ${isPending ? 'opacity-50' : ''}`}
-            disabled={isPending || lang.code === locale}
+            disabled={isPending}
             title={lang.name}
           >
             {lang.flag}

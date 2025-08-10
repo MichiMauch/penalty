@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { nanoid } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthPage from '@/components/AuthPage';
@@ -25,6 +26,7 @@ interface PendingChallenge {
 }
 
 function GarderobeContent() {
+  const t = useTranslations();
   const [error, setError] = useState('');
   const [pendingChallenges, setPendingChallenges] = useState<PendingChallenge[]>([]);
   const [isLoadingChallenges, setIsLoadingChallenges] = useState(true);
@@ -137,7 +139,7 @@ function GarderobeContent() {
     }
   };
 
-  const fetchUserStats = async () => {
+  const fetchUserStats = useCallback(async () => {
     try {
       const response = await fetch(`/api/stats/user/${user?.id}`);
       if (response.ok) {
@@ -147,7 +149,7 @@ function GarderobeContent() {
     } catch (error) {
       console.error('Error fetching user stats:', error);
     }
-  };
+  }, [user?.id]);
 
   const declineChallenge = async (challengeId: string) => {
     try {
@@ -227,7 +229,7 @@ function GarderobeContent() {
     return (
       <Layout showHeader={false}>
         <div className="min-h-screen flex items-center justify-center">
-          <div className="text-white text-xl">⚽ Lade PENALTY...</div>
+          <div className="text-white text-xl">{t('garderobe.loading')}</div>
         </div>
       </Layout>
     );
@@ -255,7 +257,7 @@ function GarderobeContent() {
         if (checkResponse.ok) {
           const { hasPendingChallenge } = await checkResponse.json();
           if (hasPendingChallenge) {
-            setError(`Es existiert bereits eine offene Herausforderung mit ${challengeUser.username}. Bitte warte, bis diese abgeschlossen ist.`);
+            setError(t('garderobe.errors.existingChallenge', { username: challengeUser.username }));
             // Auto-clear error after 5 seconds
             setTimeout(() => setError(''), 5000);
             setIsCheckingChallenge(false);
@@ -265,7 +267,7 @@ function GarderobeContent() {
         }
       } catch (err) {
         console.error('Error checking existing challenge:', err);
-        setError('Fehler beim Prüfen der Herausforderung. Bitte versuche es erneut.');
+        setError(t('garderobe.errors.checkingChallenge'));
         setTimeout(() => setError(''), 5000);
         setIsCheckingChallenge(false);
         setCheckingUserId(null);
@@ -307,11 +309,11 @@ function GarderobeContent() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="welcome-modal bg-grass-green-light backdrop-blur-lg rounded-lg border-2 border-green-600 shadow-xl pt-12 pb-6 px-8 max-w-lg w-full text-center relative">
             <div className="mb-4">
-              <h2 className="hero-title text-xl md:text-2xl text-white" style={{fontFamily: 'var(--font-notable)', marginBottom: '2.5rem', whiteSpace: 'nowrap', lineHeight: '1.2', marginTop: '1rem'}}>WILLKOMMEN ZURÜCK</h2>
+              <h2 className="hero-title text-xl md:text-2xl text-white" style={{fontFamily: 'var(--font-notable)', marginBottom: '2.5rem', whiteSpace: 'nowrap', lineHeight: '1.2', marginTop: '1rem'}}>{t('garderobe.welcome.title')}</h2>
               <h3 className="text-base text-green-900 mb-5 font-semibold">
-                in deiner Garderobe {userStats ? `${calculateLevel(userStats.totalPoints).name} ` : ''}{user?.username}
+                {t('garderobe.welcome.subtitle', { level: userStats ? calculateLevel(userStats.totalPoints).name : '', username: user?.username })}
               </h3>
-              <p className="text-green-900 text-sm font-medium mb-6">Möge die Macht mit dir sein</p>
+              <p className="text-green-900 text-sm font-medium mb-6">{t('garderobe.welcome.motto')}</p>
               <div className="flex items-center justify-center gap-6">
                 <span className="text-5xl">⚽</span>
                 <img src="/gloves.png" alt="Torwart Handschuhe" className="gloves-image w-20 h-auto" />
@@ -359,23 +361,23 @@ function GarderobeContent() {
           {/* Rules - Order 3 on mobile, row 2 col 1 on desktop */}
           <div className="order-3">
             <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6">
-              <h3 className="text-xl font-bold text-white mb-4">Spielregeln</h3>
+              <h3 className="text-xl font-bold text-white mb-4">{t('garderobe.rules.title')}</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="text-center p-3 bg-green-900 bg-opacity-50 rounded">
                   <span className="block text-2xl font-bold text-green-400">5</span>
-                  <span className="text-gray-300 text-sm">Penalty</span>
+                  <span className="text-gray-300 text-sm">{t('garderobe.rules.penalty')}</span>
                 </div>
                 <div className="text-center p-3 bg-blue-900 bg-opacity-50 rounded">
                   <span className="block text-2xl font-bold text-blue-400">3</span>
-                  <span className="text-gray-300 text-sm">Punkte/Sieg</span>
+                  <span className="text-gray-300 text-sm">{t('garderobe.rules.pointsPerWin')}</span>
                 </div>
                 <div className="text-center p-3 bg-red-900 bg-opacity-50 rounded">
                   <span className="block text-2xl font-bold text-red-400">0</span>
-                  <span className="text-gray-300 text-sm">Punkte/Niederlage</span>
+                  <span className="text-gray-300 text-sm">{t('garderobe.rules.pointsPerLoss')}</span>
                 </div>
                 <div className="text-center p-3 bg-yellow-900 bg-opacity-50 rounded">
                   <span className="block text-2xl font-bold text-yellow-400">10</span>
-                  <span className="text-gray-300 text-sm">Punkte/Stufenwechsel</span>
+                  <span className="text-gray-300 text-sm">{t('garderobe.rules.pointsPerLevel')}</span>
                 </div>
               </div>
             </div>
@@ -385,10 +387,10 @@ function GarderobeContent() {
           <div className="order-4">
             <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6">
               <h2 className="text-2xl font-bold text-white mb-2">
-                PENALTY Challenge
+                {t('garderobe.challenge.title')}
               </h2>
               <p className="text-gray-300 mb-6">
-                Fordere andere Spieler zu spannenden Penalty-Duellen heraus
+                {t('garderobe.challenge.description')}
               </p>
             
               <div className="space-y-6">
@@ -405,12 +407,12 @@ function GarderobeContent() {
                     {isCheckingChallenge ? (
                       <>
                         <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
-                        PRÜFE...
+                        {t('garderobe.challenge.checking')}
                       </>
                     ) : (
                       <>
                         <GiCrossedSwords size={20} />
-                        JETZT HERAUSFORDERN
+                        {t('garderobe.challenge.buttonText')}
                       </>
                     )}
                   </button>
@@ -418,7 +420,7 @@ function GarderobeContent() {
                 
                 <div className="text-center">
                   <p className="text-green-300 text-sm">
-                    Verwende den &quot;HERAUSFORDERN&quot; Button in der Navigation oder klicke hier
+                    {t('garderobe.challenge.hint')}
                   </p>
                 </div>
               </div>
@@ -438,7 +440,7 @@ export default function Garderobe() {
     <Suspense fallback={
       <Layout showHeader={true}>
         <div className="min-h-screen flex items-center justify-center">
-          <div className="text-white text-xl">⚽ Lade PENALTY...</div>
+          <div className="text-white text-xl">⚽ Loading PENALTY...</div>
         </div>
       </Layout>
     }>

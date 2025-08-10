@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, useState, forwardRef, useImperativeHandle, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { AvatarId } from '@/lib/types';
 import { FaSync } from 'react-icons/fa';
 
@@ -37,6 +38,7 @@ export interface LeaderboardRef {
 }
 
 const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserId, onChallengeUser, checkingUserId }, ref) => {
+  const t = useTranslations('leaderboard');
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -47,7 +49,7 @@ const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserI
     fetchLeaderboard();
   }, []);
 
-  const fetchLeaderboard = async (isRefresh = false) => {
+  const fetchLeaderboard = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
       setRefreshing(true);
     } else {
@@ -74,7 +76,7 @@ const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserI
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   // Expose fetchLeaderboard to parent component
   useImperativeHandle(ref, () => ({
@@ -139,19 +141,19 @@ const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserI
     return (
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white">Rangliste</h2>
+          <h2 className="text-xl font-bold text-white">{t('title')}</h2>
           <button
             onClick={handleRefresh}
             disabled={true}
             className="text-gray-500 cursor-not-allowed p-2"
-            title="Wird geladen..."
+            title={t('loadingTooltip')}
           >
             <FaSync className="animate-spin" />
           </button>
         </div>
         <div className="bg-gray-900 bg-opacity-40 rounded">
           <div className="h-80 flex items-center justify-center">
-            <div className="text-white">Lade Rangliste...</div>
+            <div className="text-white">{t('loading')}</div>
           </div>
         </div>
       </div>
@@ -163,7 +165,7 @@ const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserI
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-white">Rangliste</h2>
+        <h2 className="text-xl font-bold text-white">{t('title')}</h2>
         <button
           onClick={handleRefresh}
           disabled={refreshing}
@@ -172,7 +174,7 @@ const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserI
               ? 'text-green-400 cursor-not-allowed' 
               : 'text-gray-400 hover:text-green-400'
           }`}
-          title="Rangliste aktualisieren"
+          title={t('refreshTooltip')}
         >
           <FaSync className={refreshing ? 'animate-spin' : ''} />
         </button>
@@ -182,12 +184,12 @@ const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserI
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-green-900 bg-opacity-50 text-green-400">
-              <th className="text-left py-2 px-3 font-semibold">Platz</th>
-              <th className="text-left py-2 px-3 font-semibold">Spieler</th>
-              <th className="text-center py-2 px-3 font-semibold">SP</th>
-              <th className="text-center py-2 px-3 font-semibold hidden md:table-cell">G</th>
-              <th className="text-center py-2 px-3 font-semibold hidden md:table-cell">V</th>
-              <th className="text-right py-2 px-3 font-semibold">Punkte</th>
+              <th className="text-left py-2 px-3 font-semibold">{t('rank')}</th>
+              <th className="text-left py-2 px-3 font-semibold">{t('player')}</th>
+              <th className="text-center py-2 px-3 font-semibold">{t('gamesPlayed')}</th>
+              <th className="text-center py-2 px-3 font-semibold hidden md:table-cell">{t('wins')}</th>
+              <th className="text-center py-2 px-3 font-semibold hidden md:table-cell">{t('losses')}</th>
+              <th className="text-right py-2 px-3 font-semibold">{t('points')}</th>
             </tr>
           </thead>
           <tbody className="text-white">
@@ -230,7 +232,7 @@ const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserI
                         }}
                         disabled={checkingUserId === player.id}
                         className="hover:text-green-400 hover:underline transition-colors cursor-pointer text-left disabled:text-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
-                        title={checkingUserId === player.id ? 'Prüfe Herausforderung...' : `${player.username} herausfordern`}
+                        title={checkingUserId === player.id ? t('checkingChallenge') : `${player.username} ${t('challengeTooltip')}`}
                       >
                         {checkingUserId === player.id && (
                           <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-transparent"></div>
@@ -256,8 +258,8 @@ const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserI
       
       {leaderboard.length === 0 && (
         <div className="text-center py-8 text-gray-300">
-          <p>Noch keine Einträge</p>
-          <p className="text-sm mt-2">Spiele dein erstes Match!</p>
+          <p>{t('noEntries')}</p>
+          <p className="text-sm mt-2">{t('playFirstMatch')}</p>
         </div>
       )}
     </div>

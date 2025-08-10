@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface UserStats {
   totalPoints: number;
@@ -39,6 +40,7 @@ interface UserStatsCardProps {
 }
 
 export default function UserStatsCard({ userId, username, avatar }: UserStatsCardProps) {
+  const t = useTranslations('userStats');
   const [stats, setStats] = useState<UserStats | null>(null);
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,13 +94,13 @@ export default function UserStatsCard({ userId, username, avatar }: UserStatsCar
           </div>
           <div>
             <p className="text-3xl font-bold text-white">
-              {stats.totalPoints} Punkte 
+              {stats.totalPoints} {t('points')} 
               {stats.rank && stats.pointsToNextRank && (
-                <span className="text-sm text-white font-normal ml-3 hidden md:inline">Vorsprung zu #{stats.rank + 1}: {stats.pointsToNextRank} Punkte</span>
+                <span className="text-sm text-white font-normal ml-3 hidden md:inline">{t('leadTo')} #{stats.rank + 1}: {stats.pointsToNextRank} {t('points')}</span>
               )}
             </p>
             <p className="text-lg text-white">
-              {stats.rank ? `Rang #${stats.rank}` : 'Kein Rang'}
+              {stats.rank ? `${t('rank')} #${stats.rank}` : t('noRank')}
             </p>
           </div>
         </div>
@@ -118,33 +120,33 @@ export default function UserStatsCard({ userId, username, avatar }: UserStatsCar
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-green-900 bg-opacity-50">
-                <th className="text-left py-2 px-3 text-green-400 font-semibold">Statistik</th>
-                <th className="text-right py-2 px-3 text-green-400 font-semibold">Wert</th>
+                <th className="text-left py-2 px-3 text-green-400 font-semibold">{t('statistics')}</th>
+                <th className="text-right py-2 px-3 text-green-400 font-semibold">{t('value')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700 divide-opacity-50">
               <tr className="hover:bg-green-900 hover:bg-opacity-20 transition-colors">
-                <td className="py-2 px-3 text-white">🏆 Siege</td>
+                <td className="py-2 px-3 text-white">🏆 {t('wins')}</td>
                 <td className="py-2 px-3 text-right font-bold text-white">{stats.gamesWon}</td>
               </tr>
               <tr className="hover:bg-green-900 hover:bg-opacity-20 transition-colors">
-                <td className="py-2 px-3 text-white">📊 Gewinnrate</td>
+                <td className="py-2 px-3 text-white">📊 {t('winRate')}</td>
                 <td className="py-2 px-3 text-right font-bold text-white">{stats.winRate}%</td>
               </tr>
               <tr className="hover:bg-green-900 hover:bg-opacity-20 transition-colors">
-                <td className="py-2 px-3 text-white">🔥 Aktuelle Serie</td>
+                <td className="py-2 px-3 text-white">🔥 {t('currentStreak')}</td>
                 <td className="py-2 px-3 text-right font-bold text-white">{stats.currentStreak > 0 ? stats.currentStreak : '-'}</td>
               </tr>
               <tr className="hover:bg-green-900 hover:bg-opacity-20 transition-colors">
-                <td className="py-2 px-3 text-white">⚽ Tore erzielt</td>
+                <td className="py-2 px-3 text-white">⚽ {t('goalsScored')}</td>
                 <td className="py-2 px-3 text-right font-bold text-white">{stats.goalsScored}</td>
               </tr>
               <tr className="hover:bg-green-900 hover:bg-opacity-20 transition-colors">
-                <td className="py-2 px-3 text-white">🥅 Paraden</td>
+                <td className="py-2 px-3 text-white">🥅 {t('savesMade')}</td>
                 <td className="py-2 px-3 text-right font-bold text-white">{stats.savesMade}</td>
               </tr>
               <tr className="hover:bg-green-900 hover:bg-opacity-20 transition-colors">
-                <td className="py-2 px-3 text-white">💎 Perfekte Spiele</td>
+                <td className="py-2 px-3 text-white">💎 {t('perfectGames')}</td>
                 <td className="py-2 px-3 text-right font-bold text-white">{stats.perfectGames}</td>
               </tr>
             </tbody>
@@ -156,7 +158,7 @@ export default function UserStatsCard({ userId, username, avatar }: UserStatsCar
           <div className="bg-gray-900 bg-opacity-40 rounded-lg border border-green-600 p-4 flex flex-col justify-between">
             <div>
               <div className="text-center mb-3">
-                <div className="text-sm text-gray-400 mb-1">Nächstes Level</div>
+                <div className="text-sm text-gray-400 mb-1">{t('nextLevel')}</div>
                 <div className="text-lg font-bold text-white">{levelInfo.next.name}</div>
                 <div className="text-2xl mt-1">{levelInfo.next.icon}</div>
               </div>
@@ -174,9 +176,9 @@ export default function UserStatsCard({ userId, username, avatar }: UserStatsCar
             </div>
             
             <div className="text-center mt-3">
-              <div className="text-xs text-gray-400">Noch</div>
+              <div className="text-xs text-gray-400">{t('still')}</div>
               <div className="text-sm font-bold text-white">{levelInfo.pointsToNext}</div>
-              <div className="text-xs text-gray-400">Punkte</div>
+              <div className="text-xs text-gray-400">{t('pointsNeeded')}</div>
             </div>
           </div>
         )}

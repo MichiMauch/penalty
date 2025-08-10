@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { nanoid } from '@/lib/utils';
@@ -65,7 +65,7 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
     };
   }, [searchQuery]);
 
-  const searchUsers = async (query: string) => {
+  const searchUsers = useCallback(async (query: string) => {
     setIsSearching(true);
     try {
       const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
@@ -78,7 +78,7 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [user?.id]);
 
   const selectUser = async (selectedUser: User) => {
     // Set loading state
@@ -95,7 +95,7 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
       if (checkResponse.ok) {
         const { hasPendingChallenge } = await checkResponse.json();
         if (hasPendingChallenge) {
-          setError('Es existiert bereits eine offene Herausforderung zwischen euch. Bitte warte, bis diese abgeschlossen ist.');
+          setError(t('challenge.modal.errors.existingChallenge'));
           setIsLoading(false);
           return;
         }
@@ -140,7 +140,7 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
         if (checkResponse.ok) {
           const { hasPendingChallenge } = await checkResponse.json();
           if (hasPendingChallenge) {
-            setError('Es existiert bereits eine offene Herausforderung zwischen euch. Bitte warte, bis diese abgeschlossen ist.');
+            setError(t('challenge.modal.errors.existingChallenge'));
             return;
           }
         }
@@ -172,7 +172,7 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
       if (checkResponse.ok) {
         const { hasPendingChallenge } = await checkResponse.json();
         if (hasPendingChallenge) {
-          throw new Error('Es existiert bereits eine offene Herausforderung zwischen euch. Bitte warte, bis diese abgeschlossen ist.');
+          throw new Error(t('challenge.modal.errors.existingChallenge'));
         }
       }
 
@@ -221,17 +221,17 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
             })
           });
         }
-        throw new Error(errorData.error || 'Fehler beim Senden der Herausforderung');
+        throw new Error(errorData.error || t('challenge.modal.errors.sendFailed'));
       }
 
-      setSuccess(`Herausforderung an ${selectedUser.username} gesendet!`);
+      setSuccess(t('challenge.modal.success.sent', { username: selectedUser.username }));
       setTimeout(() => {
         onClose();
         resetModal();
       }, 2000);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
+      setError(err instanceof Error ? err.message : t('challenge.modal.errors.generic'));
     } finally {
       setIsLoading(false);
     }
@@ -260,7 +260,7 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <GiCrossedSwords className="text-green-400 text-2xl" />
-              <h2 className="text-xl font-bold text-white">Spieler herausfordern</h2>
+              <h2 className="text-xl font-bold text-white">{t('challenge.modal.title')}</h2>
             </div>
             <button
               onClick={handleClose}
@@ -276,7 +276,7 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
               <FaSearch className="absolute left-3 top-3 text-gray-400" size={16} />
               <input
                 type="text"
-                placeholder="Spielername oder E-Mail eingeben..."
+                placeholder={t('challenge.modal.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
@@ -300,7 +300,7 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
                     <span className="text-2xl">{getAvatarEmoji(user.avatar)}</span>
                     <div>
                       <div className="text-white font-medium">{user.username}</div>
-                      <div className="text-gray-400 text-sm">{user.totalPoints || 0} Punkte</div>
+                      <div className="text-gray-400 text-sm">{user.totalPoints || 0} {t('challenge.modal.points')}</div>
                     </div>
                   </button>
                 ))}
@@ -315,7 +315,7 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
                 <span className="text-2xl">{getAvatarEmoji(selectedUser.avatar)}</span>
                 <div>
                   <div className="text-white font-medium">{selectedUser.username}</div>
-                  <div className="text-gray-300 text-sm">{selectedUser.totalPoints || 0} Punkte</div>
+                  <div className="text-gray-300 text-sm">{selectedUser.totalPoints || 0} {t('challenge.modal.points')}</div>
                 </div>
               </div>
             </div>
@@ -340,14 +340,14 @@ export default function ChallengeModal({ isOpen, onClose, preSelectedUser, redir
               onClick={handleClose}
               className="flex-1 py-3 px-4 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
             >
-              Abbrechen
+              {t('common.cancel')}
             </button>
             <button
               onClick={sendChallenge}
               disabled={!selectedUser || isLoading}
               className="flex-1 py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? 'Sende...' : 'Herausfordern'}
+              {isLoading ? t('challenge.modal.sending') : t('challenge.modal.sendButton')}
             </button>
           </div>
         </div>

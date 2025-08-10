@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { GameResult as GameResultType, AvatarId } from '@/lib/types';
+import { useTranslations } from 'next-intl';
 import AnimatedGameReplay from './AnimatedGameReplay';
 import RevengeButton from './RevengeButton';
 import UserAvatar from './UserAvatar';
@@ -29,13 +30,14 @@ export default function GameResult({
 }: GameResultProps) {
   const [showFinalResult, setShowFinalResult] = useState(false);
   const [showAnimation, setShowAnimation] = useState(true);
+  const t = useTranslations('game');
   
   const isWinner = result.winner === playerRole;
   const isDraw = result.winner === 'draw';
   
   // Extract display names (lastname priority)
   const extractDisplayName = (fullName: string): string => {
-    if (!fullName) return 'SPIELER';
+    if (!fullName) return t('result.defaultPlayerName');
     
     // Check if it's an email
     if (fullName.includes('@')) {
@@ -51,8 +53,8 @@ export default function GameResult({
     return fullName.toUpperCase(); // First name only
   };
 
-  const playerAName = playerAUsername || playerAEmail || 'Spieler A';
-  const playerBName = playerBUsername || playerBEmail || 'Spieler B';
+  const playerAName = playerAUsername || playerAEmail || t('result.playerA');
+  const playerBName = playerBUsername || playerBEmail || t('result.playerB');
   const playerADisplayName = extractDisplayName(playerAName);
   const playerBDisplayName = extractDisplayName(playerBName);
   
@@ -98,14 +100,14 @@ export default function GameResult({
           {/* Header only during animation */}
           <div className="game-header">
             <div className="pre-result-header">
-              <h1 className="result-title">🏆 Elfmeterschießen läuft...</h1>
+              <h1 className="result-title">🏆 {t('result.penaltyInProgress')}</h1>
               
               {/* Skip to Results Button */}
               <button
                 onClick={skipToResults}
                 className="skip-button"
               >
-                📊 Direkt zum Ergebnis
+                📊 {t('result.skipToResult')}
               </button>
             </div>
           </div>
@@ -158,7 +160,7 @@ export default function GameResult({
           {/* Winner Display */}
           <div className="led-winner-section">
             <div className="led-winner-text">
-              GEWINNER: {result.winner === 'player_a' ? playerADisplayName : playerBDisplayName}
+              {t('result.winner')}: {result.winner === 'player_a' ? playerADisplayName : playerBDisplayName}
             </div>
           </div>
           </div>
@@ -169,7 +171,7 @@ export default function GameResult({
               href="/garderobe"
               className={`btn btn-primary ${isWinner ? 'btn-pill' : 'btn-rounded-left'} led-action-btn`}
             >
-              ZUR GARDEROBE
+              {t('result.toLocker')}
             </Link>
             
             {/* Revenge button only for loser */}
@@ -185,7 +187,7 @@ export default function GameResult({
                 opponentKeepermoves={result.rounds.map(round => round.keeperMove)}
                 opponentShooterMoves={result.rounds.map(round => round.shooterMove)}
                 className="btn btn-primary btn-rounded-right led-action-btn"
-                buttonText="REVANCHE"
+                buttonText={t('result.revenge')}
               />
             )}
           </div>

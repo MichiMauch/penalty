@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
 import RegisterForm from '@/components/RegisterForm';
@@ -9,6 +10,7 @@ import { RegisterData } from '@/lib/types';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const locale = useLocale();
   const { user, loading, register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,9 +19,9 @@ export default function RegisterPage() {
   // Redirect logged-in users to garderobe
   if (!loading && user) {
     if (justRegistered) {
-      router.push('/garderobe?welcome=true');
+      router.push(`/${locale}/garderobe?welcome=true`);
     } else {
-      router.push('/garderobe');
+      router.push(`/${locale}/garderobe`);
     }
     return null;
   }
@@ -51,7 +53,7 @@ export default function RegisterPage() {
   };
 
   const handleSwitchToLogin = () => {
-    router.push('/login');
+    router.push(`/${locale}/login`);
   };
 
   return (

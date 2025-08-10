@@ -46,7 +46,9 @@
       "registering": "Registrieren...",
       "hasAccount": "Bereits einen Account?",
       "loginNow": "Jetzt anmelden",
-      "chooseAvatar": "Avatar wählen"
+      "chooseAvatar": "Avatar wählen",
+      "passwordMinLength": "Passwort (min. 6 Zeichen)",
+      "passwordsDontMatch": "Passwörter stimmen nicht überein"
     },
     "forgotPassword": {
       "title": "Passwort vergessen",
@@ -135,7 +137,8 @@
       "games": "SP",
       "wins": "G",
       "losses": "V",
-      "points": "Punkte"
+      "points": "Punkte",
+      "pointsAbbr": "Pkt"
     },
     "video": {
       "title": "So spannend kann ein Match sein!",
@@ -210,11 +213,65 @@
       "finalScore": "Endergebnis",
       "playAgain": "Nochmal spielen",
       "revenge": "REVANCHE",
-      "backToHome": "Zurück zur Startseite"
+      "backToHome": "Zurück zur Startseite",
+      "defaultPlayerName": "SPIELER",
+      "playerA": "Spieler A",
+      "playerB": "Spieler B",
+      "penaltyInProgress": "Elfmeterschießen läuft...",
+      "skipToResult": "Direkt zum Ergebnis",
+      "winner": "GEWINNER",
+      "toLocker": "ZUR GARDEROBE"
     },
     "status": {
       "processing": "Das Spiel wird verarbeitet...",
       "waiting": "Status: waiting"
+    },
+    "shooter": {
+      "challengingPlayer": "Du forderst {username} heraus",
+      "challenging": "Du forderst heraus",
+      "points": "Punkte",
+      "instructions": "Schieße all deine Bälle ins Tor um das Penalty schießen zu gewinnen."
+    },
+    "keeper": {
+      "challengeTitle": "Du wurdest herausgefordert",
+      "points": "Punkte",
+      "instructions": "Wehre all seine Schüsse ab um das Penalty schießen zu gewinnen.",
+      "modal": {
+        "submitting": "Paraden werden übertragen...",
+        "success": "Erfolgreich gespeichert!",
+        "pleaseWait": "Einen Moment bitte",
+        "goingToResult": "Zum Spielergebnis..."
+      }
+    },
+    "match": {
+      "notPartOfMatch": "Du bist nicht Teil dieses Matches",
+      "notFinished": "Das Match ist noch nicht beendet",
+      "resultNotLoaded": "Spielergebnis konnte nicht geladen werden",
+      "backToLocker": "Zurück zur Garderobe",
+      "notFound": "Match nicht gefunden"
+    },
+    "loading": {
+      "default": "Lade...",
+      "shots": "Lade Schüsse...",
+      "submittingShots": "Sende Schüsse...",
+      "notifyingOpponent": "Wir informieren deinen Gegner über die Herausforderung",
+      "returningToLocker": "Wir gehen zurück in die Garderobe um uns warm zu halten",
+      "keeper": "Lade Abwehr...",
+      "submittingSaves": "Sende Paraden...",
+      "match": "Lade Match...",
+      "shooterMode": "Lade Shooter-Modus...",
+      "keeperMode": "Lade Keeper-Modus..."
+    },
+    "errors": {
+      "cannotDeterminePlayerId": "Kann Player-ID für diesen Match nicht bestimmen",
+      "matchCreationFailed": "Fehler beim Erstellen des Matches",
+      "joinFailed": "Fehler beim Beitreten",
+      "noPlayerFound": "Kein Spieler gefunden in diesem Match.",
+      "inviteFailed": "Fehler beim Einladen",
+      "challengeSendFailed": "Fehler beim Senden der Herausforderung",
+      "saveSubmitFailed": "Fehler beim Senden der Paraden",
+      "unknownError": "Unbekannter Fehler",
+      "matchLoadFailed": "Fehler beim Laden des Matches"
     }
   },
   "admin": {
@@ -271,6 +328,84 @@
     "validationError": "Validierungsfehler",
     "challengeError": "Fehler beim Senden der Herausforderung",
     "updateError": "Fehler beim Update",
-    "deleteError": "Fehler beim Löschen"
+    "deleteError": "Fehler beim Löschen",
+    "loginFailed": "Login fehlgeschlagen",
+    "registerFailed": "Registrierung fehlgeschlagen"
+  },
+  "userStats": {
+    "points": "Punkte",
+    "rank": "Rang",
+    "noRank": "Kein Rang",
+    "leadTo": "Vorsprung zu",
+    "statistics": "Statistik",
+    "value": "Wert",
+    "wins": "Siege",
+    "winRate": "Gewinnrate",
+    "currentStreak": "Aktuelle Serie",
+    "goalsScored": "Tore erzielt",
+    "savesMade": "Paraden",
+    "perfectGames": "Perfekte Spiele",
+    "nextLevel": "Nächstes Level",
+    "still": "Noch",
+    "pointsNeeded": "Punkte"
+  },
+  "leaderboard": {
+    "title": "Rangliste",
+    "refreshTooltip": "Rangliste aktualisieren",
+    "loadingTooltip": "Wird geladen...",
+    "loading": "Lade Rangliste...",
+    "rank": "Platz",
+    "player": "Spieler",
+    "gamesPlayed": "SP",
+    "wins": "G",
+    "losses": "V",
+    "points": "Punkte",
+    "challengeTooltip": "herausfordern",
+    "checkingChallenge": "Prüfe Herausforderung...",
+    "noEntries": "Noch keine Einträge",
+    "playFirstMatch": "Spiele dein erstes Match!"
+  },
+  "challenge": {
+    "modal": {
+      "title": "Spieler herausfordern",
+      "searchPlaceholder": "Spielername oder E-Mail eingeben...",
+      "sending": "Sende...",
+      "sendButton": "Herausfordern",
+      "points": "Punkte",
+      "errors": {
+        "existingChallenge": "Es existiert bereits eine offene Herausforderung zwischen euch. Bitte warte, bis diese abgeschlossen ist.",
+        "sendFailed": "Fehler beim Senden der Herausforderung",
+        "generic": "Ein Fehler ist aufgetreten"
+      },
+      "success": {
+        "sent": "Herausforderung an {username} gesendet!"
+      }
+    }
+  },
+  "garderobe": {
+    "errors": {
+      "existingChallenge": "Es existiert bereits eine offene Herausforderung mit {username}. Bitte warte, bis diese abgeschlossen ist.",
+      "checkingChallenge": "Fehler beim Prüfen der Herausforderung. Bitte versuche es erneut."
+    },
+    "welcome": {
+      "title": "WILLKOMMEN ZURÜCK",
+      "subtitle": "in deiner Garderobe {level} {username}",
+      "motto": "Möge die Macht mit dir sein"
+    },
+    "rules": {
+      "title": "Spielregeln",
+      "penalty": "Penalty",
+      "pointsPerWin": "Punkte/Sieg",
+      "pointsPerLoss": "Punkte/Niederlage",
+      "pointsPerLevel": "Punkte/Stufenwechsel"
+    },
+    "challenge": {
+      "title": "PENALTY Challenge",
+      "description": "Fordere andere Spieler zu spannenden Penalty-Duellen heraus",
+      "checking": "PRÜFE...",
+      "buttonText": "JETZT HERAUSFORDERN",
+      "hint": "Verwende den \"HERAUSFORDERN\" Button in der Navigation oder klicke hier"
+    },
+    "loading": "⚽ Lade PENALTY..."
   }
 }

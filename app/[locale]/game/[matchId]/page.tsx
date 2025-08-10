@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
@@ -28,7 +28,7 @@ export default function GamePage() {
     }
   }, [user, matchId]);
 
-  const markMatchAsViewed = () => {
+  const markMatchAsViewed = useCallback(() => {
     if (typeof window !== 'undefined' && matchId) {
       const stored = localStorage.getItem('viewedFinishedMatches');
       const viewedMatches = stored ? JSON.parse(stored) : [];
@@ -38,7 +38,7 @@ export default function GamePage() {
         localStorage.setItem('viewedFinishedMatches', JSON.stringify(viewedMatches));
       }
     }
-  };
+  }, [matchId]);
 
   useEffect(() => {
     // Check if animation should be shown (default true, can be disabled with animate=false)
@@ -48,7 +48,7 @@ export default function GamePage() {
     }
   }, [searchParams]);
 
-  const loadMatch = async () => {
+  const loadMatch = useCallback(async () => {
     try {
       const response = await fetch(`/api/match?matchId=${matchId}`);
       const data = await response.json();
@@ -117,7 +117,7 @@ export default function GamePage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [matchId, user?.email]);
 
   const getAvatarEmoji = (avatar: string): string => {
     const avatarMap: { [key: string]: string } = {

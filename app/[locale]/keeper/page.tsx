@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslations } from 'next-intl';
 import Layout from '@/components/Layout';
 import GameField from '@/components/GameField';
 import GameControls from '@/components/GameControls';
@@ -13,6 +14,7 @@ function KeeperPageContent() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('game');
   
   const [saves, setSaves] = useState<ShotDirection[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -199,7 +201,7 @@ function KeeperPageContent() {
         
         if (!joinResponse.ok) {
           const joinError = await joinResponse.text();
-          throw new Error(`Fehler beim Beitreten: ${joinError}`);
+          throw new Error(`${t('errors.joinFailed')}: ${joinError}`);
         }
         
         const joinData = await joinResponse.json();
@@ -210,7 +212,7 @@ function KeeperPageContent() {
       }
       
       if (!playerId) {
-        throw new Error(`Kein Spieler gefunden in diesem Match. Match data: ${JSON.stringify(match)}`);
+        throw new Error(`${t('errors.noPlayerFound')} Match data: ${JSON.stringify(match)}`);
       }
       
       console.log('Using player ID:', playerId);
@@ -270,7 +272,7 @@ function KeeperPageContent() {
       console.error('Submit error:', error);
       setShowSubmitModal(false);
       setIsSubmitting(false);
-      alert('Fehler beim Senden der Paraden: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+      alert(t('errors.saveSubmitFailed') + ': ' + (error instanceof Error ? error.message : t('errors.unknownError')));
     }
   };
 
@@ -278,12 +280,12 @@ function KeeperPageContent() {
 
   // Show initial loading spinner
   if (isLoading) {
-    return <LoadingSpinner text="Lade Abwehr..." />;
+    return <LoadingSpinner text={t('loading.keeper')} />;
   }
 
   // Show submit loading spinner
   if (isSubmitting) {
-    return <LoadingSpinner text="Sende Paraden..." />;
+    return <LoadingSpinner text={t('loading.submittingSaves')} />;
   }
 
   return (
@@ -293,13 +295,13 @@ function KeeperPageContent() {
         <div className="game-header">
           {opponent && (
             <div className="opponent-info">
-              <h1 className="challenge-title">🧤 Du wurdest herausgefordert</h1>
+              <h1 className="challenge-title">🧤 {t('keeper.challengeTitle')}</h1>
               <div className="opponent-details">
                 <span className="opponent-name">{opponent.username}</span>
-                <span className="opponent-points">({opponent.totalPoints || 0} Punkte)</span>
+                <span className="opponent-points">({opponent.totalPoints || 0} {t('keeper.points')})</span>
               </div>
               <p className="challenge-subtitle">
-                Wehre all seine Schüsse ab um das Penalty schießen zu gewinnen.
+                {t('keeper.instructions')}
               </p>
             </div>
           )}
@@ -358,10 +360,10 @@ function KeeperPageContent() {
               <div className="modal-content">
                 <div className="modal-icon">🧤</div>
                 <h2 className="modal-title">
-                  {isSubmitting ? 'Paraden werden übertragen...' : 'Erfolgreich gespeichert!'}
+                  {isSubmitting ? t('keeper.modal.submitting') : t('keeper.modal.success')}
                 </h2>
                 <p className="modal-subtitle">
-                  {isSubmitting ? 'Einen Moment bitte' : 'Zum Spielergebnis...'}
+                  {isSubmitting ? t('keeper.modal.pleaseWait') : t('keeper.modal.goingToResult')}
                 </p>
                 <div className="modal-spinner">
                   {isSubmitting && <div className="spinner"></div>}
@@ -707,7 +709,7 @@ export default function KeeperPage() {
     <Suspense fallback={
       <Layout showHeader={false}>
         <GameField mode="keeper">
-          <div className="loading">🧤 Lade Keeper-Modus...</div>
+          <div className="loading">🧤 Loading Keeper Mode...</div>
         </GameField>
       </Layout>
     }>

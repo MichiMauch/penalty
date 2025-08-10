@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
@@ -57,7 +57,7 @@ function ChallengeNewPageContent() {
     }
   }, [searchParams]);
 
-  const loadUserById = async (userId: string) => {
+  const loadUserById = useCallback(async (userId: string) => {
     try {
       // Try to load user by ID first from the stats API
       const statsResponse = await fetch(`/api/stats/user/${userId}`);
@@ -149,7 +149,7 @@ function ChallengeNewPageContent() {
       console.error('Error loading user:', error);
       setIsLoadingUser(false);
     }
-  };
+  }, [router, user?.email]);
 
   // Opponent search functions
   useEffect(() => {
@@ -172,7 +172,7 @@ function ChallengeNewPageContent() {
     };
   }, [searchQuery]);
 
-  const searchUsers = async (query: string) => {
+  const searchUsers = useCallback(async (query: string) => {
     setIsSearching(true);
     try {
       const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
@@ -185,7 +185,7 @@ function ChallengeNewPageContent() {
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [user?.id]);
 
   const selectUser = async (selectedUser: User) => {
     // Check for existing challenge before selecting user

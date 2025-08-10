@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { RegisterData, AvatarId } from '@/lib/types';
 import AvatarSelector from './AvatarSelector';
 import { FaUserPlus } from 'react-icons/fa';
@@ -14,6 +15,7 @@ interface RegisterFormProps {
 }
 
 export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, error, defaultEmail }: RegisterFormProps) {
+  const t = useTranslations();
   const [email, setEmail] = useState(defaultEmail || '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -27,7 +29,7 @@ export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, err
 
     // Client-side validation
     if (password !== confirmPassword) {
-      setValidationError('Passwörter stimmen nicht überein');
+      setValidationError(t('auth.register.passwordsDontMatch'));
       return;
     }
 
@@ -54,7 +56,7 @@ export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, err
   return (
     <div className="bg-black bg-opacity-80 backdrop-blur-lg rounded-lg border-2 border-green-500 border-opacity-60 shadow-xl p-8 max-w-lg w-full">
       <div className="text-center mb-6">
-        <h2 className="text-xl font-semibold text-white mb-3">Registrieren</h2>
+        <h2 className="text-xl font-semibold text-white mb-3">{t('auth.register.title')}</h2>
         <h1 className="hero-title text-4xl md:text-6xl" style={{position: 'static', transform: 'none', top: 'auto', left: 'auto'}}>PENALTY</h1>
       </div>
 
@@ -67,11 +69,11 @@ export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, err
             onChange={(e) => setUsername(e.target.value)}
             required
             className="floating-input"
-            placeholder="Benutzername"
+            placeholder={t('auth.register.username')}
             disabled={isLoading}
           />
           <label htmlFor="username" className="floating-label">
-            Benutzername
+            {t('auth.register.username')}
           </label>
         </div>
 
@@ -99,11 +101,11 @@ export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, err
             onChange={(e) => setPassword(e.target.value)}
             required
             className="floating-input"
-            placeholder="Passwort (min. 6 Zeichen)"
+            placeholder={t('auth.register.passwordMinLength')}
             disabled={isLoading}
           />
           <label htmlFor="password" className="floating-label">
-            Passwort
+            {t('auth.register.password')}
           </label>
         </div>
 
@@ -115,11 +117,11 @@ export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, err
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             className="floating-input"
-            placeholder="Passwort bestätigen"
+            placeholder={t('auth.register.confirmPassword')}
             disabled={isLoading}
           />
           <label htmlFor="confirmPassword" className="floating-label">
-            Passwort bestätigen
+            {t('auth.register.confirmPassword')}
           </label>
         </div>
 
@@ -146,12 +148,12 @@ export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, err
           {isLoading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Registriere...
+              {t('auth.register.registering')}
             </>
           ) : (
             <>
               <FaUserPlus />
-              Account erstellen
+              {t('auth.register.registerButton')}
             </>
           )}
         </button>
@@ -159,13 +161,13 @@ export default function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, err
 
       <div className="mt-6 text-center">
         <p className="text-gray-300">
-          Bereits ein Account?{' '}
+          {t('auth.register.hasAccount')}{' '}
           <button
             onClick={onSwitchToLogin}
             className="text-green-400 hover:text-green-300 font-semibold"
             disabled={isLoading}
           >
-            Jetzt anmelden
+            {t('auth.register.loginNow')}
           </button>
         </p>
       </div>

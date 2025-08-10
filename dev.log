@@ -1,0 +1,230 @@
+
+> pruegelpause@1.0.0 dev
+> next dev
+
+   ▲ Next.js 15.4.2
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.178.42:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 3s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 838ms (183 modules)
+ ○ Compiling /[locale] ...
+ ✓ Compiled /[locale] in 9.1s (756 modules)
+ ○ Compiling /api/matches/pending ...
+ GET /de 200 in 11153ms
+ ✓ Compiled /api/matches/pending in 5.6s (736 modules)
+[dotenv@17.2.0] injecting env (0) from .env.local (tip: ⚙️  enable debug logging with { debug: true })
+Pending matches API called
+Pending matches API called
+Checking session...
+Checking session...
+Session result: { userId: 'CByVGMVHYc', email: 'michi.mauch@gmail.com' }
+Fetching pending matches for user: michi.mauch@gmail.com
+Session result: { userId: 'CByVGMVHYc', email: 'michi.mauch@gmail.com' }
+Fetching pending matches for user: michi.mauch@gmail.com
+=== MATCH DEBUG FOR USER: michi.mauch@gmail.com ===
+Found pending matches as player B: 0
+Player B matches: []
+Found pending matches as player A: 0
+Player A matches: []
+Found recently finished matches: 1
+Finished matches: [
+  {
+    id: 'LgvoWAQaW5',
+    player_b: 'michi@mauch.ai',
+    winner: 'sT7ltU1Cc7',
+    status: 'finished'
+  }
+]
+Found cancelable matches: 2
+Cancelable matches: [
+  {
+    id: '5bHG9xUkuZ',
+    player_b_email: 'mauch@mac.com',
+    player_b: null,
+    player_b_moves: false,
+    status: 'waiting'
+  },
+  {
+    id: 'DDcnmrbsxJ',
+    player_b_email: 'skoelliker@gmail.com',
+    player_b: null,
+    player_b_moves: false,
+    status: 'waiting'
+  }
+]
+=== END MATCH DEBUG ===
+ GET /api/matches/pending 200 in 7217ms
+=== MATCH DEBUG FOR USER: michi.mauch@gmail.com ===
+Found pending matches as player B: 0
+Player B matches: []
+Found pending matches as player A: 0
+Player A matches: []
+Found recently finished matches: 1
+Finished matches: [
+  {
+    id: 'LgvoWAQaW5',
+    player_b: 'michi@mauch.ai',
+    winner: 'sT7ltU1Cc7',
+    status: 'finished'
+  }
+]
+Found cancelable matches: 2
+Cancelable matches: [
+  {
+    id: '5bHG9xUkuZ',
+    player_b_email: 'mauch@mac.com',
+    player_b: null,
+    player_b_moves: false,
+    status: 'waiting'
+  },
+  {
+    id: 'DDcnmrbsxJ',
+    player_b_email: 'skoelliker@gmail.com',
+    player_b: null,
+    player_b_moves: false,
+    status: 'waiting'
+  }
+]
+=== END MATCH DEBUG ===
+ GET /api/matches/pending?viewed=%5B%22gY9pM4I5fh%22%2C%22TXfVz90aOe%22%2C%22AyFWdgaI6c%22%2C%22mLc0gXGy3R%22%2C%22YBdBDnFRSZ%22%2C%22qJyb4ChzBx%22%2C%22tDdF1oyoM5%22%5D 200 in 7235ms
+ GET /en 200 in 676ms
+ ○ Compiling /api/stats/leaderboard ...
+ ✓ Compiled /api/stats/leaderboard in 1177ms (739 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/michaelmauch/Documents/Development/fussballpause/.next/server/app/api/matches/pending/route.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/michaelmauch/Documents/Development/fussballpause/.next/server/app/api/matches/pending/route.js',
+  page: '/api/matches/pending'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/michaelmauch/Documents/Development/fussballpause/.next/server/app/api/matches/pending/route.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/michaelmauch/Documents/Development/fussballpause/.next/server/app/api/matches/pending/route.js',
+  page: '/api/matches/pending'
+}
+[dotenv@17.2.0] injecting env (0) from .env.local (tip: ⚙️  override existing env vars with { override: true })
+ GET /api/stats/leaderboard 200 in 1662ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2.5s (1067 modules)
+ GET /api/matches/pending?viewed=%5B%22gY9pM4I5fh%22%2C%22TXfVz90aOe%22%2C%22AyFWdgaI6c%22%2C%22mLc0gXGy3R%22%2C%22YBdBDnFRSZ%22%2C%22qJyb4ChzBx%22%2C%22tDdF1oyoM5%22%5D 500 in 4815ms
+ GET /api/matches/pending 500 in 4848ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 6.7s (1072 modules)
+ GET /api/matches/pending?viewed=%5B%22gY9pM4I5fh%22%2C%22TXfVz90aOe%22%2C%22AyFWdgaI6c%22%2C%22mLc0gXGy3R%22%2C%22YBdBDnFRSZ%22%2C%22qJyb4ChzBx%22%2C%22tDdF1oyoM5%22%5D 404 in 7642ms
+ GET /api/stats/leaderboard 404 in 7661ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/michaelmauch/Documents/Development/fussballpause/.next/server/app/api/matches/pending/route.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/michaelmauch/Documents/Development/fussballpause/.next/server/app/api/matches/pending/route.js',
+  page: '/api/matches/pending'
+}
+ GET /api/matches/pending 404 in 7747ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/michaelmauch/Documents/Development/fussballpause/.next/server/app/api/matches/pending/route.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/michaelmauch/Documents/Development/fussballpause/.next/server/app/api/matches/pending/route.js',
+  page: '/api/matches/pending'
+}
+ GET /api/matches/pending 500 in 421ms
+ GET /api/matches/pending?viewed=%5B%22gY9pM4I5fh%22%2C%22TXfVz90aOe%22%2C%22AyFWdgaI6c%22%2C%22mLc0gXGy3R%22%2C%22YBdBDnFRSZ%22%2C%22qJyb4ChzBx%22%2C%22tDdF1oyoM5%22%5D 500 in 417ms
+ ✓ Compiled in 5.6s (551 modules)
+ ○ Compiling /[locale] ...
+ ✓ Compiled /[locale] in 2s (520 modules)
+ GET /de 200 in 4714ms
+ GET /en 200 in 281ms
+ ✓ Compiled in 7.7s (551 modules)
+ ✓ Compiled in 5.7s (611 modules)
+ ✓ Compiled in 1179ms (611 modules)
+ ✓ Compiled in 1327ms (446 modules)
+ ✓ Compiled in 802ms (446 modules)
+ ○ Compiling /[locale] ...
+ ✓ Compiled /[locale] in 2.6s (520 modules)
+ GET /en 200 in 4722ms
+ ⚠ ./components/LanguageSwitcher.tsx
+Attempted import error: 'useRouter' is not exported from '@/routing' (imported as 'useRouter').
+
+Import trace for requested module:
+./components/LanguageSwitcher.tsx
+./app/[locale]/page.tsx
+
+./components/LanguageSwitcher.tsx
+Attempted import error: 'usePathname' is not exported from '@/routing' (imported as 'usePathname').
+
+Import trace for requested module:
+./components/LanguageSwitcher.tsx
+./app/[locale]/page.tsx
+
+./components/LanguageSwitcher.tsx
+Attempted import error: 'useRouter' is not exported from '@/routing' (imported as 'useRouter').
+
+Import trace for requested module:
+./components/LanguageSwitcher.tsx
+./app/[locale]/page.tsx
+
+./components/LanguageSwitcher.tsx
+Attempted import error: 'usePathname' is not exported from '@/routing' (imported as 'usePathname').
+
+Import trace for requested module:
+./components/LanguageSwitcher.tsx
+./app/[locale]/page.tsx
+ ⚠ ./routing.ts
+Attempted import error: 'createNavigation' is not exported from 'next-intl/routing' (imported as 'createNavigation').
+
+Import trace for requested module:
+./routing.ts
+./components/LanguageSwitcher.tsx
+./app/[locale]/page.tsx
+ ⚠ ./routing.ts
+Attempted import error: 'createLocalizedPathnamesNavigation' is not exported from 'next-intl/navigation' (imported as 'createLocalizedPathnamesNavigation').
+
+Import trace for requested module:
+./routing.ts
+./components/LanguageSwitcher.tsx
+./app/[locale]/page.tsx
+ ⚠ ./routing.ts
+Attempted import error: 'createSharedPathnamesNavigation' is not exported from 'next-intl/navigation' (imported as 'createSharedPathnamesNavigation').
+
+Import trace for requested module:
+./routing.ts
+./components/LanguageSwitcher.tsx
+./app/[locale]/page.tsx
+ ⚠ ./routing.ts
+Attempted import error: 'createSharedPathnamesNavigation' is not exported from 'next-intl/navigation' (imported as 'createSharedPathnamesNavigation').
+
+Import trace for requested module:
+./routing.ts
+./components/LanguageSwitcher.tsx
+./app/[locale]/page.tsx
+
+./routing.ts
+Attempted import error: 'createSharedPathnamesNavigation' is not exported from 'next-intl/navigation' (imported as 'createSharedPathnamesNavigation').
+
+Import trace for requested module:
+./routing.ts
+ ⚠ ./routing.ts
+Attempted import error: 'createSharedPathnamesNavigation' is not exported from 'next-intl/navigation' (imported as 'createSharedPathnamesNavigation').
+
+Import trace for requested module:
+./routing.ts
+./components/LanguageSwitcher.tsx
+./app/[locale]/page.tsx
+ ✓ Compiled in 1137ms (440 modules)
+ ○ Compiling /[locale] ...
+ ✓ Compiled /[locale] in 792ms (514 modules)
+ GET /en 200 in 2772ms
+ ✓ Compiled in 4s (954 modules)
+ GET /en 200 in 821ms
+ GET /en 200 in 265ms
+ GET /en 200 in 99ms
+ ✓ Compiled in 1736ms (954 modules)
+ GET /en 200 in 1084ms
+ GET /en 200 in 29ms
+ GET /de 200 in 128ms

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
 import LoginForm from '@/components/LoginForm';
@@ -9,6 +10,7 @@ import { LoginCredentials } from '@/lib/types';
 
 export default function LoginPage() {
   const router = useRouter();
+  const locale = useLocale();
   const { user, loading, login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,9 +18,9 @@ export default function LoginPage() {
   // Redirect logged-in users to garderobe
   useEffect(() => {
     if (!loading && user) {
-      router.push('/garderobe');
+      router.push(`/${locale}/garderobe`);
     }
-  }, [loading, user, router]);
+  }, [loading, user, router, locale]);
 
   // Show loading while checking auth
   if (loading) {
@@ -46,7 +48,7 @@ export default function LoginPage() {
   };
 
   const handleSwitchToRegister = () => {
-    router.push('/register');
+    router.push(`/${locale}/register`);
   };
 
   return (

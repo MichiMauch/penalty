@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslations } from 'next-intl';
 import Layout from '@/components/Layout';
 import AuthPage from '@/components/AuthPage';
 import GameField from '@/components/GameField';
@@ -14,6 +15,7 @@ function MatchPageContent() {
   const router = useRouter();
   const { matchId } = useParams();
   const { user, loading } = useAuth();
+  const t = useTranslations('game');
   const [match, setMatch] = useState<any>(null);
   const [gameResult, setGameResult] = useState<GameResultType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,13 +28,13 @@ function MatchPageContent() {
     }
   }, [user, matchId]);
 
-  const loadMatch = async () => {
+  const loadMatch = useCallback(async () => {
     try {
       const response = await fetch(`/api/match?matchId=${matchId}`);
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Fehler beim Laden des Matches');
+        throw new Error(data.error || t('errors.matchLoadFailed'));
       }
       
       setMatch(data.match);
@@ -43,7 +45,7 @@ function MatchPageContent() {
       const isPlayerB = user?.email === data.match.player_b_email;
       
       if (!isPlayerA && !isPlayerB) {
-        setError('Du bist nicht Teil dieses Matches');
+        setError(t('match.notPartOfMatch'));
         return;
       }
       
@@ -53,7 +55,7 @@ function MatchPageContent() {
           // Player B needs to set their moves
           router.replace(`/keeper?match=${matchId}`);
         } else {
-          setError('Das Match ist noch nicht beendet');
+          setError(t('match.notFinished'));
         }
         return;
       }
@@ -61,17 +63,17 @@ function MatchPageContent() {
       // Double check that we have a result for finished matches
       if (!data.result) {
         console.error('Match is finished but no result found');
-        setError('Spielergebnis konnte nicht geladen werden');
+        setError(t('match.resultNotLoaded'));
         return;
       }
       
     } catch (err) {
       console.error('Error loading match:', err);
-      setError(err instanceof Error ? err.message : 'Fehler beim Laden des Matches');
+      setError(err instanceof Error ? err.message : t('errors.matchLoadFailed'));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [matchId, user?.email, router]);
 
   const handleAnimationComplete = () => {
     setShowAnimation(false);
@@ -81,7 +83,7 @@ function MatchPageContent() {
     return (
       <Layout showHeader={false}>
         <GameField mode="result">
-          <div className="loading">⚽ Lade Match...</div>
+          <div className="loading">⚽ {t('loading.match')}</div>
         </GameField>
       </Layout>
     );
@@ -105,7 +107,7 @@ function MatchPageContent() {
               onClick={() => router.push('/garderobe?refreshLeaderboard=true')}
               className="back-button"
             >
-              Zurück zur Garderobe
+              {t('match.backToLocker')}
             </button>
           </div>
         </GameField>
@@ -118,7 +120,7 @@ function MatchPageContent() {
       <Layout showHeader={false}>
         <GameField mode="result">
           <div className="error-container">
-            <div className="error-message">Match nicht gefunden</div>
+            <div className="error-message">{t('match.notFound')}</div>
           </div>
         </GameField>
       </Layout>
@@ -212,7 +214,7 @@ export default function MatchPage() {
     <Suspense fallback={
       <Layout showHeader={false}>
         <GameField mode="result">
-          <div className="loading">⚽ Lade Match...</div>
+          <div className="loading">⚽ Loading Match...</div>
         </GameField>
       </Layout>
     }>

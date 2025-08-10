@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
@@ -15,6 +16,7 @@ interface AuthPageProps {
 }
 
 export default function AuthPage({ matchId, match, invitationMode = false, invitedEmail }: AuthPageProps) {
+  const t = useTranslations();
   const [isLogin, setIsLogin] = useState(true);
   const [emailCheckDone, setEmailCheckDone] = useState(!invitedEmail);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +30,7 @@ export default function AuthPage({ matchId, match, invitationMode = false, invit
     }
   }, [invitedEmail, emailCheckDone]);
 
-  const checkEmailExists = async () => {
+  const checkEmailExists = useCallback(async () => {
     if (!invitedEmail) return;
     
     try {
@@ -53,7 +55,7 @@ export default function AuthPage({ matchId, match, invitationMode = false, invit
     } finally {
       setEmailCheckDone(true);
     }
-  };
+  }, [invitedEmail]);
 
   const handleLogin = async (credentials: LoginCredentials) => {
     setIsLoading(true);
@@ -63,7 +65,7 @@ export default function AuthPage({ matchId, match, invitationMode = false, invit
       await login(credentials);
       // Success message for invitation mode will be handled by automatic redirect
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login fehlgeschlagen');
+      setError(err instanceof Error ? err.message : t('errors.loginFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +79,7 @@ export default function AuthPage({ matchId, match, invitationMode = false, invit
       await register(data);
       // Success message for invitation mode will be handled by automatic redirect
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registrierung fehlgeschlagen');
+      setError(err instanceof Error ? err.message : t('errors.registerFailed'));
     } finally {
       setIsLoading(false);
     }

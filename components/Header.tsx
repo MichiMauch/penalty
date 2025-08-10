@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import UserAvatar from './UserAvatar';
@@ -47,9 +48,10 @@ export default function Header() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const locale = useLocale();
   
-  const isGarderobe = pathname === '/garderobe';
-  const isChallenge = pathname === '/challenge';
+  const isGarderobe = pathname.endsWith('/garderobe');
+  const isChallenge = pathname.endsWith('/challenge');
 
   // Fetch matches immediately when user is available
   useEffect(() => {
@@ -103,7 +105,7 @@ export default function Header() {
     }
   };
 
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     setIsLoadingMatches(true);
     setMatchesError('');
     try {
@@ -124,7 +126,7 @@ export default function Header() {
     } finally {
       setIsLoadingMatches(false);
     }
-  };
+  }, [viewedMatches]);
 
   const markMatchAsViewed = (matchId: string) => {
     const newViewedMatches = new Set([...viewedMatches, matchId]);
@@ -269,7 +271,7 @@ export default function Header() {
         
         <div className="header-content">
           {/* Logo/Title */}
-          <a href={user ? "/garderobe" : "/"} className={`logo ${isGarderobe ? 'garderobe-logo' : ''}`}>
+          <a href={user ? `/${locale}/garderobe` : `/${locale}`} className={`logo ${isGarderobe ? 'garderobe-logo' : ''}`}>
             <span className="md:inline hidden">⚽ </span>PENALTY
           </a>
 

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslations } from 'next-intl';
 import Layout from '@/components/Layout';
 import GameField from '@/components/GameField';
 import GameControls from '@/components/GameControls';
@@ -14,6 +15,7 @@ function ShooterPageContent() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('game');
   
   const [shots, setShots] = useState<ShotDirection[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,7 +88,7 @@ function ShooterPageContent() {
     }
   }, [searchParams]);
 
-  const loadMatch = async (matchId: string) => {
+  const loadMatch = useCallback(async (matchId: string) => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/match?matchId=${matchId}`);
@@ -104,15 +106,30 @@ function ShooterPageContent() {
           opponentInfo = {
             email: data.match.player_b_email,
             username: data.match.player_b_username || data.match.player_b_email || 'Gegner',
-            totalPoints: 0 // Could be loaded from user search if needed
+            totalPoints: 0 // Will be loaded below
           };
         } else {
           // User is player_b, opponent is player_a
           opponentInfo = {
             email: data.match.player_a_email,
             username: data.match.player_a_username || data.match.player_a_email || 'Gegner',
-            totalPoints: 0
+            totalPoints: 0 // Will be loaded below
           };
+        }
+        
+        // Load opponent's real points from user search API
+        try {
+          const userResponse = await fetch(`/api/users/search?q=${encodeURIComponent(opponentInfo.email)}`);
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            const foundUser = userData.users?.find((u: any) => u.email === opponentInfo.email);
+            if (foundUser) {
+              opponentInfo.totalPoints = foundUser.totalPoints || 0;
+            }
+          }
+        } catch (err) {
+          console.error('Error loading opponent points:', err);
+          // Keep totalPoints as 0 if loading fails
         }
         
         setOpponent(opponentInfo);
@@ -124,7 +141,7 @@ function ShooterPageContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user?.email]);
 
   const handleShot = (direction: ShotDirection) => {
     if (shots.length < 5 && !isAnimating) {
@@ -165,7 +182,7 @@ function ShooterPageContent() {
         });
         
         if (!playerId) {
-          throw new Error('Kann Player-ID für diesen Match nicht bestimmen');
+          throw new Error(t('errors.cannotDeterminePlayerId'));
         }
         
         const response = await fetch('/api/match', {
@@ -210,7 +227,7 @@ function ShooterPageContent() {
           })
         });
 
-        if (!response.ok) throw new Error('Fehler beim Erstellen des Matches');
+        if (!response.ok) throw new Error(t('errors.matchCreationFailed'));
 
         const { matchId } = await response.json();
         
@@ -232,7 +249,7 @@ function ShooterPageContent() {
           })
         });
 
-        if (!inviteResponse.ok) throw new Error('Fehler beim Einladen');
+        if (!inviteResponse.ok) throw new Error(t('errors.inviteFailed'));
 
         // Show returning phase
         setLoadingPhase('returning');
@@ -243,10 +260,9 @@ function ShooterPageContent() {
       }
       
     } catch (error) {
-      console.error('Fehler:', error);
-      alert('Fehler beim Senden der Herausforderung');
-    } finally {
+      console.error('Error:', error);
       setIsSubmitting(false);
+      alert(t('errors.challengeSendFailed'));
     }
   };
 
@@ -256,15 +272,15 @@ function ShooterPageContent() {
   const getLoadingText = () => {
     switch (loadingPhase) {
       case 'loading':
-        return 'Lade Schüsse...';
+        return t('loading.shots');
       case 'submitting':
-        return 'Sende Schüsse...';
+        return t('loading.submittingShots');
       case 'notifying':
-        return 'Wir informieren deinen Gegner über die Herausforderung';
+        return t('loading.notifyingOpponent');
       case 'returning':
-        return 'Wir gehen zurück in die Garderobe um uns warm zu halten';
+        return t('loading.returningToLocker');
       default:
-        return 'Lade...';
+        return t('loading.default');
     }
   };
 
@@ -281,15 +297,15 @@ function ShooterPageContent() {
           {opponent && (
             <div className="opponent-info">
               <h1 className="challenge-title">
-                <span className="mobile-only">Du forderst {opponent.username} heraus</span>
-                <span className="desktop-only">⚽ Du forderst heraus</span>
+                <span className="mobile-only">{t('shooter.challengingPlayer', {username: opponent.username})}</span>
+                <span className="desktop-only">⚽ {t('shooter.challenging')}</span>
               </h1>
               <div className="opponent-details desktop-only">
                 <span className="opponent-name">{opponent.username}</span>
-                <span className="opponent-points">({opponent.totalPoints || 0} Punkte)</span>
+                <span className="opponent-points">({opponent.totalPoints || 0} {t('shooter.points')})</span>
               </div>
               <p className="challenge-subtitle desktop-only">
-                Schieße all deine Bälle ins Tor um das Penalty schiessen zu gewinnen.
+                {t('shooter.instructions')}
               </p>
             </div>
           )}
@@ -550,7 +566,7 @@ export default function ShooterPage() {
     <Suspense fallback={
       <Layout showHeader={false}>
         <GameField mode="shooter">
-          <div className="loading">⚽ Lade Shooter-Modus...</div>
+          <div className="loading">⚽ Loading Shooter Mode...</div>
         </GameField>
       </Layout>
     }>

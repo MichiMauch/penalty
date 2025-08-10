@@ -216,7 +216,7 @@ export default function AnimatedGameReplay({
         break;
 
     }
-  }, [animationState, currentPenaltyData, nextStep, onAnimationComplete, getAdjustedTiming, timings]);
+  }, [animationState, nextStep, getAdjustedTiming, timings]);
 
   useEffect(() => {
     if (animationState.isPlaying && animationState.step !== 'complete') {

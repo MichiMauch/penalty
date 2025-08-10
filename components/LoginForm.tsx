@@ -55,11 +55,11 @@ export default function LoginForm({ onSubmit, onSwitchToRegister, isLoading, err
             onChange={(e) => setPassword(e.target.value)}
             required
             className="floating-input"
-            placeholder="Passwort"
+            placeholder={t('auth.login.password')}
             disabled={isLoading}
           />
           <label htmlFor="password" className="floating-label">
-            Passwort
+            {t('auth.login.password')}
           </label>
         </div>
 
@@ -81,12 +81,12 @@ export default function LoginForm({ onSubmit, onSwitchToRegister, isLoading, err
           {isLoading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Anmelden...
+              {t('auth.login.loggingIn')}
             </>
           ) : (
             <>
               <FaSignInAlt />
-              Anmelden
+              {t('auth.login.loginButton')}
             </>
           )}
         </button>

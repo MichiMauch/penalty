@@ -46,7 +46,9 @@
       "registering": "Registering...",
       "hasAccount": "Already have an account?",
       "loginNow": "Login now",
-      "chooseAvatar": "Choose Avatar"
+      "chooseAvatar": "Choose Avatar",
+      "passwordMinLength": "Password (min. 6 characters)",
+      "passwordsDontMatch": "Passwords don't match"
     },
     "forgotPassword": {
       "title": "Forgot Password",
@@ -135,7 +137,8 @@
       "games": "GP",
       "wins": "W",
       "losses": "L",
-      "points": "Points"
+      "points": "Points",
+      "pointsAbbr": "Pts"
     },
     "video": {
       "title": "See how exciting a match can be!",
@@ -210,11 +213,65 @@
       "finalScore": "Final Score",
       "playAgain": "Play Again",
       "revenge": "REVENGE",
-      "backToHome": "Back to Home"
+      "backToHome": "Back to Home",
+      "defaultPlayerName": "PLAYER",
+      "playerA": "Player A",
+      "playerB": "Player B",
+      "penaltyInProgress": "Penalty shootout in progress...",
+      "skipToResult": "Skip to Result",
+      "winner": "WINNER",
+      "toLocker": "TO LOCKER ROOM"
     },
     "status": {
       "processing": "The game is being processed...",
       "waiting": "Status: waiting"
+    },
+    "shooter": {
+      "challengingPlayer": "You're challenging {username}",
+      "challenging": "You're challenging",
+      "points": "points",
+      "instructions": "Score all your shots to win the penalty shootout."
+    },
+    "keeper": {
+      "challengeTitle": "You've been challenged",
+      "points": "points",
+      "instructions": "Save all their shots to win the penalty shootout.",
+      "modal": {
+        "submitting": "Saves are being submitted...",
+        "success": "Successfully saved!",
+        "pleaseWait": "Please wait",
+        "goingToResult": "Going to result..."
+      }
+    },
+    "match": {
+      "notPartOfMatch": "You are not part of this match",
+      "notFinished": "This match is not finished yet",
+      "resultNotLoaded": "Game result could not be loaded",
+      "backToLocker": "Back to Locker Room",
+      "notFound": "Match not found"
+    },
+    "loading": {
+      "default": "Loading...",
+      "shots": "Loading shots...",
+      "submittingShots": "Submitting shots...",
+      "notifyingOpponent": "We're notifying your opponent about the challenge",
+      "returningToLocker": "We're returning to the locker room to stay warm",
+      "keeper": "Loading keeper mode...",
+      "submittingSaves": "Submitting saves...",
+      "match": "Loading match...",
+      "shooterMode": "Loading shooter mode...",
+      "keeperMode": "Loading keeper mode..."
+    },
+    "errors": {
+      "cannotDeterminePlayerId": "Cannot determine player ID for this match",
+      "matchCreationFailed": "Error creating match",
+      "joinFailed": "Error joining",
+      "noPlayerFound": "No player found in this match.",
+      "inviteFailed": "Error sending invitation",
+      "challengeSendFailed": "Error sending challenge",
+      "saveSubmitFailed": "Error submitting saves",
+      "unknownError": "Unknown error",
+      "matchLoadFailed": "Error loading match"
     }
   },
   "admin": {
@@ -271,6 +328,84 @@
     "validationError": "Validation error",
     "challengeError": "Error sending challenge",
     "updateError": "Error updating",
-    "deleteError": "Error deleting"
+    "deleteError": "Error deleting",
+    "loginFailed": "Login failed",
+    "registerFailed": "Registration failed"
+  },
+  "userStats": {
+    "points": "Points",
+    "rank": "Rank",
+    "noRank": "No Rank",
+    "leadTo": "Lead to",
+    "statistics": "Statistics",
+    "value": "Value",
+    "wins": "Wins",
+    "winRate": "Win Rate",
+    "currentStreak": "Current Streak",
+    "goalsScored": "Goals Scored",
+    "savesMade": "Saves Made",
+    "perfectGames": "Perfect Games",
+    "nextLevel": "Next Level",
+    "still": "Still",
+    "pointsNeeded": "Points"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "refreshTooltip": "Refresh leaderboard",
+    "loadingTooltip": "Loading...",
+    "loading": "Loading leaderboard...",
+    "rank": "Rank",
+    "player": "Player",
+    "gamesPlayed": "GP",
+    "wins": "W",
+    "losses": "L",
+    "points": "Points",
+    "challengeTooltip": "challenge",
+    "checkingChallenge": "Checking challenge...",
+    "noEntries": "No entries yet",
+    "playFirstMatch": "Play your first match!"
+  },
+  "challenge": {
+    "modal": {
+      "title": "Challenge Player",
+      "searchPlaceholder": "Enter player name or email...",
+      "sending": "Sending...",
+      "sendButton": "Challenge",
+      "points": "Points",
+      "errors": {
+        "existingChallenge": "There is already an open challenge between you. Please wait until it is completed.",
+        "sendFailed": "Error sending challenge",
+        "generic": "An error occurred"
+      },
+      "success": {
+        "sent": "Challenge sent to {username}!"
+      }
+    }
+  },
+  "garderobe": {
+    "errors": {
+      "existingChallenge": "There is already an open challenge with {username}. Please wait until it is completed.",
+      "checkingChallenge": "Error checking challenge. Please try again."
+    },
+    "welcome": {
+      "title": "WELCOME BACK",
+      "subtitle": "to your locker room {level} {username}",
+      "motto": "May the force be with you"
+    },
+    "rules": {
+      "title": "Game Rules",
+      "penalty": "Penalties",
+      "pointsPerWin": "Points/Win",
+      "pointsPerLoss": "Points/Loss",
+      "pointsPerLevel": "Points/Level"
+    },
+    "challenge": {
+      "title": "PENALTY Challenge",
+      "description": "Challenge other players to exciting penalty duels",
+      "checking": "CHECKING...",
+      "buttonText": "CHALLENGE NOW",
+      "hint": "Use the \"CHALLENGE\" button in the navigation or click here"
+    },
+    "loading": "⚽ Loading PENALTY..."
   }
 }

@@ -190,7 +190,7 @@ export async function GET(request: NextRequest) {
       challengerUsername: match.player_a_username,
       challengerAvatar: match.player_a_avatar,
       createdAt: match.created_at,
-      type: match.player_b ? 'active' : 'invitation' as const,
+      type: match.player_b_moves ? 'active' : 'invitation' as const,
       role: 'defender' as const
     }));
     
