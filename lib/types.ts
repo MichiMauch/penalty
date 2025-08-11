@@ -6,6 +6,13 @@ export type Move = ShotDirection | SaveDirection;
 export type AvatarId = string; // Allow any playerX format
 
 // User and Authentication types
+export interface EmailPreferences {
+  challenges: boolean;
+  match_results: boolean;
+  invitations: boolean;
+  marketing?: boolean;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -16,6 +23,7 @@ export interface User {
   is_admin?: boolean;
   is_blocked?: boolean;
   preferred_language?: 'de' | 'en';
+  email_preferences?: EmailPreferences;
 }
 
 export interface UserSession {

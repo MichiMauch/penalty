@@ -63,14 +63,16 @@ function ChallengePageContent() {
 
 export default function ChallengePage() {
   return (
-    <Suspense fallback={
-      <Layout showHeader={false}>
-        <div className="min-h-screen hero-stadium flex items-center justify-center">
-          <div className="text-white text-xl">⚽ Lade Challenge...</div>
-        </div>
-      </Layout>
-    }>
-      <ChallengePageContent />
-    </Suspense>
+    <div className="has-stadium-background">
+      <Suspense fallback={
+        <Layout showHeader={false}>
+          <div className="min-h-screen hero-stadium flex items-center justify-center">
+            <div className="text-white text-xl">⚽ Lade Challenge...</div>
+          </div>
+        </Layout>
+      }>
+        <ChallengePageContent />
+      </Suspense>
+    </div>
   );
 }

@@ -45,10 +45,6 @@ const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserI
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchLeaderboard();
-  }, []);
-
   const fetchLeaderboard = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
       setRefreshing(true);
@@ -76,7 +72,11 @@ const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserI
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [currentUserId]);
+
+  useEffect(() => {
+    fetchLeaderboard();
+  }, [fetchLeaderboard]);
 
   // Expose fetchLeaderboard to parent component
   useImperativeHandle(ref, () => ({
@@ -151,7 +151,7 @@ const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserI
             <FaSync className="animate-spin" />
           </button>
         </div>
-        <div className="bg-gray-900 bg-opacity-40 rounded">
+        <div className="bg-gray-900 bg-opacity-40 rounded border border-green-600 border-opacity-60">
           <div className="h-80 flex items-center justify-center">
             <div className="text-white">{t('loading')}</div>
           </div>
@@ -180,7 +180,7 @@ const Leaderboard = forwardRef<LeaderboardRef, LeaderboardProps>(({ currentUserI
         </button>
       </div>
       
-      <div className="bg-gray-900 bg-opacity-40 rounded overflow-hidden">
+      <div className="bg-gray-900 bg-opacity-40 rounded overflow-hidden border border-green-600 border-opacity-60">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-green-900 bg-opacity-50 text-green-400">

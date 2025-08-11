@@ -72,7 +72,7 @@ export default function RegisterPage() {
 
   return (
     <Layout showHeader={false}>
-      <div className="min-h-screen hero-stadium flex items-center justify-center p-4">
+      <div className="min-h-screen hero-stadium flex items-center justify-center p-4 has-stadium-background">
         <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
           <RegisterForm
             onSubmit={handleRegister}

@@ -117,7 +117,7 @@ export default function LandingPage() {
 
   return (
     <Layout showHeader={false}>
-      <div className="modern-app-layout">
+      <div className="modern-app-layout has-stadium-background">
         {/* Language Switcher - Fixed Position */}
         <div className="fixed top-4 right-4 z-50">
           <LanguageSwitcher variant="flags" />

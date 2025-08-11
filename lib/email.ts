@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { checkEmailPreference } from './emailPreferences';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -18,6 +19,13 @@ export async function sendChallengeEmail({
   if (!resend) {
     console.warn('Resend not configured - email will not be sent');
     return { success: false, error: 'Email service not configured' };
+  }
+
+  // Check if user wants to receive challenge emails
+  const shouldSend = await checkEmailPreference(to, 'challenges');
+  if (!shouldSend) {
+    console.log(`User ${to} has disabled challenge emails - skipping`);
+    return { success: true, skipped: true, reason: 'User disabled challenge emails' };
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://penalty.mauch.ai';
@@ -427,6 +435,13 @@ export async function sendMatchCompletedEmail({
     return { success: false, error: 'Email service not configured' };
   }
 
+  // Check if user wants to receive match result emails
+  const shouldSend = await checkEmailPreference(to, 'match_results');
+  if (!shouldSend) {
+    console.log(`User ${to} has disabled match result emails - skipping`);
+    return { success: true, skipped: true, reason: 'User disabled match result emails' };
+  }
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://penalty.mauch.ai';
   const resultUrl = `${appUrl}/game/${matchId}`;
   const resultText = userWon ? 'Gewonnen! 🎉' : 'Verloren 😔';
@@ -624,6 +639,10 @@ export async function sendInvitationEmail({
     console.warn('Resend not configured - invitation email will not be sent');
     return { success: false, error: 'Email service not configured' };
   }
+
+  // Note: We don't check email preferences here because this is sent to a NEW user
+  // who doesn't have an account yet, so they can't have preferences set.
+  // This is an invitation to join the game, not a notification to an existing user.
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://penalty.mauch.ai';
   const registrationUrl = `${appUrl}/register?invitation=${invitationToken}&match=${matchId}&email=${encodeURIComponent(to)}`;

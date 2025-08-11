@@ -60,13 +60,39 @@ function GarderobeContent() {
     }
   }, [searchParams]);
 
-  // Fetch pending challenges and user stats when user is loaded
+  const fetchPendingChallenges = async () => {
+    try {
+      const response = await fetch('/api/matches/pending');
+      if (response.ok) {
+        const data = await response.json();
+        setPendingChallenges(data.challenges);
+      }
+    } catch (error) {
+      console.error('Error fetching pending challenges:', error);
+    } finally {
+      setIsLoadingChallenges(false);
+    }
+  };
+
+  const fetchUserStats = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/stats/user/${user?.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setUserStats(data.stats);
+      }
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+    }
+  }, [user?.id]);
+
+  // Update useEffect to include fetchUserStats dependency
   useEffect(() => {
     if (user) {
       fetchPendingChallenges();
       fetchUserStats();
     }
-  }, [user]);
+  }, [user, fetchUserStats]);
 
   // Auto-refresh matches every 30 seconds
   useEffect(() => {
@@ -125,32 +151,6 @@ function GarderobeContent() {
       return () => clearTimeout(timer);
     }
   }, [showWelcomeModal]);
-
-  const fetchPendingChallenges = async () => {
-    try {
-      const response = await fetch('/api/matches/pending');
-      if (response.ok) {
-        const data = await response.json();
-        setPendingChallenges(data.challenges);
-      }
-    } catch (error) {
-      console.error('Error fetching pending challenges:', error);
-    } finally {
-      setIsLoadingChallenges(false);
-    }
-  };
-
-  const fetchUserStats = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/stats/user/${user?.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setUserStats(data.stats);
-      }
-    } catch (error) {
-      console.error('Error fetching user stats:', error);
-    }
-  }, [user?.id]);
 
   const declineChallenge = async (challengeId: string) => {
     try {
@@ -331,13 +331,14 @@ function GarderobeContent() {
       )}
 
       {/* Main Garderobe Content */}
-      <div className="garderobe-page">
-        <div className="container section">
+      <div className="garderobe-page has-garderobe-background">
+        <div className="container section" style={{ paddingTop: '100px' }}>
           
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8">
           
-          {/* Player Stats - Order 1 on mobile, row 1 col 1 on desktop */}
-          <div className="order-1">
+          {/* Left column: Stats and Rules stacked */}
+          <div className="order-1 flex flex-col gap-8">
+            {/* Player Stats */}
             <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6">
               <UserStatsCard 
                 userId={user.id}
@@ -345,10 +346,34 @@ function GarderobeContent() {
                 avatar={user.avatar}
               />
             </div>
+            
+            {/* Rules - under stats */}
+            <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6">
+              <h3 className="text-xl font-bold text-white mb-4">{t('garderobe.rules.title')}</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="text-center p-3 bg-green-900 bg-opacity-50 rounded border border-green-600 border-opacity-60">
+                  <span className="block text-2xl font-bold text-green-400">5</span>
+                  <span className="text-gray-300 text-sm">{t('garderobe.rules.penalty')}</span>
+                </div>
+                <div className="text-center p-3 bg-blue-900 bg-opacity-50 rounded border border-green-600 border-opacity-60">
+                  <span className="block text-2xl font-bold text-blue-400">3</span>
+                  <span className="text-gray-300 text-sm">{t('garderobe.rules.pointsPerWin')}</span>
+                </div>
+                <div className="text-center p-3 bg-red-900 bg-opacity-50 rounded border border-green-600 border-opacity-60">
+                  <span className="block text-2xl font-bold text-red-400">0</span>
+                  <span className="text-gray-300 text-sm">{t('garderobe.rules.pointsPerLoss')}</span>
+                </div>
+                <div className="text-center p-3 bg-yellow-900 bg-opacity-50 rounded border border-green-600 border-opacity-60">
+                  <span className="block text-2xl font-bold text-yellow-400">10</span>
+                  <span className="text-gray-300 text-sm">{t('garderobe.rules.pointsPerLevel')}</span>
+                </div>
+              </div>
+            </div>
           </div>
           
-          {/* Leaderboard - Order 2 on mobile, row 1 col 2 on desktop */}
-          <div className="order-2">
+          {/* Right column: Leaderboard and Invite card stacked */}
+          <div className="order-2 flex flex-col gap-8">
+            {/* Leaderboard */}
             <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6 leaderboard-section">
               <Leaderboard 
                 ref={leaderboardRef}
@@ -357,35 +382,8 @@ function GarderobeContent() {
                 checkingUserId={checkingUserId}
               />
             </div>
-          </div>
-          
-          {/* Rules - Order 3 on mobile, row 2 col 1 on desktop */}
-          <div className="order-3">
-            <div className="bg-grass-green-light bg-opacity-60 backdrop-blur-lg rounded-lg border-2 border-green-600 border-opacity-80 shadow-xl p-6">
-              <h3 className="text-xl font-bold text-white mb-4">{t('garderobe.rules.title')}</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="text-center p-3 bg-green-900 bg-opacity-50 rounded">
-                  <span className="block text-2xl font-bold text-green-400">5</span>
-                  <span className="text-gray-300 text-sm">{t('garderobe.rules.penalty')}</span>
-                </div>
-                <div className="text-center p-3 bg-blue-900 bg-opacity-50 rounded">
-                  <span className="block text-2xl font-bold text-blue-400">3</span>
-                  <span className="text-gray-300 text-sm">{t('garderobe.rules.pointsPerWin')}</span>
-                </div>
-                <div className="text-center p-3 bg-red-900 bg-opacity-50 rounded">
-                  <span className="block text-2xl font-bold text-red-400">0</span>
-                  <span className="text-gray-300 text-sm">{t('garderobe.rules.pointsPerLoss')}</span>
-                </div>
-                <div className="text-center p-3 bg-yellow-900 bg-opacity-50 rounded">
-                  <span className="block text-2xl font-bold text-yellow-400">10</span>
-                  <span className="text-gray-300 text-sm">{t('garderobe.rules.pointsPerLevel')}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Invite New Players - Order 4 on mobile, row 2 col 2 on desktop */}
-          <div className="order-4">
+            
+            {/* Invite New Players - directly under leaderboard */}
             <InviteNewPlayerCard />
           </div>
         </div>

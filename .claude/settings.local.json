@@ -25,7 +25,9 @@
       "Bash(turso db:*)",
       "Bash(npm run lint)",
       "Bash(grep:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run:*)"
     ],
     "deny": []
   }

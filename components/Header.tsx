@@ -52,51 +52,7 @@ export default function Header() {
   
   const isGarderobe = pathname.endsWith('/garderobe');
   const isChallenge = pathname.endsWith('/challenge');
-
-  // Fetch matches immediately when user is available
-  useEffect(() => {
-    if (user) {
-      fetchMatches();
-    }
-  }, [user]);
-
-  // Auto-refresh matches every 30 seconds (only when menu is closed)
-  useEffect(() => {
-    if (!user) return;
-
-    const interval = setInterval(() => {
-      // Only fetch matches if menu is not open
-      if (!isMatchesOpen) {
-        fetchMatches();
-      }
-    }, 30000); // 30 seconds
-
-    return () => clearInterval(interval);
-  }, [user, isMatchesOpen]);
-
-  // Refresh matches when window comes back into focus (only when menu is closed)
-  useEffect(() => {
-    if (!user) return;
-
-    const handleFocus = () => {
-      // Only fetch matches if menu is not open
-      if (!isMatchesOpen) {
-        fetchMatches();
-      }
-    };
-
-    const handleOpenChallengeModal = () => {
-      setIsChallengeModalOpen(true);
-    };
-
-    window.addEventListener('focus', handleFocus);
-    window.addEventListener('openChallengeModal', handleOpenChallengeModal);
-    
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      window.removeEventListener('openChallengeModal', handleOpenChallengeModal);
-    };
-  }, [user, isMatchesOpen]);
+  const isProfile = pathname.endsWith('/profile');
 
   // Save viewed matches to localStorage
   const saveViewedMatches = (matches: Set<string>) => {
@@ -127,6 +83,51 @@ export default function Header() {
       setIsLoadingMatches(false);
     }
   }, [viewedMatches]);
+
+  // Fetch matches immediately when user is available
+  useEffect(() => {
+    if (user) {
+      fetchMatches();
+    }
+  }, [user, fetchMatches]);
+
+  // Auto-refresh matches every 30 seconds (only when menu is closed)
+  useEffect(() => {
+    if (!user) return;
+
+    const interval = setInterval(() => {
+      // Only fetch matches if menu is not open
+      if (!isMatchesOpen) {
+        fetchMatches();
+      }
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [user, isMatchesOpen, fetchMatches]);
+
+  // Refresh matches when window comes back into focus (only when menu is closed)
+  useEffect(() => {
+    if (!user) return;
+
+    const handleFocus = () => {
+      // Only fetch matches if menu is not open
+      if (!isMatchesOpen) {
+        fetchMatches();
+      }
+    };
+
+    const handleOpenChallengeModal = () => {
+      setIsChallengeModalOpen(true);
+    };
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('openChallengeModal', handleOpenChallengeModal);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('openChallengeModal', handleOpenChallengeModal);
+    };
+  }, [user, isMatchesOpen, fetchMatches]);
 
   const markMatchAsViewed = (matchId: string) => {
     const newViewedMatches = new Set([...viewedMatches, matchId]);
@@ -205,20 +206,17 @@ export default function Header() {
   const finishedMatchesCount = matches.filter(m => m.type === 'finished_recent').length;
   const newMatchesCount = invitationsCount + finishedMatchesCount; // For desktop dropdown
 
-  // Close dropdown when clicking outside - TEMPORARILY DISABLED FOR DEBUGGING
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      console.log('Click outside detected, target:', event.target);
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        console.log('Closing matches dropdown due to outside click');
         setIsMatchesOpen(false);
       }
     };
 
-    // TEMPORARILY DISABLED
-    // if (isMatchesOpen) {
-    //   document.addEventListener('mousedown', handleClickOutside);
-    // }
+    if (isMatchesOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
     
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMatchesOpen]);
@@ -253,11 +251,11 @@ export default function Header() {
   };
 
   return (
-    <header className={`modern-header ${isGarderobe ? 'garderobe-header' : ''} ${isChallenge ? 'challenge-header' : ''}`}>
+    <header className={`modern-header ${isGarderobe ? 'garderobe-header' : ''} ${isChallenge ? 'challenge-header' : ''} ${isProfile ? 'profile-header' : ''}`}>
       <div className="container">
-        {!isGarderobe && !isChallenge && (
+        {!isGarderobe && !isChallenge && !isProfile && (
           <>
-            {/* Large Hero Title - Only on non-Garderobe pages */}
+            {/* Large Hero Title - Only on non-Garderobe, non-Challenge, non-Profile pages */}
             <div className="header-hero-title">
               <h1 className="hero-main-title">
                 PENALTY
@@ -280,12 +278,6 @@ export default function Header() {
             <>
               {/* Desktop Navigation */}
               <div className="hidden md:flex items-center space-x-4">
-                <button 
-                  onClick={handleLeaderboard}
-                  className="nav-link text-white"
-                >
-                  {t('navigation.leaderboard')}
-                </button>
                 
                 {/* Challenge Button */}
                 <button 
@@ -462,7 +454,9 @@ export default function Header() {
                 )}
                 
                 <div className="header-avatar">
-                  <UserAvatar user={user} size="sm" showName={true} />
+                  <div onClick={() => router.push('/profile')} className="cursor-pointer">
+                    <UserAvatar user={user} size="sm" showName={true} />
+                  </div>
                 </div>
                 <button
                   onClick={handleLogout}
@@ -486,7 +480,9 @@ export default function Header() {
                   <GiCrossedSwords size={20} />
                 </button>
                 
-                <UserAvatar user={user} size="sm" showName={false} />
+                <div onClick={() => router.push('/profile')} className="cursor-pointer">
+                  <UserAvatar user={user} size="sm" showName={false} />
+                </div>
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="nav-link p-2 relative"
@@ -514,15 +510,14 @@ export default function Header() {
           <div className="md:hidden border-t border-subtle py-4">
             <div className="space-y-3">
               <div className="px-3 py-2">
-                <UserAvatar user={user} size="md" showName={true} />
+                <div onClick={() => {
+                  setIsMenuOpen(false);
+                  router.push('/profile');
+                }} className="cursor-pointer">
+                  <UserAvatar user={user} size="md" showName={true} />
+                </div>
               </div>
               
-              <button 
-                onClick={handleLeaderboard}
-                className="nav-link block w-full text-left text-white"
-              >
-                Rangliste
-              </button>
               
               {/* Herausforderungen */}
               <button 

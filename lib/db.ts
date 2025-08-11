@@ -109,6 +109,13 @@ export async function initDB() {
     // Column already exists, ignore error
   }
 
+  // Add email preferences column to users table
+  try {
+    await db.execute(`ALTER TABLE users ADD COLUMN email_preferences TEXT DEFAULT '{"challenges":true,"match_results":true,"invitations":true}'`);
+  } catch (error) {
+    // Column already exists, ignore error
+  }
+
   // Set Roberto Böckli as admin if he exists
   try {
     await db.execute(`

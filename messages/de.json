@@ -18,7 +18,7 @@
   "navigation": {
     "leaderboard": "Rangliste",
     "challenge": "HERAUSFORDERN",
-    "matches": "Matches",
+    "matches": "Trainerbüro",
     "profile": "Profil",
     "logout": "Abmelden",
     "admin": "Admin",
@@ -429,6 +429,69 @@
     },
     "success": {
       "invitationPrepared": "Einladung für {email} vorbereitet! Schießen Sie jetzt Ihre Elfmeter - die Einladung wird danach automatisch versendet."
+    }
+  },
+  "profile": {
+    "title": "Benutzerprofil",
+    "backToGarderobe": "Zurück zur Garderobe",
+    "tabs": {
+      "account": "Account",
+      "emailPassword": "E-Mail & Passwort",
+      "notifications": "Benachrichtigungen"
+    },
+    "account": {
+      "title": "Account-Einstellungen",
+      "username": "Benutzername",
+      "usernamePlaceholder": "Dein Benutzername",
+      "avatar": "Avatar",
+      "chooseAvatar": "Avatar auswählen",
+      "language": "Sprache",
+      "languageGerman": "Deutsch",
+      "languageEnglish": "English",
+      "passwordChange": "Passwort ändern (optional)",
+      "currentPassword": "Aktuelles Passwort",
+      "currentPasswordPlaceholder": "Aktuelles Passwort",
+      "newPassword": "Neues Passwort",
+      "newPasswordPlaceholder": "Neues Passwort (min. 6 Zeichen)",
+      "confirmPassword": "Neues Passwort bestätigen",
+      "confirmPasswordPlaceholder": "Neues Passwort bestätigen",
+      "saveButton": "Änderungen speichern",
+      "saving": "Speichere..."
+    },
+    "email": {
+      "changeEmail": "E-Mail-Adresse ändern",
+      "currentEmail": "Aktuelle E-Mail",
+      "newEmail": "Neue E-Mail-Adresse",
+      "newEmailPlaceholder": "Neue E-Mail-Adresse",
+      "passwordConfirmation": "Aktuelles Passwort zur Bestätigung",
+      "passwordConfirmationPlaceholder": "Aktuelles Passwort",
+      "changeButton": "E-Mail ändern",
+      "changing": "Ändere E-Mail..."
+    },
+    "notifications": {
+      "title": "E-Mail-Benachrichtigungen",
+      "description": "Wähle, welche E-Mails du erhalten möchtest",
+      "challenges": "Herausforderungen",
+      "challengesDescription": "Benachrichtigungen, wenn dich jemand zu einem Penalty-Duell herausfordert",
+      "matchResults": "Match-Ergebnisse",
+      "matchResultsDescription": "E-Mails wenn deine Matches beendet sind",
+      "invitations": "Einladungsbestätigungen",
+      "invitationsDescription": "Bestätigungen wenn du neue Spieler eingeladen hast",
+      "saveButton": "Einstellungen speichern",
+      "saving": "Speichere..."
+    },
+    "messages": {
+      "profileUpdated": "Profil erfolgreich aktualisiert",
+      "passwordChanged": "Passwort erfolgreich geändert",
+      "emailChanged": "E-Mail-Adresse erfolgreich geändert",
+      "settingsSaved": "Einstellungen gespeichert",
+      "loadError": "Fehler beim Laden des Profils",
+      "updateError": "Fehler beim Aktualisieren",
+      "networkError": "Netzwerkfehler beim Aktualisieren",
+      "passwordMismatch": "Neue Passwörter stimmen nicht überein",
+      "passwordTooShort": "Neues Passwort muss mindestens 6 Zeichen lang sein",
+      "emailRequired": "Aktuelles Passwort erforderlich",
+      "invalidPassword": "Falsches Passwort"
     }
   }
 }

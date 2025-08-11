@@ -18,7 +18,7 @@
   "navigation": {
     "leaderboard": "Leaderboard",
     "challenge": "CHALLENGE",
-    "matches": "Matches",
+    "matches": "Coach Office",
     "profile": "Profile",
     "logout": "Logout",
     "admin": "Admin",
@@ -429,6 +429,69 @@
     },
     "success": {
       "invitationPrepared": "Invitation for {email} prepared! Take your shots now - the invitation will be sent automatically afterwards."
+    }
+  },
+  "profile": {
+    "title": "User Profile",
+    "backToGarderobe": "Back to Locker Room",
+    "tabs": {
+      "account": "Account",
+      "emailPassword": "Email & Password",
+      "notifications": "Notifications"
+    },
+    "account": {
+      "title": "Account Settings",
+      "username": "Username",
+      "usernamePlaceholder": "Your username",
+      "avatar": "Avatar",
+      "chooseAvatar": "Choose Avatar",
+      "language": "Language",
+      "languageGerman": "Deutsch",
+      "languageEnglish": "English",
+      "passwordChange": "Change Password (optional)",
+      "currentPassword": "Current Password",
+      "currentPasswordPlaceholder": "Current password",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "New password (min. 6 characters)",
+      "confirmPassword": "Confirm New Password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "saveButton": "Save Changes",
+      "saving": "Saving..."
+    },
+    "email": {
+      "changeEmail": "Change Email Address",
+      "currentEmail": "Current Email",
+      "newEmail": "New Email Address",
+      "newEmailPlaceholder": "New email address",
+      "passwordConfirmation": "Current Password for Confirmation",
+      "passwordConfirmationPlaceholder": "Current password",
+      "changeButton": "Change Email",
+      "changing": "Changing Email..."
+    },
+    "notifications": {
+      "title": "Email Notifications",
+      "description": "Choose which emails you want to receive",
+      "challenges": "Challenges",
+      "challengesDescription": "Notifications when someone challenges you to a penalty duel",
+      "matchResults": "Match Results",
+      "matchResultsDescription": "Emails when your matches are finished",
+      "invitations": "Invitation Confirmations",
+      "invitationsDescription": "Confirmations when you've invited new players",
+      "saveButton": "Save Settings",
+      "saving": "Saving..."
+    },
+    "messages": {
+      "profileUpdated": "Profile successfully updated",
+      "passwordChanged": "Password successfully changed",
+      "emailChanged": "Email address successfully changed",
+      "settingsSaved": "Settings saved",
+      "loadError": "Error loading profile",
+      "updateError": "Error updating",
+      "networkError": "Network error while updating",
+      "passwordMismatch": "New passwords don't match",
+      "passwordTooShort": "New password must be at least 6 characters long",
+      "emailRequired": "Current password required",
+      "invalidPassword": "Incorrect password"
     }
   }
 }

@@ -53,7 +53,7 @@ export default function LoginPage() {
 
   return (
     <Layout showHeader={false}>
-      <div className="min-h-screen hero-stadium flex items-center justify-center p-4">
+      <div className="min-h-screen hero-stadium flex items-center justify-center p-4 has-stadium-background">
         <div className="w-full max-w-md max-h-[90vh] overflow-y-auto">
           <LoginForm
             onSubmit={handleLogin}

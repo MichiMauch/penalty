@@ -10,9 +10,9 @@ interface LayoutProps {
 
 export default function Layout({ children, showHeader = true }: LayoutProps) {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       {showHeader && <Header />}
-      <main>
+      <main className="flex-1">
         {children}
       </main>
     </div>

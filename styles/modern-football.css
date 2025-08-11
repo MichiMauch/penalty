@@ -64,6 +64,16 @@ body {
   font-weight: 400;
 }
 
+/* Fix layout issues - prevent double backgrounds */
+.min-h-screen {
+  background: none !important;
+}
+
+/* Ensure proper layout hierarchy */
+main {
+  background: none !important;
+}
+
 /* Modern Football App Design */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800;900&display=swap');
@@ -78,7 +88,9 @@ body {
 }
 
 /* Hero Section with Authentic Football Field - Parallax */
-.hero-stadium {
+/* IMPORTANT: Only show on pages that explicitly use stadium background */
+.stadium-page .hero-stadium,
+.has-stadium-background .hero-stadium {
   position: fixed;
   top: 0;
   left: 0;
@@ -98,8 +110,15 @@ body {
   z-index: 1;
 }
 
+/* Default - hide stadium background unless explicitly requested */
+.hero-stadium {
+  display: none !important;
+}
+
 /* Garderobe Hero Section */
-.hero-garderobe {
+/* IMPORTANT: Only show on pages that explicitly use garderobe background */
+.garderobe-page .hero-garderobe,
+.has-garderobe-background .hero-garderobe {
   position: fixed;
   top: 0;
   left: 0;
@@ -116,6 +135,11 @@ body {
   justify-content: center;
   overflow: hidden;
   z-index: 1;
+}
+
+/* Default - hide garderobe background unless explicitly requested */
+.hero-garderobe {
+  display: none !important;
 }
 
 .hero-garderobe .hero-content {
@@ -2161,13 +2185,10 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Header Component */
+/* Header Component - Default Clean Style */
 header.modern-header {
-  background: url('/stadium-background.jpg') !important;
-  background-size: cover !important;
-  background-position: center center !important;
-  background-repeat: no-repeat !important;
-  background-attachment: fixed !important;
+  background: rgba(15, 26, 46, 0.95) !important;
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-subtle);
   padding: 3rem 0;
   position: sticky;
@@ -2209,6 +2230,23 @@ header.modern-header.challenge-header {
   min-height: auto !important;
   height: auto !important;
   width: 100% !important;
+}
+
+/* Stadium Header - Only for pages with stadium backgrounds */
+.has-stadium-background header.modern-header {
+  background: url('/stadium-background.jpg') !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+
+/* Clean Header - Profile and other non-stadium pages */
+.profile-page header.modern-header {
+  background: rgba(15, 26, 46, 0.95) !important;
+  backdrop-filter: blur(10px);
+  padding: 1rem 0 !important;
+  min-height: auto !important;
 }
 
 /* Header Hero Title */

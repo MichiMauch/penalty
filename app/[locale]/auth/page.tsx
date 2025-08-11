@@ -33,7 +33,7 @@ function AuthPageContent() {
 
   return (
     <Layout showHeader={false}>
-      <div className="min-h-screen hero-stadium">
+      <div className="min-h-screen hero-stadium has-stadium-background">
         <AuthPage />
       </div>
     </Layout>
