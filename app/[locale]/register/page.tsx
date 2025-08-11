@@ -22,6 +22,14 @@ export default function RegisterPage() {
   const matchId = searchParams.get('match');
   const invitedEmail = searchParams.get('email');
 
+  // Add stadium background class to body
+  useEffect(() => {
+    document.body.classList.add('has-stadium-background');
+    return () => {
+      document.body.classList.remove('has-stadium-background');
+    };
+  }, []);
+
   // Redirect logged-in users to garderobe or keeper mode for invitations
   if (!loading && user) {
     if (justRegistered && invitationToken && matchId) {
@@ -72,7 +80,8 @@ export default function RegisterPage() {
 
   return (
     <Layout showHeader={false}>
-      <div className="min-h-screen hero-stadium flex items-center justify-center p-4 has-stadium-background">
+      <div className="hero-stadium" />
+      <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
         <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
           <RegisterForm
             onSubmit={handleRegister}

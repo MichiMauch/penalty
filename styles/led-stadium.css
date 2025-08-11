@@ -168,6 +168,13 @@ body:not(.has-stadium-background):not(.has-garderobe-background) .hero-garderobe
   display: none !important;
 }
 
+/* Ensure stadium backgrounds show when explicitly requested */
+body .has-stadium-background .hero-stadium,
+body.has-stadium-background .hero-stadium,
+body .stadium-page .hero-stadium {
+  display: flex !important;
+}
+
 /* LED Scoreboard Base */
 .led-scoreboard {
   background: var(--led-black);

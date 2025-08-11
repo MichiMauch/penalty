@@ -90,7 +90,8 @@ main {
 /* Hero Section with Authentic Football Field - Parallax */
 /* IMPORTANT: Only show on pages that explicitly use stadium background */
 .stadium-page .hero-stadium,
-.has-stadium-background .hero-stadium {
+.has-stadium-background .hero-stadium,
+body.has-stadium-background .hero-stadium {
   position: fixed;
   top: 0;
   left: 0;
@@ -110,9 +111,17 @@ main {
   z-index: 1;
 }
 
-/* Default - hide stadium background unless explicitly requested */
+/* Default - hide all hero-stadium elements */
 .hero-stadium {
   display: none !important;
+}
+
+/* Show stadium background when explicitly requested */
+body.has-stadium-background .hero-stadium,
+.has-stadium-background .hero-stadium,
+.stadium-page .hero-stadium,
+.hero-stadium.has-stadium-background {
+  display: flex !important;
 }
 
 /* Garderobe Hero Section */

@@ -22,6 +22,14 @@ export default function LoginPage() {
     }
   }, [loading, user, router, locale]);
 
+  // Add stadium background class to body
+  useEffect(() => {
+    document.body.classList.add('has-stadium-background');
+    return () => {
+      document.body.classList.remove('has-stadium-background');
+    };
+  }, []);
+
   // Show loading while checking auth
   if (loading) {
     return (
@@ -53,7 +61,8 @@ export default function LoginPage() {
 
   return (
     <Layout showHeader={false}>
-      <div className="min-h-screen hero-stadium flex items-center justify-center p-4 has-stadium-background">
+      <div className="hero-stadium" />
+      <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
         <div className="w-full max-w-md max-h-[90vh] overflow-y-auto">
           <LoginForm
             onSubmit={handleLogin}

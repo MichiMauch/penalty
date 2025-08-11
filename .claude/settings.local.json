@@ -27,7 +27,9 @@
       "Bash(grep:*)",
       "Bash(node:*)",
       "Bash(npm run typecheck:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npx next build:*)",
+      "Bash(echo $?)"
     ],
     "deny": []
   }

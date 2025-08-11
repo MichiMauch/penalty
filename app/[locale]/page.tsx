@@ -61,6 +61,14 @@ export default function LandingPage() {
     }
   }, [user, loading, router, locale]);
 
+  // Add stadium background class to body
+  useEffect(() => {
+    document.body.classList.add('has-stadium-background');
+    return () => {
+      document.body.classList.remove('has-stadium-background');
+    };
+  }, []);
+
   // Fetch leaderboard and stats
   useEffect(() => {
     fetchLeaderboard();
@@ -117,7 +125,7 @@ export default function LandingPage() {
 
   return (
     <Layout showHeader={false}>
-      <div className="modern-app-layout has-stadium-background">
+      <div className="modern-app-layout">
         {/* Language Switcher - Fixed Position */}
         <div className="fixed top-4 right-4 z-50">
           <LanguageSwitcher variant="flags" />
